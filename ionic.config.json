@@ -1,0 +1,7 @@
+{
+  "name": "volleyball-scoresheet",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
