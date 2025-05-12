@@ -1,20 +1,53 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+<div style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;">
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+  <!-- Título -->
+  <div style="padding: 20px">
+    <p style="font-size: xx-large; font-weight: bold; margin: 0;">Scoresheets</p>
   </div>
-</ion-content>
+
+  <!-- Botón "Nuevo partido" -->
+  <div style="display: flex; justify-content: center; padding: 0px 20px 0px 20px;">
+    <ion-button class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
+      Nuevo partido
+    </ion-button>
+  </div>
+
+  <!-- Lista de partidos (scrollable) -->
+  <div style="flex: 1; overflow-y: auto;overflow-x: hidden; margin: 20px 20px 20px;">
+    
+  <ion-item-sliding style=" margin-bottom: 10px;"
+  *ngFor="let partido of partidos">
+    <ion-item style="    --background: var(--color-3);
+    --color: var(--color-4);    --border-color: white; --border-radius:10px">
+      <ion-button
+      fill="clean"
+      shape="round"
+      style="--border-radius: 10px; border-radius: 10px; border: 1px solid rgba(var(--color-4-rgb), 0.2); width: 100%;margin:0px;"
+    >
+      <div style="width: 100%; padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <p style="margin: 0; font-weight: 500; font-size: x-large;">{{partido.torneo}}</p>
+          <p style="margin: 0; color: rgba(var(--color-4-rgb), 0.5);">{{partido.estado}}</p>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+          <p style="margin: 0;">{{partido.equipoA}}</p>
+          <p style="margin: 0;">{{partido.setsA?partido.setsA + " sets":"-"}}</p>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+          <p style="margin: 0;">{{partido.equipoB}}</p>
+          <p style="margin: 0;">{{partido.setsB? partido.setsB + " sets": "-"}}</p>
+        </div>
+      </div>
+    </ion-button>
+    </ion-item>
+    <ion-item-options side="end">
+      <ion-item-option color="1" style="border-radius: 10px;">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-item-option>
+      <ion-item-option color="danger" style="border-radius: 10px;">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-item-option>
+    </ion-item-options>
+  </ion-item-sliding>
+  </div>
+</div>

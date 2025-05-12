@@ -1,2 +1,53 @@
 // For information on how to create your own theme, please see:
 // http://ionicframework.com/docs/theming/
+
+:root {
+    /* Colores primarios (Azul) */
+  
+    --color-1: #3B82F6;
+    --color-1-rgb: 59, 130, 246;
+    --color-1-shade: #2563eb;
+    --color-1-shade-rgb: 37, 99, 235;
+    --color-1-tint: #60a5fa;
+    --color-1-tint-rgb: 96, 165, 250;
+    
+    --color-2: #1E3A8A;
+    --color-2-rgb: 30, 58, 138;
+    --color-2-shade: #172c6a;
+    --color-2-shade-rgb: 23, 44, 106;
+    --color-2-tint: #3b5db8;
+    --color-2-tint-rgb: 59, 93, 184;
+  
+    /* Éxito (Verde) */
+    --color-success: #10B981;
+    --color-success-rgb: 16, 185, 129;
+    --color-success-shade: #059669;
+    --color-success-shade-rgb: 5, 150, 105;
+    --color-success-tint: #34D399;
+    --color-success-tint-rgb: 52, 211, 153;
+  
+    /* Error (Rojo) */
+    --color-danger: #EF4444;
+    --color-danger-rgb: 239, 68, 68;
+    --color-danger-shade: #DC2626;
+    --color-danger-shade-rgb: 220, 38, 38;
+    --color-danger-tint: #F87171;
+    --color-danger-tint-rgb: 248, 113, 113;
+  
+    /* Blanco */
+    --color-3: #FFFFFF;
+    --color-3-rgb: 255, 255, 255;
+    --color-3-shade: #E5E5E5;
+    --color-3-shade-rgb: 229, 229, 229;
+    --color-3-tint: #FFFFFF;
+    --color-3-tint-rgb: 255, 255, 255;
+  
+    /* Negro */
+    --color-4: #2f2f2f;
+    --color-4-rgb: 0, 0, 0;
+    --color-4-shade: #000000;
+    --color-4-shade-rgb: 0, 0, 0;
+    --color-4-tint: #393939;
+    --color-4-tint-rgb: 26, 26, 26;
+  }
+  

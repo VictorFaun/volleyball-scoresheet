@@ -8,6 +8,27 @@ import { Component } from '@angular/core';
 })
 export class HomePage {
 
+  partidos:any= [
+    {
+      torneo:"Test",
+      equipoA:"UBB",
+      setsA:2,
+      equipoB:"VOLEICO",
+      setsB:0,
+      estado:"Iniciado",
+
+    },
+    {
+      torneo:"Test",
+      equipoA:"UBB",
+      setsA:2,
+      equipoB:"VOLEICO",
+      setsB:1,
+      estado:"Iniciado",
+
+    }
+  ]
+
   constructor() {}
 
 }

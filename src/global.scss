@@ -35,3 +35,58 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+@font-face {
+    font-family: 'Inter';
+    src: url('./assets/Inter/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'Inter';
+    src: url('./assets/Inter/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: italic;
+  }
+
+ion-content{
+    --background: var(--color-3);
+    --color: var(--color-4)
+}
+
+.btn-1{
+    --background: var(--color-1);
+    --color: var(--color-3);
+}
+
+.ion-color-1 {
+  --ion-color-base: var(--color-1) !important;
+  --ion-color-base-rgb: var(--color-1-rgb) !important;
+  --ion-color-contrast: var(--color-3, #fff) !important;
+  --ion-color-contrast-rgb: var(--color-3-rgb, 255, 255, 255) !important;
+  --ion-color-shade: var(--color-1-shade) !important;
+  --ion-color-tint: var(--color-1-tint) !important;
+}
+
+.ion-color-2 {
+  --ion-color-base: var(--color-2) !important;
+  --ion-color-base-rgb: var(--color-2-rgb) !important;
+  --ion-color-contrast: var(--color-3, #fff) !important;
+  --ion-color-contrast-rgb: var(--color-3-rgb, 255, 255, 255) !important;
+  --ion-color-shade: var(--color-2-shade) !important;
+  --ion-color-tint: var(--color-2-tint) !important;
+}
+
+.ion-color-danger {
+  --ion-color-base: var(--color-danger) !important;
+  --ion-color-base-rgb: var(--color-danger-rgb) !important;
+  --ion-color-contrast: var(--color-3, #fff) !important;
+  --ion-color-contrast-rgb: var(--color-3-rgb, 255, 255, 255) !important;
+  --ion-color-shade: var(--color-danger-shade) !important;
+  --ion-color-tint: var(--color-danger-tint) !important;
+}
+
+*{
+    font-family: "Inter", sans-serif;
+}
