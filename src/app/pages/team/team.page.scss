@@ -1,0 +1,52 @@
+.input-text {
+    padding-bottom: 20px;
+
+    label {
+        color: rgba(var(--color-4-rgb), .7);
+    }
+
+    ion-input {
+        --border-color: rgba(var(--color-4-rgb), .2);
+        --border-radius: 10px;
+        min-height: 44px;
+    }
+}
+
+.players {
+    padding-bottom: 20px;
+
+    label {
+        color: rgba(var(--color-4-rgb), .7);
+    }
+}
+
+.table-players {
+    border: 1px solid rgba(var(--color-4-rgb), 0.2);
+    border-radius: 10px;
+    margin-top: 5px;
+
+    table {
+        width: 100%;
+    }
+
+    td,
+    th {
+        padding: 10px;
+        padding-left: 15px;
+        text-align: start;
+    }
+
+    thead {
+        background-color: rgba(var(--color-4-rgb), 0.03);
+    }
+
+    tr {
+        border-bottom: 1px solid rgba(var(--color-4-rgb), 0.2);
+    }
+
+    tbody {
+        tr:last-child {
+            border-bottom: none;
+        }
+    }
+}

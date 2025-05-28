@@ -59,11 +59,26 @@ ion-item{
   --color: var(--color-4)
 }
 
+ion-checkbox{
+  --checkbox-background:var(--color-3);
+  --border-width:1px;
+  --border-color:rgba(var(--color-4-rgb), 0.2);
+  --checkmark-color:rgba(var(--color-4-rgb), 0.5);
+  --checkmark-width: 2;
+  --checkbox-background-checked: var(--color-3);
+  --border-color-checked: rgba(var(--color-4-rgb), 0.2);
+}
+
 .btn-1{
     --background: var(--color-1);
     --color: var(--color-3);
 }
-
+.btn-round{
+    --background: var(--color-1);
+    --color: var(--color-3);
+    min-width:25px;
+    min-height: 25px;
+}
 .ion-color-1 {
   --ion-color-base: var(--color-1) !important;
   --ion-color-base-rgb: var(--color-1-rgb) !important;

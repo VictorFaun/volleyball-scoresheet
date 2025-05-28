@@ -1,0 +1,78 @@
+<div
+  style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;">
+
+  <!-- Título -->
+  <div style="padding: 20px;padding-bottom: 0px;">
+    <p style="font-size: xx-large; font-weight: bold; margin: 0;">Equipo A</p>
+  </div>
+
+  <div style="flex: 1; overflow-y: auto;overflow-x: hidden; margin: 20px 20px 20px;">
+
+    <div class="input-text">
+      <label>Nombre <span style="color: var(--color-danger-shade);">*</span></label>
+      <ion-input fill="outline" placeholder="Nombre Equipo"></ion-input>
+    </div>
+
+    <div class="players">
+      <div style="display: flex;align-items: center;">
+        <label style="margin-right: 10px;">Jugadores</label>
+        <ion-button class="btn-round" shape="round" style="margin: 0px;">
+          <ion-icon slot="icon-only" name="add"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="table-players">
+        <table>
+          <thead>
+            <tr>
+              <td style="border-top-left-radius: 10px; width: 60px;">N° <span style="color: var(--color-danger-shade);">*</span></td>
+              <td>Nombre Jugador</td>
+              <td style="width: 50px;">Cap</td>
+              <td style="border-top-right-radius: 10px; width: 50px;">Lib</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>22</td>
+              <td>Faundez Faundez Faundez Faundez Faundez</td>
+              <td><ion-checkbox></ion-checkbox></td>
+              <td><ion-checkbox></ion-checkbox></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <div class="input-text">
+      <label>Entrenador</label>
+      <ion-input fill="outline" placeholder="Nombre Entrenador"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Primer Asistente Entrenador</label>
+      <ion-input fill="outline" placeholder="Nombre Primer Asistente"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Segundo Asistente Entrenador</label>
+      <ion-input fill="outline" placeholder="Nombre Segundo Asistente"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Medico</label>
+      <ion-input fill="outline" placeholder="Nombre Medico"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Fisioterapeuta</label>
+      <ion-input fill="outline" placeholder="Nombre Fisioterapeuta"></ion-input>
+    </div>
+
+  </div>
+
+  <div style="display: flex; justify-content: center; padding: 0px 20px 20px 20px;">
+    <ion-button class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
+      Siguiente
+    </ion-button>
+  </div>
+</div>
