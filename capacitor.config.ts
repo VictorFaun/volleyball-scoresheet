@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'volleyball-scoresheet',
+  appId: 'cl.thedifference.scoresheet',
+  appName: 'Volleyball Scoresheet',
   webDir: 'www'
 };
 

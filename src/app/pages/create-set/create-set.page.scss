@@ -7,6 +7,10 @@
         --border-color:rgba(var(--color-4-rgb),.2);
         --border-radius:10px;
         min-height: 44px;
+        border: 1px solid rgba(var(--color-4-rgb),.2);
+        border-radius: 10px;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
     }
 }
 

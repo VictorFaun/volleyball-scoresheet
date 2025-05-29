@@ -1,9 +1,10 @@
 <div
-  style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;">
+  style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;padding-top: 40px;">
 
   <!-- Título -->
-  <div style="padding: 20px;padding-bottom: 0px;">
-    <p style="font-size: xx-large; font-weight: bold; margin: 0;">Equipo A</p>
+  <div style="padding: 20px;padding-bottom: 0px;display: flex;">
+    <ion-button (click)="volver()" fill="clear" style="margin: 0;width: 40px;height: 40px;--border-radius:100%;--color: var(--color-4);min-height: 0px;"><ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon></ion-button>
+    <p style="font-size: xx-large; font-weight: bold; margin: 0;"> Equipo A</p>
   </div>
 
   <div style="flex: 1; overflow-y: auto;overflow-x: hidden; margin: 20px 20px 20px;">
@@ -32,10 +33,28 @@
           </thead>
           <tbody>
             <tr>
+              <td>5</td>
+              <td>Dany</td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td>Flores</td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td>Marshall</td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
+            </tr>
+            <tr>
               <td>22</td>
-              <td>Faundez Faundez Faundez Faundez Faundez</td>
-              <td><ion-checkbox></ion-checkbox></td>
-              <td><ion-checkbox></ion-checkbox></td>
+              <td>Faundez</td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
             </tr>
           </tbody>
         </table>
@@ -63,7 +82,7 @@
       <ion-input fill="outline" placeholder="Nombre Medico"></ion-input>
     </div>
 
-    <div class="input-text">
+    <div class="input-text" style="padding-bottom: 0px;">
       <label>Fisioterapeuta</label>
       <ion-input fill="outline" placeholder="Nombre Fisioterapeuta"></ion-input>
     </div>
@@ -71,7 +90,7 @@
   </div>
 
   <div style="display: flex; justify-content: center; padding: 0px 20px 20px 20px;">
-    <ion-button class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
+    <ion-button (click)="redireccionar('create-set')" class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
       Siguiente
     </ion-button>
   </div>

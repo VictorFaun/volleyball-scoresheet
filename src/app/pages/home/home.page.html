@@ -1,4 +1,4 @@
-<div style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;">
+<div style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;padding-top: 40px;">
 
   <!-- Título -->
   <div style="padding: 20px">
@@ -7,7 +7,7 @@
 
   <!-- Botón "Nuevo partido" -->
   <div style="display: flex; justify-content: center; padding: 0px 20px 0px 20px;">
-    <ion-button class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
+    <ion-button (click)="redireccionar('create')" class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
       Nuevo partido
     </ion-button>
   </div>

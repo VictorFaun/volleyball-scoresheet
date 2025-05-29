@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -8,27 +9,34 @@ import { Component } from '@angular/core';
 })
 export class HomePage {
 
-  partidos:any= [
+  partidos: any = [
     {
-      torneo:"Test",
-      equipoA:"UBB",
-      setsA:2,
-      equipoB:"VOLEICO",
-      setsB:0,
-      estado:"Iniciado",
+      torneo: "Test",
+      equipoA: "UBB",
+      setsA: 2,
+      equipoB: "VOLEICO",
+      setsB: 0,
+      estado: "Iniciado",
 
     },
     {
-      torneo:"Test",
-      equipoA:"UBB",
-      setsA:2,
-      equipoB:"VOLEICO",
-      setsB:1,
-      estado:"Iniciado",
+      torneo: "Test",
+      equipoA: "UBB",
+      setsA: 2,
+      equipoB: "VOLEICO",
+      setsB: 1,
+      estado: "Iniciado",
 
     }
   ]
 
-  constructor() {}
+  constructor(private router: Router) { }
+  redireccionar(ruta: string, parametros?: any) {
+    if (parametros) {
+      this.router.navigate([ruta], { queryParams: parametros });
+    } else {
+      this.router.navigate([ruta]);
+    }
+  }
 
 }

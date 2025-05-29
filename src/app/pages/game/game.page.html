@@ -1,13 +1,14 @@
-<div style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;">
+<div style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;padding-top: 40px;">
 
   <!-- Título -->
-  <div style="padding: 20px;padding-bottom: 0px;">
-    <p style="font-size: xx-large; font-weight: bold; margin: 0;">Partido</p>
+  <div style="padding: 20px;padding-bottom: 0px;display: flex;">
+    <ion-button (click)="volver()" fill="clear" style="margin: 0;width: 40px;height: 40px;--border-radius:100%;--color: var(--color-4);min-height: 0px;"><ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon></ion-button>
+    <p style="font-size: xx-large; font-weight: bold; margin: 0;"> Partido</p>
   </div>
 
   <!-- Sub Título -->
   <div style="padding: 20px;padding-bottom: 0px;padding-top: 0px;">
-    <p style="font-size: large; margin: 0;">Set 1</p>
+    <p style="font-size: large; margin: 0;text-align: center;">Set 1</p>
   </div>
 
   <div style="flex: 1; overflow-y: auto;overflow-x: hidden; margin: 20px 20px 20px; display: flex;flex-direction: column;justify-content: space-between;">
@@ -107,9 +108,9 @@
     </div>
     </div>
 
-    <div style="margin-top: 20px;">
+    <div>
     <p style="font-size: large; margin: 0;font-weight: 500;">Historial de acciones</p>
-    <div style="padding: 5px;padding-top: 0px;height: 145px;overflow: auto;">
+    <div style="padding: 5px;padding-top: 0px;height: 115px;overflow: auto;">
       <p style="margin: 0px;">[12:19] Punto Equipo B</p>
       <p style="margin: 0px;">[12:17] Punto Equipo A</p>
       <p style="margin: 0px;">[12:17] Amonestacion Equipo A (Jugador 3)</p>
@@ -148,7 +149,7 @@
   </div>
 
   <div style="display: flex; justify-content: center; padding: 0px 20px 20px 20px;">
-    <ion-button class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
+    <ion-button (click)="redireccionar('home')" class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
       Terminar
     </ion-button>
   </div>
