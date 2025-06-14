@@ -50,6 +50,14 @@
     font-style: italic;
   }
 
+.is-mobile ion-app {
+    margin-top: 40px;
+}
+
+body{
+    background: var(--color-3);
+}
+
 ion-content{
     --background: var(--color-3);
     --color: var(--color-4)
