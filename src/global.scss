@@ -37,84 +37,104 @@
 @import "@ionic/angular/css/palettes/dark.system.css";
 
 @font-face {
-    font-family: 'Inter';
-    src: url('./assets/Inter/Inter-VariableFont_opsz,wght.ttf') format('truetype');
-    font-weight: 100 900;
-    font-style: normal;
-  }
-  
-  @font-face {
-    font-family: 'Inter';
-    src: url('./assets/Inter/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype');
-    font-weight: 100 900;
-    font-style: italic;
-  }
+  font-family: 'Inter';
+  src: url('./assets/Inter/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('./assets/Inter/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
 
 .is-mobile ion-app {
-    margin-top: 40px;
+  margin-top: 40px;
 }
 
-body{
-    background: var(--color-3);
+.is-ios .input-text ion-input {
+  border: 1px solid rgba(var(--color-4-rgb), .2);
+  border-radius: 10px;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
 }
 
-ion-content{
-    --background: var(--color-3);
-    --color: var(--color-4)
+.is-android .input-text ion-input {
+  --border-color: rgba(var(--color-4-rgb), .2);
+  --border-radius: 10px;
 }
-ion-item{
+
+body {
+  background: var(--color-3);
+}
+
+ion-content {
   --background: var(--color-3);
   --color: var(--color-4)
 }
 
-ion-checkbox{
-  --checkbox-background:var(--color-3);
-  --border-width:1px;
-  --border-color:rgba(var(--color-4-rgb), 0.2);
-  --checkmark-color:rgba(var(--color-4-rgb), 0.5);
+ion-item {
+  --background: var(--color-3);
+  --color: var(--color-4)
+}
+
+ion-checkbox {
+  --checkbox-background: var(--color-3);
+  --border-width: 1px;
+  --border-color: rgba(var(--color-4-rgb), 0.2);
+  --checkmark-color: rgba(var(--color-4-rgb), 0.5);
   --checkmark-width: 2;
   --checkbox-background-checked: var(--color-3);
   --border-color-checked: rgba(var(--color-4-rgb), 0.2);
 }
 
-ion-alert{
-  --background:var(--color-3) !important;
+ion-alert {
+  --background: var(--color-3) !important;
+
   [aria-checked=true].sc-ion-alert-md .alert-radio-label.sc-ion-alert-md {
     color: rgba(var(--color-4-rgb), 0.5);
-}
-.sc-ion-alert-md .alert-radio-label.sc-ion-alert-md {
-    color: rgba(var(--color-4-rgb), 0.5);
-}
-.alert-radio-inner.sc-ion-alert-md{
-  background-color:var(--color-1);
-}
+  }
 
-  [aria-checked=true].sc-ion-alert-md .alert-radio-icon.sc-ion-alert-md{
-    border-color:var(--color-1);
+  .sc-ion-alert-md .alert-radio-label.sc-ion-alert-md {
+    color: rgba(var(--color-4-rgb), 0.5);
+  }
+
+  .alert-radio-inner.sc-ion-alert-md {
+    background-color: var(--color-1);
+  }
+
+  [aria-checked=true].sc-ion-alert-md .alert-radio-icon.sc-ion-alert-md {
+    border-color: var(--color-1);
   }
 }
-.alert-button.sc-ion-alert-md{
 
-  color:var(--color-1);
+.alert-button.sc-ion-alert-md {
+
+  color: var(--color-1);
 }
 
-.btn-1{
-    --background: var(--color-1);
-    --color: var(--color-3);
+.btn-1 {
+  --background: var(--color-1);
+  --color: var(--color-3);
 }
-.btn-round{
-    --background: var(--color-1);
-    --color: var(--color-3);
-    min-width:25px;
-    min-height: 25px;
+
+.btn-round {
+  --background: var(--color-1);
+  --color: var(--color-3);
+  min-width: 25px;
+  min-height: 25px;
 }
-.btn-round-2{
-    --background: var(--color-1);
-    --color: var(--color-3);
-    min-width:50px;
-    min-height: 50px;
-    font-size: 25px !important;
+
+.btn-round-2 {
+  --background: var(--color-1);
+  --color: var(--color-3);
+  min-width: 50px;
+  min-height: 50px;
+  font-size: 25px !important;
 }
+
 .ion-color-1 {
   --ion-color-base: var(--color-1) !important;
   --ion-color-base-rgb: var(--color-1-rgb) !important;
@@ -142,6 +162,6 @@ ion-alert{
   --ion-color-tint: var(--color-danger-tint) !important;
 }
 
-*{
-    font-family: "Inter", sans-serif;
+* {
+  font-family: "Inter", sans-serif;
 }
