@@ -23,13 +23,6 @@
         color: rgba(var(--color-4-rgb),.7);
     }
     ion-select{
-        --background: var(--color-3);
-        --border-width: 1px;
-        --border-style:solid;
-        --border-color:rgba(var(--color-4-rgb),.2);
-        --border-radius: 10px;
-        --padding-start: 16px;
-        --padding-end: 16px;
         min-height: 44px;
     }
 }

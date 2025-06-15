@@ -1,102 +1,117 @@
-<div style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;">
+<div
+  style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;">
 
   <!-- Título -->
   <div style="padding: 20px;padding-bottom: 0px;display: flex;">
-    <ion-button (click)="volver()" fill="clear" style="margin: 0;width: 40px;height: 40px;--border-radius:100%;--color: var(--color-4);min-height: 0px;"><ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon></ion-button>
+    <ion-button (click)="volver()" fill="clear"
+      style="margin: 0;width: 40px;height: 40px;--border-radius:100%;--color: var(--color-4);min-height: 0px;"><ion-icon
+        slot="icon-only" name="arrow-back-outline"></ion-icon></ion-button>
     <p style="font-size: xx-large; font-weight: bold; margin: 0;"> Registrar Partido</p>
   </div>
 
   <div style="flex: 1; overflow-y: auto;overflow-x: hidden; margin: 20px 20px 20px;">
-    
+
     <div class="input-text">
-      <label >Torneo <span style="color: var(--color-danger-shade);">*</span></label>
-      <ion-input fill="outline" placeholder="Nombre Torneo"></ion-input>
+      <label>Partido <!--<span style="color: var(--color-danger-shade);">*</span>--></label>
+      <ion-input fill="outline" placeholder="Nombre Partido"></ion-input>
     </div>
-    
+
     <div class="input-text">
-      <label >Ciudad</label>
-      <ion-input fill="outline" placeholder="Nombre Ciudad"></ion-input>
-    </div>
-    
-    <div class="input-text">
-      <label >Pais</label>
-      <ion-input fill="outline" placeholder="Nombre Pais"></ion-input>
-    </div>
-    
-    <div class="input-text">
-      <label >Gimnasio</label>
-      <ion-input fill="outline" placeholder="Nombre Gimnasio"></ion-input>
-    </div>
-    
-    <div class="input-text">
-      <label >N° Partido</label>
+      <label>N° Partido</label>
       <ion-input fill="outline" placeholder="Numero Partido"></ion-input>
     </div>
-    
+
     <div class="input-text">
-      <label >Division</label>
+      <label>Competición <!--<span style="color: var(--color-danger-shade);">*</span>--></label>
+      <ion-input fill="outline" placeholder="Nombre Competición"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Ciudad</label>
+      <ion-input fill="outline" placeholder="Nombre Ciudad"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Pais</label>
+      <ion-input fill="outline" placeholder="Nombre Pais"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Gimnasio</label>
+      <ion-input fill="outline" placeholder="Nombre Gimnasio"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Division</label>
       <ion-input fill="outline" placeholder="Nombre Division"></ion-input>
     </div>
-    
+
     <div class="input-text">
-      <label >Categoria</label>
+      <label>Categoria</label>
       <ion-input fill="outline" placeholder="Nombre Categoria"></ion-input>
     </div>
-    
+
     <div class="input-text">
-      <label >Fecha</label>
-      <ion-input fill="outline" placeholder="DD/MM/YYYY"></ion-input>
+      <label>Fecha</label>
+      <div id="present-alert" id="ion-datatime-picker-1" class="input-datetime">DD/MM/YYYY</div>
+      <app-datetimepicker format="DD/MM/YYYY" mode="md" presentation="date" trigger="ion-datatime-picker-1"
+        [cancelText]="'CANCELAR'"
+        [doneText]="'CONFIRMAR'" [display]="false"></app-datetimepicker>
     </div>
-    
+
     <div class="input-text">
-      <label >Hora</label>
-      <ion-input fill="outline" placeholder="HH:SS"></ion-input>
+      <label>Hora</label>
+      <div id="present-alert" id="ion-datatime-picker-2" class="input-datetime">HH:MM</div>
+      <app-datetimepicker format="HH:mm" mode="md" presentation="time" trigger="ion-datatime-picker-2"
+        [cancelText]="'CANCELAR'"
+        [doneText]="'CONFIRMAR'" [display]="false"></app-datetimepicker>
     </div>
-    
+
     <div class="input-text">
-      <label >Primer Arbitro</label>
+      <label>Primer Arbitro</label>
       <ion-input fill="outline" placeholder="Nombre Primer Arbitro"></ion-input>
     </div>
-    
+
     <div class="input-text">
-      <label >Segundo Arbitro</label>
+      <label>Segundo Arbitro</label>
       <ion-input fill="outline" placeholder="Nombre Segundo Arbitro"></ion-input>
     </div>
-    
+
     <div class="input-text">
-      <label >Planillero</label>
+      <label>Planillero</label>
       <ion-input fill="outline" placeholder="Nombre Planillero"></ion-input>
     </div>
-    
+
     <div class="input-text">
-      <label >Asistente Planillero</label>
+      <label>Asistente Planillero</label>
       <ion-input fill="outline" placeholder="Nombre Asistente Planillero"></ion-input>
     </div>
-    
+
     <div class="input-text">
-      <label >Primer Banderin</label>
+      <label>Primer Banderin</label>
       <ion-input fill="outline" placeholder="Nombre Primer Banderin"></ion-input>
     </div>
-    
+
     <div class="input-text">
-      <label >Segundo Banderin</label>
+      <label>Segundo Banderin</label>
       <ion-input fill="outline" placeholder="Nombre Segundo Banderin"></ion-input>
     </div>
-    
+
     <div class="input-text">
-      <label >Tercer Banderin</label>
+      <label>Tercer Banderin</label>
       <ion-input fill="outline" placeholder="Nombre Tercer Banderin"></ion-input>
     </div>
-    
+
     <div class="input-text" style="padding-bottom: 0px;">
-      <label >Cuarto Banderin</label>
+      <label>Cuarto Banderin</label>
       <ion-input fill="outline" placeholder="Nombre Cuarto Banderin"></ion-input>
     </div>
 
   </div>
 
   <div style="display: flex; justify-content: center; padding: 0px 20px 20px 20px;">
-    <ion-button (click)="redireccionar('team')" class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
+    <ion-button (click)="redireccionar('team')" class="btn-1"
+      style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
       Siguiente
     </ion-button>
   </div>

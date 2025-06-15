@@ -29,9 +29,20 @@ export class SqliteService {
 
   private async createTables() {
     const query = `
-      CREATE TABLE IF NOT EXISTS test_data (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL
+      CREATE TABLE IF NOT EXISTS PARTIDO (
+        ID INTEGER PRIMARY KEY AUTOINCREMENT
+      );
+      CREATE TABLE IF NOT EXISTS EQUIPO (
+        ID INTEGER PRIMARY KEY AUTOINCREMENT
+      );
+      CREATE TABLE IF NOT EXISTS JUGADOR (
+        ID INTEGER PRIMARY KEY AUTOINCREMENT
+      );
+      CREATE TABLE IF NOT EXISTS SET (
+        ID INTEGER PRIMARY KEY AUTOINCREMENT
+      );
+      CREATE TABLE IF NOT EXISTS PARTIDO_LOG (
+        ID INTEGER PRIMARY KEY AUTOINCREMENT
       );
     `;
     await this.db?.execute(query);

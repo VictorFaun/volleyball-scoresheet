@@ -66,6 +66,35 @@
   --border-radius: 10px;
 }
 
+.is-ios .select-text ion-select {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  border: 1px solid rgba(var(--color-4-rgb), .2);
+  border-radius: 10px;
+}
+
+.is-android .select-text ion-select {
+  --background: var(--color-3);
+  --border-width: 1px;
+  --border-style: solid;
+  --border-color: rgba(var(--color-4-rgb), .2);
+  --border-radius: 10px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+.input-datetime {
+  border: 1px solid rgba(var(--color-4-rgb), .2);
+  border-radius: 10px;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  height: 44px;
+  display: flex;
+  align-items: center;
+
+  color: rgba(var(--color-4-rgb), 0.5);
+}
+
 body {
   background: var(--color-3);
 }
@@ -107,6 +136,17 @@ ion-alert {
 
   [aria-checked=true].sc-ion-alert-md .alert-radio-icon.sc-ion-alert-md {
     border-color: var(--color-1);
+  }
+
+  .alert-radio-label.sc-ion-alert-ios{
+    color: rgba(var(--color-4-rgb), 0.5);
+  }
+  .sc-ion-alert-ios-h{
+    --background: red;
+  }
+  .alert-radio-group.sc-ion-alert-md, .alert-checkbox-group.sc-ion-alert-md{
+    border-top: 0px;
+    border-bottom: 0px;
   }
 }
 

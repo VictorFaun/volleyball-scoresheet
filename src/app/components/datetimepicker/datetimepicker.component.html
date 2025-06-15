@@ -1,0 +1,30 @@
+<p [class]="valueText?'normal':'placeholder'" [style]="formatCSS" *ngIf="display">
+    {{valueText?valueText:placeholder}}
+</p>
+<ion-modal [trigger]="disabled?null:trigger" class="modal-datetimepicker">
+    <ng-template>
+        <ion-content>
+            <div class="contenedor">
+                <div style="width: 100%;">
+                    <ion-row>
+                        <ion-col class="boton" (click)="close()">
+                            {{cancelText}}
+                        </ion-col>
+
+                        <ion-col class="boton" (click)="select()">
+                            {{doneText}}
+                        </ion-col>
+                    </ion-row>
+                    <div class="fecha">
+                        <div style="position: absolute;height: 2px;top: -1px;width: 100%;background: white; z-index: 1;"></div>
+                        <ion-datetime [min]="min" [max]="max" color="color" [locale]="idioma"
+                            [presentation]="presentation" [preferWheel]="preferWheel" [mode]="mode" #datetime
+                            [(ngModel)]="innerValue" (ngModelChange)="change($event)" [disabled]="disabled">
+                        </ion-datetime>
+                    </div>
+                </div>
+            </div>
+
+        </ion-content>
+    </ng-template>
+</ion-modal>
