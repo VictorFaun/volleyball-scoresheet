@@ -27,6 +27,10 @@ const routes: Routes = [
     path: 'game',
     loadChildren: () => import('./pages/game/game.module').then( m => m.GamePageModule)
   },
+  {
+    path: 'signature',
+    loadChildren: () => import('./pages/signature/signature.module').then( m => m.SignaturePageModule)
+  },
 ];
 
 @NgModule({

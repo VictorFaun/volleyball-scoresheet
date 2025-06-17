@@ -1,0 +1,21 @@
+<ion-content fullscreen class="ion-padding" scrollY="false">
+  <div class="titulo" style="display: flex;align-items: center;">
+        <ion-button (click)="volver()" fill="clear" style="margin: 0;width: 20px;height: 20px;--border-radius:100%;--color: var(--color-4);min-height: 0px;"><ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon></ion-button> Primer Arbitro
+    </div>
+  <div class="canvas-container">
+    
+    <canvas #canvas></canvas>
+
+    <div class="boton borrar">
+      <ion-button class="btn-round-2" shape="round" (click)="clearCanvas()" style="margin: 0px;    font-size: initial !important;">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div class="boton guardar">
+      <ion-button class="btn-round-2" shape="round" (click)="saveCanvas()" style="margin: 0px;    font-size: initial !important;">
+        <ion-icon slot="icon-only" name="save"></ion-icon>
+      </ion-button>
+    </div>
+  </div>
+</ion-content>
