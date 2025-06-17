@@ -53,64 +53,81 @@ export class SignaturePage implements OnInit {
 
 
   private addListeners(canvas: HTMLCanvasElement) {
-    const getPos = (e: TouchEvent | MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const clientX = (e instanceof TouchEvent) ? e.touches[0].clientX : (e as MouseEvent).clientX;
-      const clientY = (e instanceof TouchEvent) ? e.touches[0].clientY : (e as MouseEvent).clientY;
-      return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
-      };
+  let lastPos: { x: number, y: number } | null = null;
+  let moved = false;
+
+  const getPos = (e: TouchEvent | MouseEvent) => {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = (e instanceof TouchEvent) ? e.touches[0].clientX : (e as MouseEvent).clientX;
+    const clientY = (e instanceof TouchEvent) ? e.touches[0].clientY : (e as MouseEvent).clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
     };
+  };
 
-    canvas.addEventListener('mousedown', (e) => {
-      if (!this.ctx) {
-        return
-      }
-      this.drawing = true;
-      const pos = getPos(e);
+  // Mouse events
+  canvas.addEventListener('mousedown', (e) => {
+    if (!this.ctx) return;
+    this.drawing = true;
+    moved = false;
+    lastPos = getPos(e);
+    this.ctx.beginPath();
+    this.ctx.moveTo(lastPos.x, lastPos.y);
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (!this.ctx || !this.drawing) return;
+    const pos = getPos(e);
+    moved = true;
+    this.ctx.lineTo(pos.x, pos.y);
+    this.ctx.stroke();
+  });
+
+  canvas.addEventListener('mouseup', () => {
+    if (!this.ctx || !lastPos) return;
+    if (!moved) {
+      // Dibujar punto
       this.ctx.beginPath();
-      this.ctx.moveTo(pos.x, pos.y);
-    });
+      this.ctx.arc(lastPos.x, lastPos.y, 1.5, 0, 2 * Math.PI);
+      this.ctx.fill();
+    }
+    this.drawing = false;
+  });
 
-    canvas.addEventListener('mousemove', (e) => {
-      if (!this.ctx) {
-        return
-      }
-      if (!this.drawing) return;
-      const pos = getPos(e);
-      this.ctx.lineTo(pos.x, pos.y);
-      this.ctx.stroke();
-    });
+  canvas.addEventListener('mouseout', () => this.drawing = false);
 
-    canvas.addEventListener('mouseup', () => this.drawing = false);
-    canvas.addEventListener('mouseout', () => this.drawing = false);
+  // Touch events
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (!this.ctx) return;
+    this.drawing = true;
+    moved = false;
+    lastPos = getPos(e);
+    this.ctx.beginPath();
+    this.ctx.moveTo(lastPos.x, lastPos.y);
+  }, { passive: false });
 
-    // Touch support
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      if (!this.ctx) {
-        return
-      }
-      this.drawing = true;
-      const pos = getPos(e);
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (!this.ctx || !this.drawing) return;
+    const pos = getPos(e);
+    moved = true;
+    this.ctx.lineTo(pos.x, pos.y);
+    this.ctx.stroke();
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', () => {
+    if (!this.ctx || !lastPos) return;
+    if (!moved) {
       this.ctx.beginPath();
-      this.ctx.moveTo(pos.x, pos.y);
-    }, { passive: false });
+      this.ctx.arc(lastPos.x, lastPos.y, 1.5, 0, 2 * Math.PI);
+      this.ctx.fill();
+    }
+    this.drawing = false;
+  });
+}
 
-    canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      if (!this.ctx) {
-        return
-      }
-      if (!this.drawing) return;
-      const pos = getPos(e);
-      this.ctx.lineTo(pos.x, pos.y);
-      this.ctx.stroke();
-    }, { passive: false });
-
-    canvas.addEventListener('touchend', () => this.drawing = false);
-  }
 
   clearCanvas() {
     if (!this.canvasRef) {
