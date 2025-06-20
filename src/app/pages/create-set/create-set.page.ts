@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
+import { GameService } from 'src/app/services/game/game.service';
 
 @Component({
   selector: 'app-create-set',
@@ -10,20 +11,23 @@ import { NavController } from '@ionic/angular';
 })
 export class CreateSetPage implements OnInit {
 
+  num:any;
 
-  constructor(private router: Router,private navCtrl: NavController) { }
-  redireccionar(ruta: string, parametros?: any) {
-    if (parametros) {
-      this.router.navigate([ruta], { queryParams: parametros });
-    } else {
-      this.router.navigate([ruta]);
-    }
-  }
+  constructor(private navCtrl: NavController,private route: ActivatedRoute,private _game_: GameService) { }
+  
   volver() {
     this.navCtrl.back();
   }
 
   ngOnInit() {
+    
+    this.route.queryParams.subscribe(params => {
+      this.num = params['num'];
+    });
+  }
+
+  siguiente(){
+    console.log(this._game_.partido)
   }
 
 }

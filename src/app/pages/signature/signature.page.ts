@@ -1,8 +1,8 @@
 import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
+import { GameService } from 'src/app/services/game/game.service';
 
 @Component({
   selector: 'app-signature',
@@ -12,9 +12,29 @@ import { ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
 })
 export class SignaturePage implements OnInit {
 
-  constructor(private router: Router, private navCtrl: NavController,private sanitizer: DomSanitizer) { }
+  num:any;
+  text:any
+
+  constructor(private router: Router, private navCtrl: NavController,private route: ActivatedRoute,private _game_: GameService) { }
 
   ngOnInit() {
+    
+    this.route.queryParams.subscribe(params => {
+      this.clearCanvas()
+      this.num = params['num'];
+      if(this.num == 1){
+        this.text = "Capitan Equipo A"
+      }
+      if(this.num == 2){
+        this.text = "Entrenador Equipo A"
+      }
+      if(this.num == 3){
+        this.text = "Capitan Equipo B"
+      }
+      if(this.num == 4){
+        this.text = "Entrenador Equipo B"
+      }
+    });
   }
 
   firma: any;
@@ -198,6 +218,25 @@ export class SignaturePage implements OnInit {
       reader.onerror = reject;
       reader.readAsDataURL(blob); // convierte a base64
     });
+  }
+
+  siguiente(){
+    if(this.num == 1){
+      this._game_.partido.firma_inicio_capitan_a = this.resultado_firma;
+      this._game_.new_firma(2)
+    }
+    if(this.num == 2){
+      this._game_.partido.firma_entrenador_a = this.resultado_firma;
+      this._game_.new_firma(3)
+    }
+    if(this.num == 3){
+      this._game_.partido.firma_inicio_capitan_b = this.resultado_firma;
+      this._game_.new_firma(4)
+    }
+    if(this.num == 4){
+      this._game_.partido.firma_entrenador_b = this.resultado_firma;
+      this._game_.new_set(1);
+    }
   }
 
 }

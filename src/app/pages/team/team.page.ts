@@ -36,8 +36,7 @@ export class TeamPage implements OnInit {
       this._game_.new_equipo("B");
     }
     if(this.lado == "B"){
-      console.log(this._game_.partido)
-      console.log(this._game_.partidos)
+      this._game_.new_firma(1);
     }
   }
 

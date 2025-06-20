@@ -42,6 +42,32 @@ export class GameService {
 
   constructor(private router: Router) { }
 
+  new_set(num:any){
+    if(num == 1){
+      this.partido.estado=7
+      this.redireccionar('create-set', { num });
+    }
+  }
+
+  new_firma(num:any){
+    if(num == 1){
+      this.partido.estado=3
+      this.redireccionar('signature', { num });
+    }
+    if(num == 2){
+      this.partido.estado=4
+      this.redireccionar('signature', { num });
+    }
+    if(num == 3){
+      this.partido.estado=5
+      this.redireccionar('signature', { num });
+    }
+    if(num == 4){
+      this.partido.estado=6
+      this.redireccionar('signature', { num });
+    }
+  }
+
   new_equipo(lado: any) {
 
     if (lado == "A") {
@@ -118,6 +144,16 @@ export class GameService {
       set_5: null,
       equipo_a: null,
       equipo_b: null,
+      firma_inicio_capitan_a:null,
+      firma_inicio_capitan_b:null,
+      firma_fin_capitan_a:null,
+      firma_fin_capitan_b:null,
+      firma_entrenador_a:null,
+      firma_entrenador_b:null,
+      firma_planillero:null,
+      firma_asistente_planillero:null,
+      firma_primer_arbitro:null,
+      firma_segundo_arbitro:null,
       estado: null
     }
   }
