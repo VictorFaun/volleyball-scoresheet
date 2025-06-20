@@ -7,13 +7,14 @@ import { IonicModule } from '@ionic/angular';
 import { SignaturePageRoutingModule } from './signature-routing.module';
 
 import { SignaturePage } from './signature.page';
+import { ImageCropperComponent } from 'ngx-image-cropper';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    SignaturePageRoutingModule
+    SignaturePageRoutingModule, ImageCropperComponent
   ],
   declarations: [SignaturePage]
 })
