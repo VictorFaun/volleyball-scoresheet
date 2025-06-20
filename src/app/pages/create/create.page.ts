@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
+import { GameService } from 'src/app/services/game/game.service';
 
 @Component({
   selector: 'app-create',
@@ -10,21 +10,19 @@ import { NavController } from '@ionic/angular';
 })
 export class CreatePage implements OnInit {
 
-  players:any = [];
+  partido:any;
 
-  constructor(private router: Router,private navCtrl: NavController) { }
-  redireccionar(ruta: string, parametros?: any) {
-    if (parametros) {
-      this.router.navigate([ruta], { queryParams: parametros });
-    } else {
-      this.router.navigate([ruta]);
-    }
-  }
+  constructor(private navCtrl: NavController,private _game_: GameService) { }
   volver() {
     this.navCtrl.back();
   }
 
   ngOnInit() {
+    this.partido = this._game_.partido;
+  }
+
+  siguiente(){
+    this._game_.new_equipo("A")
   }
 
 }

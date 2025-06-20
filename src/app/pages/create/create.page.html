@@ -13,104 +13,104 @@
 
     <div class="input-text">
       <label>Partido <!--<span style="color: var(--color-danger-shade);">*</span>--></label>
-      <ion-input fill="outline" placeholder="Nombre Partido"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Partido" [(ngModel)]="partido.nombre"></ion-input>
     </div>
 
     <div class="input-text">
       <label>N° Partido</label>
-      <ion-input fill="outline" placeholder="Numero Partido"></ion-input>
+      <ion-input fill="outline" placeholder="Numero Partido" [(ngModel)]="partido.numero_partido"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Competición <!--<span style="color: var(--color-danger-shade);">*</span>--></label>
-      <ion-input fill="outline" placeholder="Nombre Competición"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Competición" [(ngModel)]="partido.competicion"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Ciudad</label>
-      <ion-input fill="outline" placeholder="Nombre Ciudad"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Ciudad" [(ngModel)]="partido.ciudad"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Pais</label>
-      <ion-input fill="outline" placeholder="Nombre Pais"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Pais" [(ngModel)]="partido.pais"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Gimnasio</label>
-      <ion-input fill="outline" placeholder="Nombre Gimnasio"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Gimnasio" [(ngModel)]="partido.gimnasio"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Division</label>
-      <ion-input fill="outline" placeholder="Nombre Division"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Division" [(ngModel)]="partido.division"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Categoria</label>
-      <ion-input fill="outline" placeholder="Nombre Categoria"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Categoria" [(ngModel)]="partido.categoria"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Fecha</label>
-      <div id="present-alert" id="ion-datatime-picker-1" class="input-datetime">DD/MM/YYYY</div>
-      <app-datetimepicker format="DD/MM/YYYY" mode="md" presentation="date" trigger="ion-datatime-picker-1"
+      <div id="present-alert" id="ion-datatime-picker-1" class="input-datetime">{{partido.fecha?partido.fecha:'DD/MM/YYYY'}}</div>
+      <app-datetimepicker format="DD/MM/YYYY" outputFormat="DD/MM/YYYY" mode="md" presentation="date" trigger="ion-datatime-picker-1"
         [cancelText]="'CANCELAR'"
-        [doneText]="'CONFIRMAR'" [display]="false"></app-datetimepicker>
+        [doneText]="'CONFIRMAR'" [display]="false" [(ngModel)]="partido.fecha"></app-datetimepicker>
     </div>
 
     <div class="input-text">
       <label>Hora</label>
-      <div id="present-alert" id="ion-datatime-picker-2" class="input-datetime">HH:MM</div>
-      <app-datetimepicker format="HH:mm" mode="md" presentation="time" trigger="ion-datatime-picker-2"
+      <div id="present-alert" id="ion-datatime-picker-2" class="input-datetime">{{partido.hora?partido.hora:'HH:MM'}}</div>
+      <app-datetimepicker format="HH:mm" outputFormat="HH:mm" mode="md" presentation="time" trigger="ion-datatime-picker-2"
         [cancelText]="'CANCELAR'"
-        [doneText]="'CONFIRMAR'" [display]="false"></app-datetimepicker>
+        [doneText]="'CONFIRMAR'" [display]="false" [(ngModel)]="partido.hora"></app-datetimepicker>
     </div>
 
     <div class="input-text">
       <label>Primer Arbitro</label>
-      <ion-input fill="outline" placeholder="Nombre Primer Arbitro"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Primer Arbitro" [(ngModel)]="partido.primer_arbitro"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Segundo Arbitro</label>
-      <ion-input fill="outline" placeholder="Nombre Segundo Arbitro"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Segundo Arbitro" [(ngModel)]="partido.segundo_arbitro"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Planillero</label>
-      <ion-input fill="outline" placeholder="Nombre Planillero"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Planillero" [(ngModel)]="partido.planillero"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Asistente Planillero</label>
-      <ion-input fill="outline" placeholder="Nombre Asistente Planillero"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Asistente Planillero" [(ngModel)]="partido.asistente_planillero"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Primer Banderin</label>
-      <ion-input fill="outline" placeholder="Nombre Primer Banderin"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Primer Banderin" [(ngModel)]="partido.primer_banderin"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Segundo Banderin</label>
-      <ion-input fill="outline" placeholder="Nombre Segundo Banderin"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Segundo Banderin" [(ngModel)]="partido.segundo_banderin"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Tercer Banderin</label>
-      <ion-input fill="outline" placeholder="Nombre Tercer Banderin"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Tercer Banderin" [(ngModel)]="partido.tercer_banderin"></ion-input>
     </div>
 
     <div class="input-text" style="padding-bottom: 0px;">
       <label>Cuarto Banderin</label>
-      <ion-input fill="outline" placeholder="Nombre Cuarto Banderin"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Cuarto Banderin" [(ngModel)]="partido.cuarto_banderin"></ion-input>
     </div>
 
   </div>
 
   <div style="display: flex; justify-content: center; padding: 0px 20px 20px 20px;">
-    <ion-button (click)="redireccionar('team')" class="btn-1"
+    <ion-button class="btn-1" (click)="siguiente()"
       style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
       Siguiente
     </ion-button>

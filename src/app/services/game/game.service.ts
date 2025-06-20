@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -37,26 +38,55 @@ export class GameService {
   //29: finalizado
 
   partido: any
+  partidos:any = []
 
-  constructor() { }
+  constructor(private router: Router) { }
 
-  clean_log(){
-    return { 
-      id:null,
-      tipo:null,
-      jugador:null,
-      equipo:null,
-      set:null
+  new_equipo(lado: any) {
+
+    if (lado == "A") {
+      this.partido.estado = 1;
+      this.partidos.push(this.partido)
+      this.partido.equipo_a = this.clean_equipo();
+      this.redireccionar('team', { lado: "A" });
+    }
+    if (lado == "B") {
+      this.partido.estado = 2;
+      this.partido.equipo_b = this.clean_equipo();
+      this.redireccionar('team', { lado: "B" });
     }
   }
 
-  clean_jugador(){
-    return{
-      id:null,
-      numero:null,
-      nombre:null,
-      capitan:null,
-      libero:null
+  new_game() {
+    this.partido = this.clean_partido();
+    this.redireccionar('create');
+  }
+
+  redireccionar(ruta: string, parametros?: any) {
+    if (parametros) {
+      this.router.navigate([ruta], { queryParams: parametros });
+    } else {
+      this.router.navigate([ruta]);
+    }
+  }
+
+  clean_log() {
+    return {
+      id: null,
+      tipo: null,
+      jugador: null,
+      equipo: null,
+      set: null
+    }
+  }
+
+  clean_jugador() {
+    return {
+      id: null,
+      numero: null,
+      nombre: null,
+      capitan: null,
+      libero: null
     }
   }
 
@@ -81,14 +111,14 @@ export class GameService {
       segundo_banderin: null,
       tercer_banderin: null,
       cuarto_banderin: null,
-      set_1:null,
-      set_2:null,
-      set_3:null,
-      set_4:null,
-      set_5:null,
-      equipo_a:null,
-      equipo_b:null,
-      estado:null
+      set_1: null,
+      set_2: null,
+      set_3: null,
+      set_4: null,
+      set_5: null,
+      equipo_a: null,
+      equipo_b: null,
+      estado: null
     }
   }
 
@@ -96,7 +126,7 @@ export class GameService {
     return {
       id: null,
       nombre: null,
-      jugadores:null,
+      jugadores: null,
       entrenador: null,
       primer_asistente: null,
       segundo_asistente: null,
@@ -110,8 +140,8 @@ export class GameService {
       equipo_saque: null,
       alineacion_a: null,
       alineacion_b: null,
-      hora_inicio:null,
-      hora_fin:null
+      hora_inicio: null,
+      hora_fin: null
     }
   }
 }

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { GameService } from 'src/app/services/game/game.service';
 
 @Component({
   selector: 'app-home',
@@ -30,13 +30,10 @@ export class HomePage {
     }
   ]
 
-  constructor(private router: Router) { }
-  redireccionar(ruta: string, parametros?: any) {
-    if (parametros) {
-      this.router.navigate([ruta], { queryParams: parametros });
-    } else {
-      this.router.navigate([ruta]);
-    }
+  constructor(private _game_: GameService) { }
+
+  new_game(){
+    this._game_.new_game();
   }
 
 }

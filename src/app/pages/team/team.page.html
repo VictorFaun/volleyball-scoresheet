@@ -4,14 +4,14 @@
   <!-- Título -->
   <div style="padding: 20px;padding-bottom: 0px;display: flex;">
     <ion-button (click)="volver()" fill="clear" style="margin: 0;width: 40px;height: 40px;--border-radius:100%;--color: var(--color-4);min-height: 0px;"><ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon></ion-button>
-    <p style="font-size: xx-large; font-weight: bold; margin: 0;"> Equipo A</p>
+    <p style="font-size: xx-large; font-weight: bold; margin: 0;"> Equipo {{lado}}</p>
   </div>
 
   <div style="flex: 1; overflow-y: auto;overflow-x: hidden; margin: 20px 20px 20px;">
 
     <div class="input-text">
-      <label>Nombre <span style="color: var(--color-danger-shade);">*</span></label>
-      <ion-input fill="outline" placeholder="Nombre Equipo"></ion-input>
+      <label>Nombre <!-- <span style="color: var(--color-danger-shade);">*</span> --></label>
+      <ion-input fill="outline" placeholder="Nombre Equipo" [(ngModel)]="equipo.nombre"></ion-input>
     </div>
 
     <div class="players">
@@ -64,33 +64,33 @@
 
     <div class="input-text">
       <label>Entrenador</label>
-      <ion-input fill="outline" placeholder="Nombre Entrenador"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Entrenador" [(ngModel)]="equipo.entrenador"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Primer Asistente Entrenador</label>
-      <ion-input fill="outline" placeholder="Nombre Primer Asistente"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Primer Asistente" [(ngModel)]="equipo.primer_asistente"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Segundo Asistente Entrenador</label>
-      <ion-input fill="outline" placeholder="Nombre Segundo Asistente"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Segundo Asistente" [(ngModel)]="equipo.segundo_asistente"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Medico</label>
-      <ion-input fill="outline" placeholder="Nombre Medico"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Medico" [(ngModel)]="equipo.medico"></ion-input>
     </div>
 
     <div class="input-text" style="padding-bottom: 0px;">
       <label>Fisioterapeuta</label>
-      <ion-input fill="outline" placeholder="Nombre Fisioterapeuta"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Fisioterapeuta" [(ngModel)]="equipo.fisioterapeuta"></ion-input>
     </div>
 
   </div>
 
   <div style="display: flex; justify-content: center; padding: 0px 20px 20px 20px;">
-    <ion-button (click)="redireccionar('create-set')" class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
+    <ion-button (click)="siguiente()" class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
       Siguiente
     </ion-button>
   </div>
