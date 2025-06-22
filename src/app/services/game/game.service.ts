@@ -39,30 +39,38 @@ export class GameService {
 
   partido: any
   partidos:any = []
+  index:any
 
   constructor(private router: Router) { }
 
   new_set(num:any){
     if(num == 1){
+      if(this.partido.estado < 7)
       this.partido.estado=7
+      if(!this.partido.set_1)
+      this.partido.set_1 = this.clean_set()
       this.redireccionar('create-set', { num });
     }
   }
 
   new_firma(num:any){
     if(num == 1){
+      if(this.partido.estado < 3)
       this.partido.estado=3
       this.redireccionar('signature', { num });
     }
     if(num == 2){
+      if(this.partido.estado < 4)
       this.partido.estado=4
       this.redireccionar('signature', { num });
     }
     if(num == 3){
+      if(this.partido.estado < 5)
       this.partido.estado=5
       this.redireccionar('signature', { num });
     }
     if(num == 4){
+      if(this.partido.estado < 6)
       this.partido.estado=6
       this.redireccionar('signature', { num });
     }
@@ -71,20 +79,31 @@ export class GameService {
   new_equipo(lado: any) {
 
     if (lado == "A") {
+      if(this.partido.estado < 1)
       this.partido.estado = 1;
+      if(!this.index)
       this.partidos.push(this.partido)
+      if(!this.partido.equipo_a)
       this.partido.equipo_a = this.clean_equipo();
       this.redireccionar('team', { lado: "A" });
     }
     if (lado == "B") {
+      if(this.partido.estado < 2)
       this.partido.estado = 2;
+      if(!this.index)
+      this.partidos.push(this.partido)
+      if(!this.partido.equipo_b)
       this.partido.equipo_b = this.clean_equipo();
       this.redireccionar('team', { lado: "B" });
     }
   }
 
   new_game() {
-    this.partido = this.clean_partido();
+    if(this.index){
+      this.partido = this.partidos[this.index]
+    }else{
+      this.partido = this.clean_partido();
+    }
     this.redireccionar('create');
   }
 
@@ -174,8 +193,8 @@ export class GameService {
   clean_set() {
     return {
       equipo_saque: null,
-      alineacion_a: null,
-      alineacion_b: null,
+      alineacion_a: [false,false,false,false,false,false],
+      alineacion_b: [false,false,false,false,false,false],
       hora_inicio: null,
       hora_fin: null
     }

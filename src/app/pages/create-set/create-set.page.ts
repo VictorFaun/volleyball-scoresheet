@@ -13,6 +13,8 @@ export class CreateSetPage implements OnInit {
 
   num:any;
 
+  set:any;
+
   constructor(private navCtrl: NavController,private route: ActivatedRoute,private _game_: GameService) { }
   
   volver() {
@@ -23,6 +25,9 @@ export class CreateSetPage implements OnInit {
     
     this.route.queryParams.subscribe(params => {
       this.num = params['num'];
+      if(this.num == 1){
+        this.set = this._game_.partido.set_1
+      }
     });
   }
 

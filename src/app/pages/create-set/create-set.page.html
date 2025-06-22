@@ -11,7 +11,7 @@
 
     <div class="select-text">
       <label>Equipo al Saque <span style="color: var(--color-danger-shade);">*</span></label>
-      <ion-select fill="outline" labelPlacement="stacked" label-placement="floating" placeholder="Seleccionar Equipo">
+      <ion-select fill="outline" labelPlacement="stacked" label-placement="floating" placeholder="Seleccionar Equipo" [(ngModel)]="set.equipo_saque">
         <ion-select-option value="A">Equipo A</ion-select-option>
         <ion-select-option value="B">Equipo B</ion-select-option>
       </ion-select>
@@ -25,21 +25,21 @@
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2); border-top-left-radius: 20px;">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">4</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_a[3]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[3]">{{set.alineacion_a[3]}}</p></ion-button>
             </div>
           </div>
           <div
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2);">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">3</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_a[2]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[2]">{{set.alineacion_a[2]}}</p></ion-button>
             </div>
           </div>
           <div
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2);border-right: 1px solid rgba(var(--color-4-rgb),.2); border-top-right-radius: 20px;">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">2</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_a[1]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[1]">{{set.alineacion_a[1]}}</p></ion-button>
             </div>
           </div>
         </div>
@@ -49,21 +49,21 @@
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2);border-bottom: 1px solid rgba(var(--color-4-rgb),.2);; border-bottom-left-radius: 20px;">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">5</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_a[4]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[4]">{{set.alineacion_a[4]}}</p></ion-button>
             </div>
           </div>
           <div
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2);border-bottom: 1px solid rgba(var(--color-4-rgb),.2);">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">6</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_a[5]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[5]">{{set.alineacion_a[5]}}</p></ion-button>
             </div>
           </div>
           <div
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2);border-right: 1px solid rgba(var(--color-4-rgb),.2);border-bottom: 1px solid rgba(var(--color-4-rgb),.2); border-bottom-right-radius: 20px;">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">1</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_a[0]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[0]">{{set.alineacion_a[0]}}</p></ion-button>
             </div>
           </div>
         </div>
@@ -78,21 +78,21 @@
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2); border-top-left-radius: 20px;">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">4</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_b[3]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[3]">{{set.alineacion_b[3]}}</p></ion-button>
             </div>
           </div>
           <div
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2);">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">3</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_b[2]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[2]">{{set.alineacion_b[2]}}</p></ion-button>
             </div>
           </div>
           <div
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2);border-right: 1px solid rgba(var(--color-4-rgb),.2); border-top-right-radius: 20px;">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">2</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_b[1]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[1]">{{set.alineacion_b[1]}}</p></ion-button>
             </div>
           </div>
         </div>
@@ -102,21 +102,21 @@
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2);border-bottom: 1px solid rgba(var(--color-4-rgb),.2);; border-bottom-left-radius: 20px;">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">5</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_b[4]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[4]">{{set.alineacion_b[4]}}</p></ion-button>
             </div>
           </div>
           <div
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2);border-bottom: 1px solid rgba(var(--color-4-rgb),.2);">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">6</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_b[5]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[5]">{{set.alineacion_b[5]}}</p></ion-button>
             </div>
           </div>
           <div
             style="display:flex;justify-content: center;align-items: center;position: relative;height: 124px; width: calc(100% / 3);border-top: 1px solid rgba(var(--color-4-rgb),.2);border-left: 1px solid rgba(var(--color-4-rgb),.2);border-right: 1px solid rgba(var(--color-4-rgb),.2);border-bottom: 1px solid rgba(var(--color-4-rgb),.2); border-bottom-right-radius: 20px;">
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">1</p>
             <div style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
+              <ion-button fill="clear" style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon slot="icon-only" name="add" *ngIf="!set.alineacion_b[0]"></ion-icon> <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[0]">{{set.alineacion_b[0]}}</p></ion-button>
             </div>
           </div>
         </div>
