@@ -17,7 +17,7 @@
     <div class="players">
       <div style="display: flex;align-items: center;">
         <label style="margin-right: 10px;">Jugadores</label>
-        <ion-button class="btn-round" shape="round" style="margin: 0px;">
+        <ion-button class="btn-round" shape="round" style="margin: 0px;" (click)="abrirModalJugador()">
           <ion-icon slot="icon-only" name="add"></ion-icon>
         </ion-button>
       </div>
@@ -32,29 +32,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>5</td>
-              <td>Dany</td>
-              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
-              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
-            </tr>
-            <tr>
-              <td>13</td>
-              <td>Flores</td>
-              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
-              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
-            </tr>
-            <tr>
-              <td>21</td>
-              <td>Marshall</td>
-              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
-              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
-            </tr>
-            <tr>
-              <td>22</td>
-              <td>Faundez</td>
-              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
-              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox></ion-checkbox></div></td>
+            <tr  *ngFor="let jugador of equipo.jugadores">
+              <td>{{jugador.numero}}</td>
+              <td>{{jugador.nombre}}</td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox [(ngModel)]="jugador.capitan"></ion-checkbox></div></td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox [(ngModel)]="jugador.libero"></ion-checkbox></div></td>
             </tr>
           </tbody>
         </table>

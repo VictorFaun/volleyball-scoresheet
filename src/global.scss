@@ -205,3 +205,25 @@ ion-alert {
 * {
   font-family: "Inter", sans-serif;
 }
+
+
+.modal-centrado {
+  --background: transparent;
+  --height:750px;
+  --box-shadow:none !important;
+  ion-content{
+    // --overflow-y:hidden;
+  }
+
+  .modal-wrapper{
+    border-radius: 10px 10px 0px 0px;
+    --background:transparent;
+    @media (min-width:721px){
+      --box-shadow:none;
+    }
+  }
+  @media (max-width: 720px){
+        --width: 90%;
+        --max-height:90%;
+  }
+}

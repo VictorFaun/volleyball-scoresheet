@@ -46,7 +46,16 @@
 
     tbody {
         tr:last-child {
-            border-bottom: none;
+    border-bottom: none;
+        }
+        tr:first-child {
+        border-top: 1px solid rgba(var(--color-4-rgb), 0.2);
+        }
+    }
+
+    thead {
+        tr:last-child {
+    border-bottom: none;
         }
     }
 }

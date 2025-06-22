@@ -1,0 +1,24 @@
+<div style="background: var(--color-3); border-radius: 10px;padding:20px">
+
+  <div style="padding: 0px;padding-bottom: 20px;display: flex;">
+    <ion-button (click)="cancelar()" fill="clear"
+      style="margin: 0;width: 40px;height: 40px;--border-radius:100%;--color: var(--color-4);min-height: 0px;"><ion-icon
+        slot="icon-only" name="arrow-back-outline"></ion-icon></ion-button>
+    <p style="font-size: xx-large; font-weight: bold; margin: 0;color:var(--color-4)"> Nuevo Jugador</p>
+  </div>
+  <div class="input-text">
+    <label>Nombre</label>
+    <ion-input fill="outline" placeholder="Nombre Jugador" [(ngModel)]="nombre"></ion-input>
+  </div>
+
+  <div class="input-text">
+    <label>Número Dorsal</label>
+    <ion-input fill="outline" type="number" placeholder="Número Dorsal" [(ngModel)]="dorsal"></ion-input>
+  </div>
+  <div style="display: flex; justify-content: center; padding: 0px 20px 20px 20px;">
+    <ion-button (click)="guardar()" [disabled]="!nombre || dorsal === null" class="btn-1"
+      style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
+      Guardar
+    </ion-button>
+  </div>
+</div>

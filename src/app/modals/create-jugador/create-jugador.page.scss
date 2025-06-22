@@ -1,0 +1,10 @@
+.input-text{
+    padding-bottom: 20px;
+    label{
+        color: rgba(var(--color-4-rgb),.7);
+    }
+    ion-input{
+        min-height: 44px;
+        color: rgba(var(--color-4-rgb),.7);
+    }
+}
