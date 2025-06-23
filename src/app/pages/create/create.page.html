@@ -12,13 +12,8 @@
   <div style="flex: 1; overflow-y: auto;overflow-x: hidden; margin: 20px 20px 20px;">
 
     <div class="input-text">
-      <label>Partido <!--<span style="color: var(--color-danger-shade);">*</span>--></label>
-      <ion-input fill="outline" placeholder="Nombre Partido" [(ngModel)]="partido.nombre"></ion-input>
-    </div>
-
-    <div class="input-text">
       <label>N° Partido</label>
-      <ion-input fill="outline" placeholder="Numero Partido" [(ngModel)]="partido.numero_partido"></ion-input>
+      <ion-input fill="outline" placeholder="Numero Partido" type="number" [(ngModel)]="partido.numero_partido"></ion-input>
     </div>
 
     <div class="input-text">

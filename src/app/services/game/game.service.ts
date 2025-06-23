@@ -81,8 +81,6 @@ export class GameService {
     if (lado == "A") {
       if(this.partido.estado < 1)
       this.partido.estado = 1;
-      if(!this.index)
-      this.partidos.push(this.partido)
       if(!this.partido.equipo_a)
       this.partido.equipo_a = this.clean_equipo();
       this.redireccionar('team', { lado: "A" });
@@ -90,8 +88,6 @@ export class GameService {
     if (lado == "B") {
       if(this.partido.estado < 2)
       this.partido.estado = 2;
-      if(!this.index)
-      this.partidos.push(this.partido)
       if(!this.partido.equipo_b)
       this.partido.equipo_b = this.clean_equipo();
       this.redireccionar('team', { lado: "B" });
@@ -99,11 +95,14 @@ export class GameService {
   }
 
   new_game() {
-    if(this.index){
-      this.partido = this.partidos[this.index]
-    }else{
-      this.partido = this.clean_partido();
-    }
+    
+    this.partido = this.clean_partido();
+    this.partidos.push(this.partido)
+    this.redireccionar('create');
+  }
+  edit_game(index:any) {
+    this.index = index
+    this.partido = this.partidos[index]
     this.redireccionar('create');
   }
 
@@ -138,7 +137,6 @@ export class GameService {
   clean_partido() {
     return {
       id: null,
-      nombre: null,
       numero_partido: null,
       competicion: null,
       ciudad: null,
@@ -196,7 +194,8 @@ export class GameService {
       alineacion_a: [false,false,false,false,false,false],
       alineacion_b: [false,false,false,false,false,false],
       hora_inicio: null,
-      hora_fin: null
+      hora_fin: null,
+      victoria:null
     }
   }
 }

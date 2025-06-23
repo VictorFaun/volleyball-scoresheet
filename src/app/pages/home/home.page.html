@@ -26,14 +26,17 @@
     >
       <div style="width: 100%; padding: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <p style="margin: 0; font-weight: 500; font-size: x-large;">{{partido.torneo}}</p>
+          <p style="margin: 0; font-weight: 500; font-size: x-large;">{{partido.torneo?partido.torneo:'Partido N° '+partido.numero_partido}}</p>
           <p style="margin: 0; color: rgba(var(--color-4-rgb), 0.5);">{{partido.estado}}</p>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+        <div *ngIf="partido.torneo">
+          <p style="margin: 0; font-weight: 400; font-size: small;text-align: left;">{{'Partido N° '+partido.numero_partido}}</p>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 10px;padding-left: 10px;padding-right: 10px;">
           <p style="margin: 0;">{{partido.equipoA}}</p>
           <p style="margin: 0;">{{partido.setsA?partido.setsA + " sets":"-"}}</p>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+        <div style="display: flex; justify-content: space-between; margin-top: 10px;padding-left: 10px;padding-right: 10px;">
           <p style="margin: 0;">{{partido.equipoB}}</p>
           <p style="margin: 0;">{{partido.setsB? partido.setsB + " sets": "-"}}</p>
         </div>
@@ -41,10 +44,10 @@
     </ion-button>
     </ion-item>
     <ion-item-options side="end">
-      <ion-item-option color="1" style="border-radius: 10px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;">
+      <ion-item-option (click)="edit_game(partido.index)" color="1" style="border-radius: 10px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;">
         <ion-icon slot="icon-only" name="pencil"></ion-icon>
       </ion-item-option>
-      <ion-item-option color="danger" style="border-radius: 10px;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">
+      <ion-item-option (click)="eliminarPartido(partido.index)" color="danger" style="border-radius: 10px;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">
         <ion-icon slot="icon-only" name="trash"></ion-icon>
       </ion-item-option>
     </ion-item-options>

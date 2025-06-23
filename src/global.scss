@@ -148,12 +148,41 @@ ion-alert {
     border-top: 0px;
     border-bottom: 0px;
   }
+  .alert-title.sc-ion-alert-ios {
+    color: var(--color-4);
+}
+.alert-message.sc-ion-alert-ios, .alert-input-group.sc-ion-alert-ios {
+  color:  rgba(var(--color-4-rgb), 0.5);
+}
+.alert-title.sc-ion-alert-md {
+  color: var(--color-4);
+}
+.alert-message.sc-ion-alert-md, .alert-input-group.sc-ion-alert-md {
+color:  rgba(var(--color-4-rgb), 0.5);
 }
 
 .alert-button.sc-ion-alert-md {
 
   color: var(--color-1);
 }
+.alert-button.sc-ion-alert-ios {
+
+  color: var(--color-1);
+}
+
+.alert-button-role-destructive.sc-ion-alert-ios, .alert-button-role-destructive.ion-activated.sc-ion-alert-ios, .alert-button-role-destructive.ion-focused.sc-ion-alert-ios {
+  color: var(--color-danger, #c5000f);
+}
+.alert-button.sc-ion-alert-md {
+
+  color: var(--color-1);
+}
+
+.alert-button-role-destructive.sc-ion-alert-md, .alert-button-role-destructive.ion-activated.sc-ion-alert-md, .alert-button-role-destructive.ion-focused.sc-ion-alert-md {
+  color: var(--color-danger, #c5000f);
+}
+}
+
 
 .btn-1 {
   --background: var(--color-1);
