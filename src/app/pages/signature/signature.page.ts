@@ -195,7 +195,7 @@ export class SignaturePage implements OnInit {
   }
 
   volver() {
-    this.navCtrl.back();
+    this.router.navigate(["home"]);
   }
 
   resultado_firma:any;

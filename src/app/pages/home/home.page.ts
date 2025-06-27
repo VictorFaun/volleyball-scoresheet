@@ -104,32 +104,33 @@ export class HomePage implements OnInit {
         const estadosTexto:any = {
           1: 'Config',
           2: 'Config',
-          3: 'Firmas',
+          3: 'Config',
           4: 'Firmas',
           5: 'Firmas',
           6: 'Firmas',
-          7: 'Config Set 1',
-          8: 'Inicio Set 1',
-          9: 'Fin Set 1',
-          10: 'Config Set 2',
-          11: 'Inicio Set 2',
-          12: 'Fin Set 2',
-          13: 'Config Set 3',
-          14: 'Inicio Set 3',
-          15: 'Fin Set 3',
-          16: 'Config Set 4',
-          17: 'Inicio Set 4',
-          18: 'Fin Set 4',
-          19: 'Config Set 5',
-          20: 'Inicio Set 5',
-          21: 'Fin Set 5',
-          22: 'Firmas',
+          7: 'Firmas',
+          8: 'Config Set 1',
+          9: 'Inicio Set 1',
+          10: 'Fin Set 1',
+          11: 'Config Set 2',
+          12: 'Inicio Set 2',
+          13: 'Fin Set 2',
+          14: 'Config Set 3',
+          15: 'Inicio Set 3',
+          16: 'Fin Set 3',
+          17: 'Config Set 4',
+          18: 'Inicio Set 4',
+          19: 'Fin Set 4',
+          20: 'Config Set 5',
+          21: 'Inicio Set 5',
+          22: 'Fin Set 5',
           23: 'Firmas',
           24: 'Firmas',
           25: 'Firmas',
           26: 'Firmas',
           27: 'Firmas',
-          28: 'Finalizado',
+          28: 'Firmas',
+          29: 'Finalizado',
         };
       
         partido.estado = estadosTexto[estado] || 'Config';
@@ -172,5 +173,35 @@ export class HomePage implements OnInit {
   
     await alert.present();
     
+  }
+
+  continuar_partido(i:any){
+    let estado = this._game_.partidos[i].estado
+    this._game_.index = i;
+    this._game_.partido = this._game_.partidos[i]
+    if(estado == 1){
+      this._game_.edit_game(i)
+    }
+    if(estado == 2){
+      this._game_.new_equipo("A")
+    }
+    if(estado == 3){
+      this._game_.new_equipo("B")
+    }
+    if(estado == 4){
+      this._game_.new_firma(1)
+    }
+    if(estado == 5){
+      this._game_.new_firma(2)
+    }
+    if(estado == 6){
+      this._game_.new_firma(3)
+    }
+    if(estado == 7){
+      this._game_.new_firma(4)
+    }
+    if(estado == 8){
+      this._game_.new_set(1)
+    }
   }
 }

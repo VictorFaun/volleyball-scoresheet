@@ -9,6 +9,9 @@
  * https://ionicframework.com/docs/layout/global-stylesheets
  */
 
+/* =======================================
+ * 1. Imports de estilos de Ionic
+ * ======================================= */
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
 
@@ -25,17 +28,22 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
+/* =======================================
+ * 2. Ionic Dark Mode & Palettes
+ * ======================================= */
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
  * For more info, please see:
  * https://ionicframework.com/docs/theming/dark-mode
  */
-
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
 
+/* =======================================
+ * 3. Fuentes
+ * ======================================= */
 @font-face {
   font-family: 'Inter';
   src: url('./assets/Inter/Inter-VariableFont_opsz,wght.ttf') format('truetype');
@@ -50,10 +58,36 @@
   font-style: italic;
 }
 
+/* Aplicar la fuente globalmente */
+* {
+  font-family: "Inter", sans-serif;
+}
+
+/* =======================================
+ * 4. Estilos globales del body y componentes de Ionic
+ * ======================================= */
+body {
+  background: var(--color-3);
+}
+
+ion-content {
+  --background: var(--color-3);
+  --color: var(--color-4);
+}
+
+ion-item {
+  --background: var(--color-3);
+  --color: var(--color-4);
+}
+
+/*
+ * Estilos específicos para IONIC en diferentes plataformas
+ */
 .is-mobile ion-app {
   margin-top: 40px;
 }
 
+/* Input y Select */
 .is-ios .input-text ion-input {
   border: 1px solid rgba(var(--color-4-rgb), .2);
   border-radius: 10px;
@@ -83,6 +117,7 @@
   --padding-end: 16px;
 }
 
+/* Datetime */
 .input-datetime {
   border: 1px solid rgba(var(--color-4-rgb), .2);
   border-radius: 10px;
@@ -91,24 +126,25 @@
   height: 44px;
   display: flex;
   align-items: center;
-
   color: rgba(var(--color-4-rgb), 0.5);
 }
 
-body {
-  background: var(--color-3);
+/* Select */
+.input-select {
+  border: 1px solid rgba(var(--color-4-rgb), .2);
+  border-radius: 10px;
+  min-height: 44px !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: rgba(var(--color-4-rgb), 0.5);
+  p{
+    margin: 0px;
+  }
 }
 
-ion-content {
-  --background: var(--color-3);
-  --color: var(--color-4)
-}
 
-ion-item {
-  --background: var(--color-3);
-  --color: var(--color-4)
-}
-
+/* Checkbox */
 ion-checkbox {
   --checkbox-background: var(--color-3);
   --border-width: 1px;
@@ -119,14 +155,17 @@ ion-checkbox {
   --border-color-checked: rgba(var(--color-4-rgb), 0.2);
 }
 
+/* =======================================
+ * 5. Estilos de alertas y modales
+ * ======================================= */
+/* Alert (global) */
 ion-alert {
   --background: var(--color-3) !important;
 
-  [aria-checked=true].sc-ion-alert-md .alert-radio-label.sc-ion-alert-md {
-    color: rgba(var(--color-4-rgb), 0.5);
-  }
-
-  .sc-ion-alert-md .alert-radio-label.sc-ion-alert-md {
+  /* Estilos específicos para alert-radio-label y alert-radio-icon */
+  [aria-checked=true].sc-ion-alert-md .alert-radio-label.sc-ion-alert-md,
+  .sc-ion-alert-md .alert-radio-label.sc-ion-alert-md,
+  .alert-radio-label.sc-ion-alert-ios {
     color: rgba(var(--color-4-rgb), 0.5);
   }
 
@@ -138,52 +177,104 @@ ion-alert {
     border-color: var(--color-1);
   }
 
-  .alert-radio-label.sc-ion-alert-ios{
+  /* Títulos y mensajes de la alerta */
+  .alert-title.sc-ion-alert-ios,
+  .alert-title.sc-ion-alert-md {
+    color: var(--color-4);
+  }
+
+  .alert-message.sc-ion-alert-ios,
+  .alert-input-group.sc-ion-alert-ios,
+  .alert-message.sc-ion-alert-md,
+  .alert-input-group.sc-ion-alert-md {
     color: rgba(var(--color-4-rgb), 0.5);
   }
-  .sc-ion-alert-ios-h{
-    --background: red;
+
+  .alert-message.sc-ion-alert-ios:empty
+  {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
   }
-  .alert-radio-group.sc-ion-alert-md, .alert-checkbox-group.sc-ion-alert-md{
+
+  /* Botones de la alerta */
+  .alert-button.sc-ion-alert-md,
+  .alert-button.sc-ion-alert-ios {
+    color: var(--color-1);
+  }
+
+  /* Botones destructivos */
+  .alert-button-role-destructive.sc-ion-alert-ios,
+  .alert-button-role-destructive.ion-activated.sc-ion-alert-ios,
+  .alert-button-role-destructive.ion-focused.sc-ion-alert-ios,
+  .alert-button-role-destructive.sc-ion-alert-md,
+  .alert-button-role-destructive.ion-activated.sc-ion-alert-md,
+  .alert-button-role-destructive.ion-focused.sc-ion-alert-md {
+    color: var(--color-danger, #c5000f);
+  }
+  
+  /* Otros estilos del grupo de radio/checkbox y wrapper */
+  .alert-radio-group.sc-ion-alert-md,
+  .alert-checkbox-group.sc-ion-alert-md {
     border-top: 0px;
     border-bottom: 0px;
   }
-  .alert-title.sc-ion-alert-ios {
-    color: var(--color-4);
+  
+  .sc-ion-alert-ios-h {
+    --background: red; /* Este estilo parece un error, revísalo si es necesario */
+  }
 }
-.alert-message.sc-ion-alert-ios, .alert-input-group.sc-ion-alert-ios {
-  color:  rgba(var(--color-4-rgb), 0.5);
-}
-.alert-title.sc-ion-alert-md {
+
+/* Custom Alert (clase personalizada) */
+.custom-alert .alert-wrapper {
+  --background: var(--color-3);
   color: var(--color-4);
 }
-.alert-message.sc-ion-alert-md, .alert-input-group.sc-ion-alert-md {
-color:  rgba(var(--color-4-rgb), 0.5);
+
+.custom-alert .alert-title,
+.custom-alert .alert-sub-title,
+.custom-alert .alert-message,
+.custom-alert .alert-radio-label {
+  color: var(--color-4);
 }
 
-.alert-button.sc-ion-alert-md {
-
-  color: var(--color-1);
-}
-.alert-button.sc-ion-alert-ios {
-
-  color: var(--color-1);
+.custom-alert .alert-radio-inner {
+  border-color: var(--color-1) !important;
 }
 
-.alert-button-role-destructive.sc-ion-alert-ios, .alert-button-role-destructive.ion-activated.sc-ion-alert-ios, .alert-button-role-destructive.ion-focused.sc-ion-alert-ios {
-  color: var(--color-danger, #c5000f);
-}
-.alert-button.sc-ion-alert-md {
-
+.custom-alert .alert-button {
   color: var(--color-1);
 }
 
-.alert-button-role-destructive.sc-ion-alert-md, .alert-button-role-destructive.ion-activated.sc-ion-alert-md, .alert-button-role-destructive.ion-focused.sc-ion-alert-md {
-  color: var(--color-danger, #c5000f);
-}
+/* Modal personalizado */
+.modal-centrado {
+  --background: transparent;
+  --height: 750px;
+  --box-shadow: none !important;
+
+  ion-content {
+    /* --overflow-y: hidden; */
+  }
+
+  .modal-wrapper {
+    border-radius: 10px 10px 0px 0px;
+    --background: transparent;
+    @media (min-width: 721px) {
+      --box-shadow: none;
+    }
+  }
+
+  @media (max-width: 720px) {
+    --width: 90%;
+    --max-height: 90%;
+  }
 }
 
-
+/* =======================================
+ * 6. Clases de utilidad y botones
+ * ======================================= */
+/* Botones */
 .btn-1 {
   --background: var(--color-1);
   --color: var(--color-3);
@@ -204,6 +295,7 @@ color:  rgba(var(--color-4-rgb), 0.5);
   font-size: 25px !important;
 }
 
+/* Colores de utilidad para Ionic */
 .ion-color-1 {
   --ion-color-base: var(--color-1) !important;
   --ion-color-base-rgb: var(--color-1-rgb) !important;
@@ -229,30 +321,4 @@ color:  rgba(var(--color-4-rgb), 0.5);
   --ion-color-contrast-rgb: var(--color-3-rgb, 255, 255, 255) !important;
   --ion-color-shade: var(--color-danger-shade) !important;
   --ion-color-tint: var(--color-danger-tint) !important;
-}
-
-* {
-  font-family: "Inter", sans-serif;
-}
-
-
-.modal-centrado {
-  --background: transparent;
-  --height:750px;
-  --box-shadow:none !important;
-  ion-content{
-    // --overflow-y:hidden;
-  }
-
-  .modal-wrapper{
-    border-radius: 10px 10px 0px 0px;
-    --background:transparent;
-    @media (min-width:721px){
-      --box-shadow:none;
-    }
-  }
-  @media (max-width: 720px){
-        --width: 90%;
-        --max-height:90%;
-  }
 }

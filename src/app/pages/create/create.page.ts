@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { GameService } from 'src/app/services/game/game.service';
 
@@ -12,9 +13,9 @@ export class CreatePage implements OnInit {
 
   partido:any;
 
-  constructor(private navCtrl: NavController,private _game_: GameService) { }
+  constructor(private router: Router,private _game_: GameService) { }
   volver() {
-    this.navCtrl.back();
+    this.router.navigate(["home"]);
   }
 
   ngOnInit() {

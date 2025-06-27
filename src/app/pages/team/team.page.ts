@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavController } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from 'src/app/services/game/game.service';
 import { CreateJugadorPage } from 'src/app/modals/create-jugador/create-jugador.page';
 
@@ -15,9 +15,9 @@ export class TeamPage implements OnInit {
   lado: string = '';
   equipo:any;
 
-  constructor(private navCtrl: NavController,private route: ActivatedRoute,private _game_: GameService,private modalCtrl: ModalController) { }
+  constructor(private navCtrl: NavController,private route: ActivatedRoute,private _game_: GameService,private modalCtrl: ModalController,private router: Router) { }
   volver() {
-    this.navCtrl.back();
+    this.router.navigate(["home"]);
   }
 
   ngOnInit() {

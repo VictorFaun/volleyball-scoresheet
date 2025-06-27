@@ -12,7 +12,6 @@ import { Platform } from '@ionic/angular';
 export class AppComponent {
 
   constructor(private platform: Platform, private renderer: Renderer2) {
-    console.log(this.platform.platforms())
     if ((this.platform.is('mobile') || this.platform.is('android') || this.platform.is('ios')) && !this.platform.is('mobileweb')) {
       this.renderer.addClass(document.body, 'is-mobile');
     }
