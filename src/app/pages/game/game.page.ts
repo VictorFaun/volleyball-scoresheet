@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 
 @Component({
@@ -10,12 +10,18 @@ import { NavController } from '@ionic/angular';
 })
 export class GamePage implements OnInit {
 
-  constructor(private router: Router,private navCtrl: NavController) { }
+  set:any
+
+  constructor(private router: Router, private route: ActivatedRoute) { }
   volver() {
     this.router.navigate(["home"]);
   }
 
   ngOnInit() {
+
+    this.route.queryParams.subscribe(params => {
+      this.set = params['set'];
+    });
   }
 
 }

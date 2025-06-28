@@ -32,7 +32,7 @@ export class CreateSetPage implements OnInit {
   }
 
   siguiente() {
-    console.log(this._game_.partido)
+    this._game_.confirm_set(this.num);
   }
 
   async alineacion(equipo: 'A' | 'B', pos: number) {

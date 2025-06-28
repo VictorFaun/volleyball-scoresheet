@@ -203,5 +203,8 @@ export class HomePage implements OnInit {
     if(estado == 8){
       this._game_.new_set(1)
     }
+    if(estado == 9){
+      this._game_.start_set(1)
+    }
   }
 }

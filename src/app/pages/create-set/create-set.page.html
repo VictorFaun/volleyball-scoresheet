@@ -13,12 +13,12 @@
 
     <div class="select-text">
       <label>Equipo al Saque <span style="color: var(--color-danger-shade);">*</span></label>
-      <ion-button class="input-select" fill="clear" (click)="seleccionar_equipo()"><div style="width: 100%;display: flex;justify-content: space-between;"><p>{{set.equipo_saque?set.equipo_saque=="A"?"Equipo A":"Equipo B":"Seleccionar Equipo"}}</p> <ion-icon name="chevron-expand-outline"></ion-icon></div></ion-button>
-      <!-- <ion-select fill="outline" labelPlacement="stacked" label-placement="floating" placeholder="Seleccionar Equipo"
-        [(ngModel)]="set.equipo_saque">
-        <ion-select-option value="A">Equipo A</ion-select-option>
-        <ion-select-option value="B">Equipo B</ion-select-option>
-      </ion-select> -->
+      <ion-button class="input-select" fill="clear" (click)="seleccionar_equipo()">
+        <div style="width: 100%;display: flex;justify-content: space-between;">
+          <p>{{set.equipo_saque?set.equipo_saque=="A"?"Equipo A":"Equipo B":"Seleccionar Equipo"}}</p> <ion-icon
+            name="chevron-expand-outline"></ion-icon>
+        </div>
+      </ion-button>
     </div>
 
     <div class="posiciones-inicial">
@@ -30,8 +30,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">4</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-                (click)="alineacion('A', 3)"
+              <ion-button fill="clear" (click)="alineacion('A', 3)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_a[3]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[3]">
@@ -44,8 +43,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">3</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-              (click)="alineacion('A', 2)"
+              <ion-button fill="clear" (click)="alineacion('A', 2)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_a[2]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[2]">
@@ -58,8 +56,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">2</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-              (click)="alineacion('A', 1)"
+              <ion-button fill="clear" (click)="alineacion('A', 1)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_a[1]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[1]">
@@ -75,8 +72,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">5</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-              (click)="alineacion('A', 4)"
+              <ion-button fill="clear" (click)="alineacion('A', 4)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_a[4]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[4]">
@@ -89,8 +85,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">6</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-              (click)="alineacion('A', 5)"
+              <ion-button fill="clear" (click)="alineacion('A', 5)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_a[5]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[5]">
@@ -103,8 +98,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">1</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-              (click)="alineacion('A', 0)"
+              <ion-button fill="clear" (click)="alineacion('A', 0)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_a[0]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_a[0]">
@@ -125,8 +119,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">4</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-              (click)="alineacion('B', 3)"
+              <ion-button fill="clear" (click)="alineacion('B', 3)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_b[3]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[3]">
@@ -139,8 +132,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">3</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-              (click)="alineacion('B', 2)"
+              <ion-button fill="clear" (click)="alineacion('B', 2)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_b[2]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[2]">
@@ -153,8 +145,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">2</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-              (click)="alineacion('B', 1)"
+              <ion-button fill="clear" (click)="alineacion('B', 1)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_b[1]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[1]">
@@ -170,8 +161,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">5</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-              (click)="alineacion('B', 4)"
+              <ion-button fill="clear" (click)="alineacion('B', 4)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_b[4]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[4]">
@@ -184,8 +174,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">6</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-              (click)="alineacion('B', 5)"
+              <ion-button fill="clear" (click)="alineacion('B', 5)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_b[5]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[5]">
@@ -198,8 +187,7 @@
             <p style="position: absolute; top: 5px;width: 100%;text-align: center;margin: 0px;">1</p>
             <div
               style="border-radius: 100%;border: 1px solid rgba(var(--color-4-rgb),.2);width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
-              <ion-button fill="clear"
-              (click)="alineacion('B', 0)"
+              <ion-button fill="clear" (click)="alineacion('B', 0)"
                 style="margin: 0;width: 100%;height: 100%;--border-radius:100%;--color: var(--color-1);min-height: 0px;"><ion-icon
                   slot="icon-only" name="add" *ngIf="!set.alineacion_b[0]"></ion-icon>
                 <p style="margin: 0px;font-weight: bold;color: var(--color-1);" *ngIf="set.alineacion_b[0]">

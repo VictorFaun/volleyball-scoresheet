@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { AlertController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
@@ -38,7 +39,7 @@ export class GameService {
   //29: finalizado
 
   partido: any
-  partidos:any = [
+  partidos: any = [
     {
       "id": null,
       "numero_partido": 1,
@@ -59,80 +60,142 @@ export class GameService {
       "tercer_banderin": null,
       "cuarto_banderin": null,
       "set_1": {
-          "equipo_saque": null,
-          "alineacion_a": [
-              false,
-              false,
-              false,
-              false,
-              false,
-              false
-          ],
-          "alineacion_b": [
-              false,
-              false,
-              false,
-              false,
-              false,
-              false
-          ],
-          "hora_inicio": null,
-          "hora_fin": null,
-          "victoria": null
+        "equipo_saque": null,
+        "alineacion_a": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "alineacion_b": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "hora_inicio": null,
+        "hora_fin": null,
+        "victoria": null
       },
       "set_2": null,
       "set_3": null,
       "set_4": null,
       "set_5": null,
       "equipo_a": {
-          "id": null,
-          "nombre": null,
-          "jugadores": [
-              {
-                  "id": null,
-                  "numero": 1,
-                  "nombre": "Malote",
-                  "capitan": null,
-                  "libero": null
-              },
-              {
-                  "id": null,
-                  "numero": 2,
-                  "nombre": "Marshall",
-                  "capitan": null,
-                  "libero": true
-              }
-          ],
-          "entrenador": null,
-          "primer_asistente": null,
-          "segundo_asistente": null,
-          "medico": null,
-          "fisioterapeuta": null
+        "id": null,
+        "nombre": null,
+        "jugadores": [
+          {
+            "id": null,
+            "numero": 1,
+            "nombre": "Jugador 1",
+            "capitan": true,
+            "libero": null
+          },
+          {
+            "id": null,
+            "numero": 2,
+            "nombre": "Jugador 2",
+            "capitan": null,
+            "libero": null
+          }, {
+            "id": null,
+            "numero": 3,
+            "nombre": "Jugador 3",
+            "capitan": null,
+            "libero": null
+          }, {
+            "id": null,
+            "numero": 4,
+            "nombre": "Jugador 4",
+            "capitan": null,
+            "libero": null
+          }, {
+            "id": null,
+            "numero": 5,
+            "nombre": "Jugador 5",
+            "capitan": null,
+            "libero": null
+          }, {
+            "id": null,
+            "numero": 6,
+            "nombre": "Jugador 6",
+            "capitan": null,
+            "libero": null
+          }, {
+            "id": null,
+            "numero": 7,
+            "nombre": "Jugador 1",
+            "capitan": null,
+            "libero": true
+          }
+
+        ],
+        "entrenador": null,
+        "primer_asistente": null,
+        "segundo_asistente": null,
+        "medico": null,
+        "fisioterapeuta": null
       },
       "equipo_b": {
-          "id": null,
-          "nombre": null,
-          "jugadores": [
-              {
-                  "id": null,
-                  "numero": 3,
-                  "nombre": "Victor",
-                  "capitan": null,
-                  "libero": null
-              },
-              {
-                  "id": null,
-                  "numero": 4,
-                  "nombre": "Dani",
-                  "capitan": null,
-                  "libero": true
-              }
-          ],
-          "entrenador": null,
-          "primer_asistente": null,
-          "segundo_asistente": null,
-          "medico": null,
-          "fisioterapeuta": null
+        "id": null,
+        "nombre": null,
+        "jugadores": [
+          {
+            "id": null,
+            "numero": 1,
+            "nombre": "Jugador 1",
+            "capitan": true,
+            "libero": null
+          },
+          {
+            "id": null,
+            "numero": 2,
+            "nombre": "Jugador 2",
+            "capitan": null,
+            "libero": null
+          }, {
+            "id": null,
+            "numero": 3,
+            "nombre": "Jugador 3",
+            "capitan": null,
+            "libero": null
+          }, {
+            "id": null,
+            "numero": 4,
+            "nombre": "Jugador 4",
+            "capitan": null,
+            "libero": null
+          }, {
+            "id": null,
+            "numero": 5,
+            "nombre": "Jugador 5",
+            "capitan": null,
+            "libero": null
+          }, {
+            "id": null,
+            "numero": 6,
+            "nombre": "Jugador 6",
+            "capitan": null,
+            "libero": null
+          }, {
+            "id": null,
+            "numero": 7,
+            "nombre": "Jugador 1",
+            "capitan": null,
+            "libero": true
+          }
+
+        ],
+        "entrenador": null,
+        "primer_asistente": null,
+        "segundo_asistente": null,
+        "medico": null,
+        "fisioterapeuta": null
       },
       "firma_inicio_capitan_a": null,
       "firma_inicio_capitan_b": null,
@@ -147,39 +210,100 @@ export class GameService {
       "estado": 8
     }
   ]
-  index:any
+  index: any
 
-  constructor(private router: Router) { }
+  constructor(private router: Router,private alertController: AlertController) { }
 
-  new_set(num:any){
-    if(num == 1){
-      if(this.partido.estado < 8)
-      this.partido.estado=8
-      if(!this.partido.set_1)
-      this.partido.set_1 = this.clean_set()
+  async confirm_set(set:any){
+    const alert = await this.alertController.create({
+      header: 'Confirmar',
+      cssClass: 'custom-alert',
+      message: `¿Estás seguro de iniciar el set ${set}?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'secondary'
+        },
+        {
+          text: 'Iniciar',
+          handler: () => {
+            this.start_set(set)
+          }
+        }
+      ]
+    });
+  
+    await alert.present();
+  }
+
+  start_set(set:any){
+    if(set == 1){
+      if(this.partido.estado < 9){
+        this.partido.estado = 9;
+        this.partido.set_1.hora_inicio = new Date()
+      }
+      this.redireccionar('game', { set });
+    }
+    if(set == 2){
+      if(this.partido.estado < 12){
+        this.partido.estado = 12;
+        this.partido.set_2.hora_inicio = new Date()
+      }
+      this.redireccionar('game', { set });
+    }
+    if(set == 3){
+      if(this.partido.estado < 15){
+        this.partido.estado = 15;
+        this.partido.set_3.hora_inicio = new Date()
+      }
+      this.redireccionar('game', { set });
+    }
+    if(set == 4){
+      if(this.partido.estado < 18){
+        this.partido.estado = 18;
+        this.partido.set_4.hora_inicio = new Date()
+      }
+      this.redireccionar('game', { set });
+    }
+    if(set == 5){
+      if(this.partido.estado < 21){
+        this.partido.estado = 21;
+        this.partido.set_5.hora_inicio = new Date()
+      }
+      this.redireccionar('game', { set });
+    }
+  }
+
+  new_set(num: any) {
+    if (num == 1) {
+      if (this.partido.estado < 8)
+        this.partido.estado = 8
+      if (!this.partido.set_1)
+        this.partido.set_1 = this.clean_set()
       this.redireccionar('create-set', { num });
     }
   }
 
-  new_firma(num:any){
-    if(num == 1){
-      if(this.partido.estado < 4)
-      this.partido.estado=4
+  new_firma(num: any) {
+    if (num == 1) {
+      if (this.partido.estado < 4)
+        this.partido.estado = 4
       this.redireccionar('signature', { num });
     }
-    if(num == 2){
-      if(this.partido.estado < 5)
-      this.partido.estado=5
+    if (num == 2) {
+      if (this.partido.estado < 5)
+        this.partido.estado = 5
       this.redireccionar('signature', { num });
     }
-    if(num == 3){
-      if(this.partido.estado < 6)
-      this.partido.estado=6
+    if (num == 3) {
+      if (this.partido.estado < 6)
+        this.partido.estado = 6
       this.redireccionar('signature', { num });
     }
-    if(num == 4){
-      if(this.partido.estado < 7)
-      this.partido.estado=7
+    if (num == 4) {
+      if (this.partido.estado < 7)
+        this.partido.estado = 7
       this.redireccionar('signature', { num });
     }
   }
@@ -187,28 +311,28 @@ export class GameService {
   new_equipo(lado: any) {
 
     if (lado == "A") {
-      if(this.partido.estado < 2)
-      this.partido.estado = 2;
-      if(!this.partido.equipo_a)
-      this.partido.equipo_a = this.clean_equipo();
+      if (this.partido.estado < 2)
+        this.partido.estado = 2;
+      if (!this.partido.equipo_a)
+        this.partido.equipo_a = this.clean_equipo();
       this.redireccionar('team', { lado: "A" });
     }
     if (lado == "B") {
-      if(this.partido.estado < 3)
-      this.partido.estado = 3;
-      if(!this.partido.equipo_b)
-      this.partido.equipo_b = this.clean_equipo();
+      if (this.partido.estado < 3)
+        this.partido.estado = 3;
+      if (!this.partido.equipo_b)
+        this.partido.equipo_b = this.clean_equipo();
       this.redireccionar('team', { lado: "B" });
     }
   }
 
   new_game() {
-    
+
     this.partido = this.clean_partido();
     this.partidos.push(this.partido)
     this.redireccionar('create');
   }
-  edit_game(index:any) {
+  edit_game(index: any) {
     this.index = index
     this.partido = this.partidos[index]
     this.redireccionar('create');
@@ -269,16 +393,16 @@ export class GameService {
       set_5: null,
       equipo_a: null,
       equipo_b: null,
-      firma_inicio_capitan_a:null,
-      firma_inicio_capitan_b:null,
-      firma_fin_capitan_a:null,
-      firma_fin_capitan_b:null,
-      firma_entrenador_a:null,
-      firma_entrenador_b:null,
-      firma_planillero:null,
-      firma_asistente_planillero:null,
-      firma_primer_arbitro:null,
-      firma_segundo_arbitro:null,
+      firma_inicio_capitan_a: null,
+      firma_inicio_capitan_b: null,
+      firma_fin_capitan_a: null,
+      firma_fin_capitan_b: null,
+      firma_entrenador_a: null,
+      firma_entrenador_b: null,
+      firma_planillero: null,
+      firma_asistente_planillero: null,
+      firma_primer_arbitro: null,
+      firma_segundo_arbitro: null,
       estado: 1
     }
   }
@@ -299,11 +423,11 @@ export class GameService {
   clean_set() {
     return {
       equipo_saque: null,
-      alineacion_a: [false,false,false,false,false,false],
-      alineacion_b: [false,false,false,false,false,false],
+      alineacion_a: [false, false, false, false, false, false],
+      alineacion_b: [false, false, false, false, false, false],
       hora_inicio: null,
       hora_fin: null,
-      victoria:null
+      victoria: null
     }
   }
 }
