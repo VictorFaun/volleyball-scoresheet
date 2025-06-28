@@ -108,9 +108,9 @@
     <div class="historial-container">
       <p class="historial-titulo">Historial de acciones</p>
       <div class="historial-lista">
-        <p>[12:19] Punto Equipo B</p>
-        <p>[12:17] Punto Equipo A</p>
-        <p>[12:17] Amonestacion Equipo A (Jugador 3)</p>
+        <p *ngFor="let item of logs">
+          {{`[${item.hora}] ${item.tipo}${item.equipo?" Equipo "+item.equipo:""}${item.jugador?" (Jugador "+item.jugador.numero+")":""}`}}
+        </p>
       </div>
     </div>
 

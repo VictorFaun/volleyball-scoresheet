@@ -79,6 +79,7 @@ export class GameService {
         ],
         "hora_inicio": null,
         "hora_fin": null,
+        "logs":[],
         "victoria": null
       },
       "set_2": null,
@@ -207,7 +208,7 @@ export class GameService {
       "firma_asistente_planillero": null,
       "firma_primer_arbitro": null,
       "firma_segundo_arbitro": null,
-      "estado": 8
+      "estado": 9
     }
   ]
   index: any
@@ -283,6 +284,34 @@ export class GameService {
         this.partido.set_1 = this.clean_set()
       this.redireccionar('create-set', { num });
     }
+    if (num == 2) {
+      if (this.partido.estado < 11)
+        this.partido.estado = 11
+      if (!this.partido.set_2)
+        this.partido.set_2 = this.clean_set()
+      this.redireccionar('create-set', { num });
+    }
+    if (num == 3) {
+      if (this.partido.estado < 14)
+        this.partido.estado = 14
+      if (!this.partido.set_3)
+        this.partido.set_3 = this.clean_set()
+      this.redireccionar('create-set', { num });
+    }
+    if (num == 4) {
+      if (this.partido.estado < 17)
+        this.partido.estado = 17
+      if (!this.partido.set_4)
+        this.partido.set_4 = this.clean_set()
+      this.redireccionar('create-set', { num });
+    }
+    if (num == 5) {
+      if (this.partido.estado < 20)
+        this.partido.estado = 20
+      if (!this.partido.set_5)
+        this.partido.set_5 = this.clean_set()
+      this.redireccionar('create-set', { num });
+    }
   }
 
   new_firma(num: any) {
@@ -350,9 +379,9 @@ export class GameService {
     return {
       id: null,
       tipo: null,
+      hora: null,
       jugador: null,
-      equipo: null,
-      set: null
+      equipo: null
     }
   }
 
@@ -427,6 +456,7 @@ export class GameService {
       alineacion_b: [false, false, false, false, false, false],
       hora_inicio: null,
       hora_fin: null,
+      logs:[],
       victoria: null
     }
   }
