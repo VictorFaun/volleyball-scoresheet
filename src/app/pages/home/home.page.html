@@ -27,7 +27,7 @@
     >
       <div style="width: 100%; padding: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <p style="margin: 0; font-weight: 500; font-size: x-large;">{{partido.torneo?partido.torneo:'Partido N° '+partido.numero_partido}}</p>
+          <p style="margin: 0; font-weight: 500; font-size: x-large;text-align: left;">{{partido.torneo?partido.torneo:'Partido N° '+partido.numero_partido}}</p>
           <p style="margin: 0; color: rgba(var(--color-4-rgb), 0.5);" *ngIf="!partido.torneo">{{partido.estado}}</p>
         </div>
         <div *ngIf="partido.torneo" style="display: flex; justify-content: space-between; align-items: center;margin-top: 5px;">

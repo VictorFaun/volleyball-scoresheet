@@ -7,6 +7,8 @@ import { AlertController } from '@ionic/angular';
 })
 export class GameService {
 
+  //funcion para buscar con input torneos ya creados y con este cargar configuraciones de equipos ya creadas
+
   //Estados partidos
   //1: registrar partido
   //2: registrar equipo a
@@ -38,20 +40,28 @@ export class GameService {
   //28: firma primer arbitro
   //29: finalizado
 
+
+  //tipos de log
+  //1: + punto
+  //2: cambio jugador
+  //3: desaher cambio
+  //4: Amonestación
+  //5:
+
   partido: any
   partidos: any = [
     {
       "id": null,
       "numero_partido": 1,
-      "competicion": "Test",
-      "ciudad": null,
-      "pais": null,
-      "gimnasio": null,
-      "division": null,
-      "categoria": null,
-      "fecha": null,
-      "hora": null,
-      "primer_arbitro": null,
+      "competicion": "Hexagonal Recreativo UBB",
+      "ciudad": "Chillán",
+      "pais": "Chile",
+      "gimnasio": "Liceo San Nicolas",
+      "division": "Varones",
+      "categoria": "TC - Menor",
+      "fecha": "05/07/2025",
+      "hora": "09:00",
+      "primer_arbitro": "Gustavo Rantul",
       "segundo_arbitro": null,
       "planillero": null,
       "asistente_planillero": null,
@@ -60,26 +70,26 @@ export class GameService {
       "tercer_banderin": null,
       "cuarto_banderin": null,
       "set_1": {
-        "equipo_saque": null,
+        "equipo_saque": "A",
         "alineacion_a": [
-          false,
-          false,
-          false,
-          false,
-          false,
-          false
+          6,
+          5,
+          4,
+          2,
+          3,
+          1
         ],
         "alineacion_b": [
-          false,
-          false,
-          false,
-          false,
-          false,
-          false
+          1,
+          5,
+          6,
+          3,
+          2,
+          4
         ],
         "hora_inicio": null,
         "hora_fin": null,
-        "logs":[],
+        "logs": [],
         "victoria": null
       },
       "set_2": null,
@@ -88,7 +98,7 @@ export class GameService {
       "set_5": null,
       "equipo_a": {
         "id": null,
-        "nombre": null,
+        "nombre": "Trawen",
         "jugadores": [
           {
             "id": null,
@@ -103,40 +113,58 @@ export class GameService {
             "nombre": "Jugador 2",
             "capitan": null,
             "libero": null
-          }, {
+          },
+          {
             "id": null,
             "numero": 3,
             "nombre": "Jugador 3",
             "capitan": null,
             "libero": null
-          }, {
+          },
+          {
             "id": null,
             "numero": 4,
             "nombre": "Jugador 4",
             "capitan": null,
             "libero": null
-          }, {
+          },
+          {
             "id": null,
             "numero": 5,
             "nombre": "Jugador 5",
             "capitan": null,
             "libero": null
-          }, {
+          },
+          {
             "id": null,
             "numero": 6,
             "nombre": "Jugador 6",
             "capitan": null,
             "libero": null
-          }, {
+          },
+          {
             "id": null,
             "numero": 7,
-            "nombre": "Jugador 1",
+            "nombre": "Jugador 7",
             "capitan": null,
             "libero": true
+          },
+          {
+            "id": null,
+            "numero": 8,
+            "nombre": "Jugador 8",
+            "capitan": null,
+            "libero": null
+          },
+          {
+            "id": null,
+            "numero": 9,
+            "nombre": "Jugador 9",
+            "capitan": null,
+            "libero": null
           }
-
         ],
-        "entrenador": null,
+        "entrenador": "Paul Ferrada",
         "primer_asistente": null,
         "segundo_asistente": null,
         "medico": null,
@@ -144,7 +172,7 @@ export class GameService {
       },
       "equipo_b": {
         "id": null,
-        "nombre": null,
+        "nombre": "Municipal",
         "jugadores": [
           {
             "id": null,
@@ -159,40 +187,44 @@ export class GameService {
             "nombre": "Jugador 2",
             "capitan": null,
             "libero": null
-          }, {
+          },
+          {
             "id": null,
             "numero": 3,
             "nombre": "Jugador 3",
             "capitan": null,
             "libero": null
-          }, {
+          },
+          {
             "id": null,
             "numero": 4,
             "nombre": "Jugador 4",
             "capitan": null,
             "libero": null
-          }, {
+          },
+          {
             "id": null,
             "numero": 5,
             "nombre": "Jugador 5",
             "capitan": null,
             "libero": null
-          }, {
+          },
+          {
             "id": null,
             "numero": 6,
             "nombre": "Jugador 6",
             "capitan": null,
             "libero": null
-          }, {
+          },
+          {
             "id": null,
             "numero": 7,
-            "nombre": "Jugador 1",
+            "nombre": "Jugador 7",
             "capitan": null,
             "libero": true
           }
-
         ],
-        "entrenador": null,
+        "entrenador": "Abraham Marianjel",
         "primer_asistente": null,
         "segundo_asistente": null,
         "medico": null,
@@ -213,62 +245,134 @@ export class GameService {
   ]
   index: any
 
-  constructor(private router: Router,private alertController: AlertController) { }
+  constructor(private router: Router, private alertController: AlertController) { }
 
-  async confirm_set(set:any){
-    const alert = await this.alertController.create({
-      header: 'Confirmar',
-      cssClass: 'custom-alert',
-      message: `¿Estás seguro de iniciar el set ${set}?`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
-        {
-          text: 'Iniciar',
-          handler: () => {
-            this.start_set(set)
-          }
-        }
-      ]
-    });
-  
-    await alert.present();
+  deshacer(set: any) {
+    if (set == 1) {
+      this.partido.set_1.logs.shift()
+    }
+    if (set == 2) {
+      this.partido.set_2.logs.shift()
+    }
+    if (set == 3) {
+      this.partido.set_3.logs.shift()
+    }
+    if (set == 4) {
+      this.partido.set_4.logs.shift()
+    }
+    if (set == 5) {
+      this.partido.set_5.logs.shift()
+    }
   }
 
-  start_set(set:any){
-    if(set == 1){
-      if(this.partido.estado < 9){
+  punto(set: any, equipo: any) {
+    let log: any = this.clean_log()
+    log.tipo = 1;
+    log.hora = new Date();
+    log.equipo = equipo;
+
+    if (set == 1) {
+      this.partido.set_1.logs.unshift(log)
+    }
+    if (set == 2) {
+      this.partido.set_2.logs.unshift(log)
+    }
+    if (set == 3) {
+      this.partido.set_3.logs.unshift(log)
+    }
+    if (set == 4) {
+      this.partido.set_4.logs.unshift(log)
+    }
+    if (set == 5) {
+      this.partido.set_5.logs.unshift(log)
+    }
+  }
+
+  async confirm_set(set: any) {
+    let confirmacion = false
+    if (set == 1) {
+      if (this.partido.estado < 9) {
+        confirmacion = true;
+      }
+    }
+    if (set == 2) {
+      if (this.partido.estado < 12) {
+        confirmacion = true;
+      }
+    }
+    if (set == 3) {
+      if (this.partido.estado < 15) {
+        confirmacion = true;
+      }
+    }
+    if (set == 4) {
+      if (this.partido.estado < 18) {
+        confirmacion = true;
+      }
+    }
+    if (set == 5) {
+      if (this.partido.estado < 21) {
+        confirmacion = true;
+      }
+    }
+
+    if (confirmacion) {
+      const alert = await this.alertController.create({
+        header: 'Confirmar',
+        cssClass: 'custom-alert',
+        message: `¿Estás seguro de iniciar el set ${set}?`,
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+            cssClass: 'secondary'
+          },
+          {
+            text: 'Iniciar',
+            handler: () => {
+              this.start_set(set)
+            }
+          }
+        ]
+      });
+
+      await alert.present();
+    } else {
+      this.start_set(set)
+    }
+  }
+
+  start_set(set: any) {
+    if (set == 1) {
+      if (this.partido.estado < 9) {
         this.partido.estado = 9;
         this.partido.set_1.hora_inicio = new Date()
       }
       this.redireccionar('game', { set });
     }
-    if(set == 2){
-      if(this.partido.estado < 12){
+    if (set == 2) {
+      if (this.partido.estado < 12) {
         this.partido.estado = 12;
         this.partido.set_2.hora_inicio = new Date()
       }
       this.redireccionar('game', { set });
     }
-    if(set == 3){
-      if(this.partido.estado < 15){
+    if (set == 3) {
+      if (this.partido.estado < 15) {
         this.partido.estado = 15;
         this.partido.set_3.hora_inicio = new Date()
       }
       this.redireccionar('game', { set });
     }
-    if(set == 4){
-      if(this.partido.estado < 18){
+    if (set == 4) {
+      if (this.partido.estado < 18) {
         this.partido.estado = 18;
         this.partido.set_4.hora_inicio = new Date()
       }
       this.redireccionar('game', { set });
     }
-    if(set == 5){
-      if(this.partido.estado < 21){
+    if (set == 5) {
+      if (this.partido.estado < 21) {
         this.partido.estado = 21;
         this.partido.set_5.hora_inicio = new Date()
       }
@@ -381,6 +485,7 @@ export class GameService {
       tipo: null,
       hora: null,
       jugador: null,
+      cambio: null,
       equipo: null
     }
   }
@@ -456,7 +561,7 @@ export class GameService {
       alineacion_b: [false, false, false, false, false, false],
       hora_inicio: null,
       hora_fin: null,
-      logs:[],
+      logs: [],
       victoria: null
     }
   }

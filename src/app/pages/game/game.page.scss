@@ -1,11 +1,13 @@
-.input-text{
-    padding-bottom: 20px;
-    label{
-        color: rgba(var(--color-4-rgb),.7);
-    }
-    ion-input{
-        min-height: 44px;
-    }
+.input-text {
+  padding-bottom: 20px;
+
+  label {
+    color: rgba(var(--color-4-rgb), .7);
+  }
+
+  ion-input {
+    min-height: 44px;
+  }
 }
 
 /* Contenedor principal de la vista */
@@ -54,7 +56,8 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  margin: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -77,8 +80,10 @@
 .cancha-container {
   border: 1px solid rgba(var(--color-4-rgb), 0.2);
   border-radius: 10px;
-  height: 200px;
+  height: 180px;
   display: flex;
+  width: 70%;
+  margin: auto;
 }
 
 .cancha-equipo {
@@ -100,6 +105,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: transform 1s ease, top 1s ease, left 1s ease, right 1s ease;
 }
 
 .jugador-posicion ion-button {
@@ -112,8 +118,16 @@
 }
 
 /* Posiciones de los jugadores del Equipo A */
+
+.saque-a {
+  .pos-a-1 {
+    left: calc(calc(calc(100% / 8) *  -1.75) - 20px);
+    top: calc(calc(calc(100% / 6) * 5) - 20px);
+  }
+}
+
 .pos-a-1 {
-  left: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  left: calc(calc(calc(100% / 8) *  2.5) - 20px);
   top: calc(calc(calc(100% / 6) * 5) - 20px);
 }
 
@@ -143,6 +157,13 @@
 }
 
 /* Posiciones de los jugadores del Equipo B */
+.saque-b {
+  .pos-b-1 {
+    right: calc(calc(calc(100% / 8) * -1.75) - 20px);
+    top: calc(calc(calc(100% / 6) * 1) - 20px);
+  }
+}
+
 .pos-b-1 {
   right: calc(calc(calc(100% / 8) * 2.5) - 20px);
   top: calc(calc(calc(100% / 6) * 1) - 20px);
@@ -254,6 +275,8 @@
 /* Historial de acciones */
 .historial-container {
   margin-top: 10px;
+  margin-right: 20px;
+  margin-left: 20px;
 }
 
 .historial-titulo {
