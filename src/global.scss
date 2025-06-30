@@ -279,6 +279,10 @@ ion-alert {
   --background: var(--color-1);
   --color: var(--color-3);
 }
+.btn-danger {
+  --background: var(--color-danger);
+  --color: var(--color-3);
+}
 
 .btn-round {
   --background: var(--color-1);

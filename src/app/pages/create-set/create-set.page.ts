@@ -31,22 +31,52 @@ export class CreateSetPage implements OnInit {
     });
   }
 
-  siguiente() {
-    this._game_.confirm_set(this.num);
+  async siguiente() {
+  const aCompleto = this.set.alineacion_a.every((j:any) => j && typeof j === 'number');
+  const bCompleto = this.set.alineacion_b.every((j:any) => j && typeof j === 'number');
+  const saqueValido = this.set.equipo_saque === 'A' || this.set.equipo_saque === 'B';
+
+  if (!saqueValido) {
+    const alert = await this.alertController.create({
+      header: 'Saque inválido',
+      cssClass: 'custom-alert',
+      message: 'Debes seleccionar un equipo válido para el saque (A o B).',
+      buttons: ['Aceptar']
+    });
+    await alert.present();
+    return;
   }
+
+  if (!aCompleto || !bCompleto) {
+    const equipo = !aCompleto ? 'A' : 'B';
+    const alert = await this.alertController.create({
+      header: 'Alineación incompleta',
+      cssClass: 'custom-alert',
+      message: `La alineación inicial del Equipo ${equipo} no está completa. Debes asignar los 6 Jugadores.`,
+      buttons: ['Aceptar']
+    });
+
+    await alert.present();
+    return;
+  }
+
+  // Todas las validaciones pasaron
+  this._game_.confirm_set(this.num);
+}
+
 
   async alineacion(equipo: 'A' | 'B', pos: number) {
     const jugadores = equipo === 'A'
       ? this._game_.partido.equipo_a.jugadores
       : this._game_.partido.equipo_b.jugadores;
-  
+
     const alineacion = equipo === 'A'
       ? this.set.alineacion_a
       : this.set.alineacion_b;
-  
+
     // Filtrar jugadores que no sean líberos
     const jugadoresFiltrados = jugadores.filter((j: any) => !j.libero);
-  
+
     const inputs = jugadoresFiltrados.map((j: any) => ({
       name: `jugador-${j.numero}`,
       type: 'radio',
@@ -54,7 +84,7 @@ export class CreateSetPage implements OnInit {
       value: j.numero,
       checked: alineacion[pos] === j.numero
     }));
-  
+
     const alert = await this.alertController.create({
       header: 'Selecciona un jugador',
       cssClass: 'custom-alert',
@@ -70,21 +100,21 @@ export class CreateSetPage implements OnInit {
             const indexExistente = alineacion.findIndex((num: any, i: number) =>
               num === selectedValue && i !== pos
             );
-  
+
             if (indexExistente !== -1) {
               alineacion[indexExistente] = false;
             }
-  
+
             alineacion[pos] = selectedValue;
           }
         }
       ]
     });
-  
-    await alert.present();
-  }  
 
-  async seleccionar_equipo(){
+    await alert.present();
+  }
+
+  async seleccionar_equipo() {
     const alert = await this.alertController.create({
       header: 'Selecciona un equipo',
       cssClass: 'custom-alert',
@@ -94,14 +124,14 @@ export class CreateSetPage implements OnInit {
           type: 'radio',
           label: 'Equipo A',
           value: 'A',
-          checked: this.set.equipo_saque=="A"
+          checked: this.set.equipo_saque == "A"
         },
         {
           name: 'B',
           type: 'radio',
           label: 'Equipo B',
           value: 'B',
-          checked: this.set.equipo_saque=="B"
+          checked: this.set.equipo_saque == "B"
         }
       ],
       buttons: [

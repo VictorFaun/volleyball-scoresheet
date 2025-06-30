@@ -13,9 +13,9 @@ import { CreateJugadorPage } from 'src/app/modals/create-jugador/create-jugador.
 export class TeamPage implements OnInit {
 
   lado: string = '';
-  equipo:any;
+  equipo: any;
 
-  constructor(private navCtrl: NavController,private route: ActivatedRoute,private _game_: GameService,private modalCtrl: ModalController,private router: Router) { }
+  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private modalCtrl: ModalController, private router: Router) { }
   volver() {
     this.router.navigate(["home"]);
   }
@@ -23,27 +23,59 @@ export class TeamPage implements OnInit {
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.lado = params['lado'];
-      if(this.lado == "A"){
+      if (this.lado == "A") {
         this.equipo = this._game_.partido.equipo_a;
       }
-      if(this.lado == "B"){
+      if (this.lado == "B") {
         this.equipo = this._game_.partido.equipo_b;
       }
     });
   }
 
-  siguiente(){
-    if(this.lado == "A"){
+  siguiente() {
+    if (this.lado == "A") {
       this._game_.new_equipo("B");
     }
-    if(this.lado == "B"){
+    if (this.lado == "B") {
       this._game_.new_firma(1);
     }
   }
 
   async abrirModalJugador() {
+    const modal = await this.modalCtrl.create({
+      component: CreateJugadorPage,
+      componentProps: {
+        equipo:this.lado
+      },
+      cssClass: ['modal-centrado']
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+    if (data) {
+      let jugador = this._game_.clean_jugador();
+      jugador.numero = data.dorsal;
+      jugador.nombre = data.nombre;
+      if (!this.equipo.jugadores) {
+        this.equipo.jugadores = [jugador]
+      } else {
+        this.equipo.jugadores.push(jugador)
+      }
+    }
+  }
+
+  async editarJugador(i: any) {
+  const jugadorActual = this.equipo.jugadores[i];
+
   const modal = await this.modalCtrl.create({
     component: CreateJugadorPage,
+    componentProps: {
+      index: true,
+      nombre: jugadorActual.nombre,
+      dorsal: jugadorActual.numero,
+      equipo:this.lado
+    },
     cssClass: ['modal-centrado']
   });
 
@@ -51,13 +83,13 @@ export class TeamPage implements OnInit {
 
   const { data } = await modal.onDidDismiss();
   if (data) {
-    let jugador = this._game_.clean_jugador();
-    jugador.numero= data.dorsal;
-    jugador.nombre= data.nombre;
-    if(!this.equipo.jugadores){
-      this.equipo.jugadores=[jugador]
-    }else{
-      this.equipo.jugadores.push(jugador)
+    if (data.eliminar) {
+      // Eliminar jugador
+      this.equipo.jugadores.splice(i, 1);
+    } else {
+      // Editar jugador
+      this.equipo.jugadores[i].nombre = data.nombre;
+      this.equipo.jugadores[i].numero = data.dorsal;
     }
   }
 }

@@ -418,11 +418,13 @@ export class GameService {
     }
   }
 
-  new_firma(num: any) {
+  async new_firma(num: any) {
     if (num == 1) {
-      if (this.partido.estado < 4)
-        this.partido.estado = 4
-      this.redireccionar('signature', { num });
+      if(await this.validarJugadores("B")){
+        if (this.partido.estado < 4)
+          this.partido.estado = 4
+        this.redireccionar('signature', { num });
+      }
     }
     if (num == 2) {
       if (this.partido.estado < 5)
@@ -441,7 +443,7 @@ export class GameService {
     }
   }
 
-  new_equipo(lado: any) {
+  async new_equipo(lado: any) {
 
     if (lado == "A") {
       if (this.partido.estado < 2)
@@ -451,11 +453,13 @@ export class GameService {
       this.redireccionar('team', { lado: "A" });
     }
     if (lado == "B") {
-      if (this.partido.estado < 3)
-        this.partido.estado = 3;
-      if (!this.partido.equipo_b)
-        this.partido.equipo_b = this.clean_equipo();
-      this.redireccionar('team', { lado: "B" });
+      if(await this.validarJugadores("A")){
+        if (this.partido.estado < 3)
+          this.partido.estado = 3;
+        if (!this.partido.equipo_b)
+          this.partido.equipo_b = this.clean_equipo();
+        this.redireccionar('team', { lado: "B" });
+      }
     }
   }
 
@@ -470,6 +474,28 @@ export class GameService {
     this.partido = this.partidos[index]
     this.redireccionar('create');
   }
+
+  async validarJugadores(equipo: 'A' | 'B') {
+  const jugadores = equipo === 'A'
+    ? this.partido.equipo_a.jugadores
+    : this.partido.equipo_b.jugadores;
+
+  const jugadoresNoLibero = jugadores.filter((j:any) => !j.libero);
+
+  if (jugadoresNoLibero.length < 6) {
+    const alerta = await this.alertController.create({
+      header: 'Equipo incompleto',
+        cssClass: 'custom-alert',
+      message: `El Equipo ${equipo} debe tener al menos 6 jugadores que no sean líberos.`,
+      buttons: ['Aceptar']
+    });
+
+    await alerta.present();
+    return false;
+  }
+
+  return true;
+}
 
   redireccionar(ruta: string, parametros?: any) {
     if (parametros) {
@@ -545,7 +571,7 @@ export class GameService {
     return {
       id: null,
       nombre: null,
-      jugadores: null,
+      jugadores: [],
       entrenador: null,
       primer_asistente: null,
       segundo_asistente: null,

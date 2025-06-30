@@ -32,11 +32,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr  *ngFor="let jugador of equipo.jugadores">
+            <tr  *ngFor="let jugador of equipo.jugadores;let i = index" (click)="editarJugador(i)">
               <td>{{jugador.numero}}</td>
               <td>{{jugador.nombre}}</td>
-              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox [(ngModel)]="jugador.capitan"></ion-checkbox></div></td>
-              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox [(ngModel)]="jugador.libero"></ion-checkbox></div></td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox [(ngModel)]="jugador.capitan" (click)="$event.stopPropagation()"></ion-checkbox></div></td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox [(ngModel)]="jugador.libero" (click)="$event.stopPropagation()"></ion-checkbox></div></td>
             </tr>
           </tbody>
         </table>
