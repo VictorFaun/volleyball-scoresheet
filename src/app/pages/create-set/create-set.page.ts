@@ -28,6 +28,18 @@ export class CreateSetPage implements OnInit {
       if (this.num == 1) {
         this.set = this._game_.partido.set_1
       }
+      if (this.num == 2) {
+        this.set = this._game_.partido.set_2
+      }
+      if (this.num == 3) {
+        this.set = this._game_.partido.set_3
+      }
+      if (this.num == 4) {
+        this.set = this._game_.partido.set_4
+      }
+      if (this.num == 5) {
+        this.set = this._game_.partido.set_5
+      }
     });
   }
 

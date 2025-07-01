@@ -206,5 +206,66 @@ export class HomePage implements OnInit {
     if(estado == 9){
       this._game_.start_set(1)
     }
+
+    if(estado == 10){
+      this._game_.closeSet(1)
+    }
+    if(estado == 11){
+      this._game_.new_set(2)
+    }
+    if(estado == 12){
+      this._game_.start_set(2)
+    }
+    if(estado == 13){
+      this._game_.closeSet(2)
+    }
+    if(estado == 14){
+      this._game_.new_set(3)
+    }
+    if(estado == 15){
+      this._game_.start_set(3)
+    }
+    if(estado == 16){
+      this._game_.closeSet(3)
+    }
+    if(estado == 17){
+      this._game_.new_set(4)
+    }
+    if(estado == 18){
+      this._game_.start_set(4)
+    }
+    if(estado == 19){
+      this._game_.closeSet(4)
+    }
+    if(estado == 20){
+      this._game_.new_set(5)
+    }
+    if(estado == 21){
+      this._game_.start_set(5)
+    }
+    if(estado == 22){
+      this._game_.closeSet(5)
+    }
+    if(estado == 23){
+      this._game_.new_firma(5)
+    }
+    if(estado == 24){
+      this._game_.new_firma(6)
+    }
+    if(estado == 25){
+      this._game_.new_firma(7)
+    }
+    if(estado == 26){
+      this._game_.new_firma(8)
+    }
+    if(estado == 27){
+      this._game_.new_firma(9)
+    }
+    if(estado == 28){
+      this._game_.new_firma(10)
+    }
+    if(estado == 29){
+
+    }
   }
 }

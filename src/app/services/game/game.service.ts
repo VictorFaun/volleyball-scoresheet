@@ -247,6 +247,99 @@ export class GameService {
 
   constructor(private router: Router, private alertController: AlertController) { }
 
+  async closeSet(set: any) {
+    let confirmacion = false
+    if (set == 1) {
+      if (this.partido.estado < 10) {
+        confirmacion = true;
+      }
+    }
+    if (set == 2) {
+      if (this.partido.estado < 13) {
+        confirmacion = true;
+      }
+    }
+    if (set == 3) {
+      if (this.partido.estado < 16) {
+        confirmacion = true;
+      }
+    }
+    if (set == 4) {
+      if (this.partido.estado < 19) {
+        confirmacion = true;
+      }
+    }
+    if (set == 5) {
+      if (this.partido.estado < 22) {
+        confirmacion = true;
+      }
+    }
+
+    if (confirmacion) {
+      const alert = await this.alertController.create({
+        header: 'Confirmar',
+        message: `¿Está seguro que desea terminar el Set ${set}?`,
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+            handler: () => {
+              console.log('Cancelado');
+            }
+          },
+          {
+            text: 'Terminar',
+            handler: () => {
+              if (set == 1) {
+                this.partido.set_1.hora_fin = new Date()
+                this.partido.estado = 10
+                this.new_set(2)
+              }
+              if (set == 2) {
+                this.partido.set_2.hora_fin = new Date()
+                this.partido.estado = 13
+                this.new_set(3)
+              }
+              if (set == 3) {
+                this.partido.set_3.hora_fin = new Date()
+                this.partido.estado = 16
+                this.new_set(4)
+              }
+              if (set == 4) {
+                this.partido.set_4.hora_fin = new Date()
+                this.partido.estado = 19
+                this.new_set(5)
+              }
+              if (set == 5) {
+                this.partido.set_4.hora_fin = new Date()
+                this.partido.estado = 22
+              }
+            }
+          }
+        ]
+      });
+
+      await alert.present();
+    } else {
+      if (set == 1) {
+        this.new_set(2)
+      }
+      if (set == 2) {
+        this.new_set(3)
+      }
+      if (set == 3) {
+        this.new_set(4)
+      }
+      if (set == 4) {
+        this.new_set(5)
+      }
+      if (set == 5) {
+      }
+    }
+
+
+  }
+
   deshacer(set: any) {
     if (set == 1) {
       this.partido.set_1.logs.shift()
@@ -420,7 +513,7 @@ export class GameService {
 
   async new_firma(num: any) {
     if (num == 1) {
-      if(await this.validarJugadores("B")){
+      if (await this.validarJugadores("B")) {
         if (this.partido.estado < 4)
           this.partido.estado = 4
         this.redireccionar('signature', { num });
@@ -441,6 +534,51 @@ export class GameService {
         this.partido.estado = 7
       this.redireccionar('signature', { num });
     }
+    if (num == 5) {
+      if (this.partido.estado < 23)
+        this.partido.estado = 23
+      this.redireccionar('signature', { num });
+    }
+    if (num == 6) {
+      if (this.partido.estado < 24)
+        this.partido.estado = 24
+      this.redireccionar('signature', { num });
+    }
+    if (num == 7) {
+      if (this.partido.estado < 25)
+        this.partido.estado = 25
+      this.redireccionar('signature', { num });
+    }
+    if (num == 8) {
+      if (this.partido.estado < 26)
+        this.partido.estado = 26
+      this.redireccionar('signature', { num });
+    }
+    if (num == 9) {
+      if (this.partido.estado < 27)
+        this.partido.estado = 27
+      this.redireccionar('signature', { num });
+    }
+    if (num == 10) {
+      if (this.partido.estado < 28)
+        this.partido.estado = 28
+      this.redireccionar('signature', { num });
+    }
+  }
+
+  async terminoPartido() {
+    if(this.partido.estado < 29){
+      this.partido.estado = 29
+      const alert = await this.alertController.create({
+        header: 'Partido Finalizado',
+        message: 'El partido se ha finalizado correctamente.',
+        buttons: ['Aceptar']
+      });
+  
+      await alert.present();
+    }
+    
+    this.redireccionar('home');
   }
 
   async new_equipo(lado: any) {
@@ -453,7 +591,7 @@ export class GameService {
       this.redireccionar('team', { lado: "A" });
     }
     if (lado == "B") {
-      if(await this.validarJugadores("A")){
+      if (await this.validarJugadores("A")) {
         if (this.partido.estado < 3)
           this.partido.estado = 3;
         if (!this.partido.equipo_b)
@@ -476,26 +614,26 @@ export class GameService {
   }
 
   async validarJugadores(equipo: 'A' | 'B') {
-  const jugadores = equipo === 'A'
-    ? this.partido.equipo_a.jugadores
-    : this.partido.equipo_b.jugadores;
+    const jugadores = equipo === 'A'
+      ? this.partido.equipo_a.jugadores
+      : this.partido.equipo_b.jugadores;
 
-  const jugadoresNoLibero = jugadores.filter((j:any) => !j.libero);
+    const jugadoresNoLibero = jugadores.filter((j: any) => !j.libero);
 
-  if (jugadoresNoLibero.length < 6) {
-    const alerta = await this.alertController.create({
-      header: 'Equipo incompleto',
+    if (jugadoresNoLibero.length < 6) {
+      const alerta = await this.alertController.create({
+        header: 'Equipo incompleto',
         cssClass: 'custom-alert',
-      message: `El Equipo ${equipo} debe tener al menos 6 jugadores que no sean líberos.`,
-      buttons: ['Aceptar']
-    });
+        message: `El Equipo ${equipo} debe tener al menos 6 jugadores que no sean líberos.`,
+        buttons: ['Aceptar']
+      });
 
-    await alerta.present();
-    return false;
+      await alerta.present();
+      return false;
+    }
+
+    return true;
   }
-
-  return true;
-}
 
   redireccionar(ruta: string, parametros?: any) {
     if (parametros) {

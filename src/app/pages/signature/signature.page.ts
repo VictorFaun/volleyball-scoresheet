@@ -30,7 +30,7 @@ export class SignaturePage implements OnInit {
       if(this.num == 2){
         this.text = "Entrenador Equipo A"
         this.firma = this._game_.partido.firma_entrenador_a;
-        this.resultado_firma = this._game_.partido.firma_inicio_capitan_a;
+        this.resultado_firma = this._game_.partido.firma_entrenador_a;
       }
       if(this.num == 3){
         this.text = "Capitan Equipo B"
@@ -40,7 +40,37 @@ export class SignaturePage implements OnInit {
       if(this.num == 4){
         this.text = "Entrenador Equipo B"
         this.firma = this._game_.partido.firma_entrenador_b;
-        this.resultado_firma = this._game_.partido.firma_inicio_capitan_a;
+        this.resultado_firma = this._game_.partido.firma_entrenador_b;
+      }
+      if(this.num == 5){
+        this.text = "Capitan Equipo A"
+        this.firma = this._game_.partido.firma_fin_capitan_a;
+        this.resultado_firma = this._game_.partido.firma_fin_capitan_a;
+      }
+      if(this.num == 6){
+        this.text = "Capitan Equipo B"
+        this.firma = this._game_.partido.firma_fin_capitan_b;
+        this.resultado_firma = this._game_.partido.firma_fin_capitan_b;
+      }
+      if(this.num == 7){
+        this.text = "Planillero"
+        this.firma = this._game_.partido.firma_planillero;
+        this.resultado_firma = this._game_.partido.firma_planillero;
+      }
+      if(this.num == 8){
+        this.text = "Asistente Planillero"
+        this.firma = this._game_.partido.firma_asistente_planillero;
+        this.resultado_firma = this._game_.partido.firma_asistente_planillero;
+      }
+      if(this.num == 9){
+        this.text = "Segundo Arbitro"
+        this.firma = this._game_.partido.firma_segundo_arbitro;
+        this.resultado_firma = this._game_.partido.firma_segundo_arbitro;
+      }
+      if(this.num == 10){
+        this.text = "Primer Arbitro"
+        this.firma = this._game_.partido.firma_primer_arbitro;
+        this.resultado_firma = this._game_.partido.firma_primer_arbitro;
       }
     });
   }
@@ -244,6 +274,31 @@ export class SignaturePage implements OnInit {
     if(this.num == 4){
       this._game_.partido.firma_entrenador_b = this.resultado_firma;
       this._game_.new_set(1);
+    }
+
+    if(this.num == 5){
+      this._game_.partido.firma_fin_capitan_a = this.resultado_firma ;
+      this._game_.new_firma(6)
+    }
+    if(this.num == 6){
+      this._game_.partido.firma_fin_capitan_b = this.resultado_firma;
+      this._game_.new_firma(7)
+    }
+    if(this.num == 7){
+      this._game_.partido.firma_planillero = this.resultado_firma;
+      this._game_.new_firma(8)
+    }
+    if(this.num == 8){
+      this._game_.partido.firma_asistente_planillero = this.resultado_firma;
+      this._game_.new_firma(9)
+    }
+    if(this.num == 9){
+      this._game_.partido.firma_segundo_arbitro = this.resultado_firma;
+      this._game_.new_firma(10)
+    }
+    if(this.num == 10){
+      this._game_.partido.firma_primer_arbitro = this.resultado_firma;
+      this._game_.terminoPartido()
     }
   }
 
