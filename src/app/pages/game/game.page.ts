@@ -118,8 +118,28 @@ export class GamePage implements OnInit {
     return this.logs.filter((log: any) => log.tipo === 1 && log.equipo === equipo).length;
   }
 
-  siguiente() {
-    console.log(this._game_.partido)
+  async siguiente() {
+    const alert = await this.alertController.create({
+    header: 'Confirmar',
+    message: `¿Está seguro que desea terminar el Set ${this.set}?`,
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel',
+        handler: () => {
+          console.log('Cancelado');
+        }
+      },
+      {
+        text: 'Terminar',
+        handler: () => {
+          console.log(this._game_.partido)
+        }
+      }
+    ]
+  });
+
+  await alert.present();
   }
 
   contarRotaciones(equipo: "A" | "B"): number {
