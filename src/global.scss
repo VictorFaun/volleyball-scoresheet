@@ -326,3 +326,44 @@ ion-alert {
   --ion-color-shade: var(--color-danger-shade) !important;
   --ion-color-tint: var(--color-danger-tint) !important;
 }
+
+.segment-custom {
+  --background: transparent;
+  height: 44px;
+  ion-segment-button {
+    --background: transparent;
+    --color: rgba(var(--color-4-rgb), 0.4); /* Texto gris */
+    --color-checked: var(--color-3); /* Texto blanco */
+    --background-checked: var(--color-1); /* Fondo azul */
+
+    min-height: 44px;    
+    font-size: large;
+    /* Bordes redondeados opcionales */
+    border-radius: 8px;
+    margin: 0px;
+  }
+
+  /* Quitar sombra o bordes si aparecen */
+  ion-segment-button::part(native) {
+    box-shadow: none !important;
+  }
+  --indicator-color: transparent; /* Evita que se dibuje la línea por defecto */
+
+  ion-segment-button::part(indicator-background) {
+    display: none !important; /* Oculta completamente el fondo indicador */
+  }
+
+  ion-segment-button::part(indicator) {
+    display: none !important; /* Oculta también la línea indicador */
+  }
+}
+
+/* Datetime */
+.input-segment {
+  border: 1px solid rgba(var(--color-4-rgb), .2);
+  border-radius: 10px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  color: rgba(var(--color-4-rgb), 0.5);
+}

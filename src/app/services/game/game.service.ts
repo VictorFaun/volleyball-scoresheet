@@ -49,200 +49,7 @@ export class GameService {
   //5:
 
   partido: any
-  partidos: any = [
-    {
-      "id": null,
-      "numero_partido": 1,
-      "competicion": "Hexagonal Recreativo UBB",
-      "ciudad": "Chillán",
-      "pais": "Chile",
-      "gimnasio": "Liceo San Nicolas",
-      "division": "Varones",
-      "categoria": "TC - Menor",
-      "fecha": "05/07/2025",
-      "hora": "09:00",
-      "primer_arbitro": "Gustavo Rantul",
-      "segundo_arbitro": null,
-      "planillero": null,
-      "asistente_planillero": null,
-      "primer_banderin": null,
-      "segundo_banderin": null,
-      "tercer_banderin": null,
-      "cuarto_banderin": null,
-      "set_1": {
-        "equipo_saque": "A",
-        "alineacion_a": [
-          6,
-          5,
-          4,
-          2,
-          3,
-          1
-        ],
-        "alineacion_b": [
-          1,
-          5,
-          6,
-          3,
-          2,
-          4
-        ],
-        "hora_inicio": null,
-        "hora_fin": null,
-        "logs": [],
-        "victoria": null
-      },
-      "set_2": null,
-      "set_3": null,
-      "set_4": null,
-      "set_5": null,
-      "equipo_a": {
-        "id": null,
-        "nombre": "Trawen",
-        "jugadores": [
-          {
-            "id": null,
-            "numero": 1,
-            "nombre": "Jugador 1",
-            "capitan": true,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 2,
-            "nombre": "Jugador 2",
-            "capitan": null,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 3,
-            "nombre": "Jugador 3",
-            "capitan": null,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 4,
-            "nombre": "Jugador 4",
-            "capitan": null,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 5,
-            "nombre": "Jugador 5",
-            "capitan": null,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 6,
-            "nombre": "Jugador 6",
-            "capitan": null,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 7,
-            "nombre": "Jugador 7",
-            "capitan": null,
-            "libero": true
-          },
-          {
-            "id": null,
-            "numero": 8,
-            "nombre": "Jugador 8",
-            "capitan": null,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 9,
-            "nombre": "Jugador 9",
-            "capitan": null,
-            "libero": null
-          }
-        ],
-        "entrenador": "Paul Ferrada",
-        "primer_asistente": null,
-        "segundo_asistente": null,
-        "medico": null,
-        "fisioterapeuta": null
-      },
-      "equipo_b": {
-        "id": null,
-        "nombre": "Municipal",
-        "jugadores": [
-          {
-            "id": null,
-            "numero": 1,
-            "nombre": "Jugador 1",
-            "capitan": true,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 2,
-            "nombre": "Jugador 2",
-            "capitan": null,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 3,
-            "nombre": "Jugador 3",
-            "capitan": null,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 4,
-            "nombre": "Jugador 4",
-            "capitan": null,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 5,
-            "nombre": "Jugador 5",
-            "capitan": null,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 6,
-            "nombre": "Jugador 6",
-            "capitan": null,
-            "libero": null
-          },
-          {
-            "id": null,
-            "numero": 7,
-            "nombre": "Jugador 7",
-            "capitan": null,
-            "libero": true
-          }
-        ],
-        "entrenador": "Abraham Marianjel",
-        "primer_asistente": null,
-        "segundo_asistente": null,
-        "medico": null,
-        "fisioterapeuta": null
-      },
-      "firma_inicio_capitan_a": null,
-      "firma_inicio_capitan_b": null,
-      "firma_fin_capitan_a": null,
-      "firma_fin_capitan_b": null,
-      "firma_entrenador_a": null,
-      "firma_entrenador_b": null,
-      "firma_planillero": null,
-      "firma_asistente_planillero": null,
-      "firma_primer_arbitro": null,
-      "firma_segundo_arbitro": null,
-      "estado": 9
-    }
-  ]
+  partidos: any = []
   index: any
 
   constructor(private router: Router, private alertController: AlertController) { }
@@ -292,27 +99,37 @@ export class GameService {
             handler: () => {
               if (set == 1) {
                 this.partido.set_1.hora_fin = new Date()
+                if(this.partido.estado<10)
                 this.partido.estado = 10
                 this.new_set(2)
               }
               if (set == 2) {
                 this.partido.set_2.hora_fin = new Date()
+                if(this.partido.estado<13)
                 this.partido.estado = 13
                 this.new_set(3)
               }
               if (set == 3) {
                 this.partido.set_3.hora_fin = new Date()
+                if(this.partido.estado<16)
                 this.partido.estado = 16
-                this.new_set(4)
+                if(this.partido.numero_sets == 3){
+                  this.new_firma(5)
+                }else{
+                  this.new_set(4)
+                }
               }
               if (set == 4) {
                 this.partido.set_4.hora_fin = new Date()
+                if(this.partido.estado<19)
                 this.partido.estado = 19
                 this.new_set(5)
               }
               if (set == 5) {
                 this.partido.set_4.hora_fin = new Date()
+                if(this.partido.estado<22)
                 this.partido.estado = 22
+                this.new_firma(5)
               }
             }
           }
@@ -328,12 +145,17 @@ export class GameService {
         this.new_set(3)
       }
       if (set == 3) {
-        this.new_set(4)
+        if(this.partido.numero_sets == 3){
+          this.new_firma(5)
+        }else{
+          this.new_set(4)
+        }
       }
       if (set == 4) {
         this.new_set(5)
       }
       if (set == 5) {
+        this.new_firma(5)
       }
     }
 
@@ -684,6 +506,7 @@ export class GameService {
       segundo_banderin: null,
       tercer_banderin: null,
       cuarto_banderin: null,
+      numero_sets:3,
       set_1: null,
       set_2: null,
       set_3: null,

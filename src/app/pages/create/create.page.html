@@ -13,12 +13,46 @@
 
     <div class="input-text">
       <label>N° Partido</label>
-      <ion-input fill="outline" placeholder="Numero Partido" type="number" [(ngModel)]="partido.numero_partido"></ion-input>
+      <ion-input fill="outline" placeholder="Numero Partido" type="number"
+        [(ngModel)]="partido.numero_partido"></ion-input>
     </div>
 
     <div class="input-text">
       <label>Competición <!--<span style="color: var(--color-danger-shade);">*</span>--></label>
       <ion-input fill="outline" placeholder="Nombre Competición" [(ngModel)]="partido.competicion"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Nro de Sets <!--<span style="color: var(--color-danger-shade);">*</span>--></label>
+      <div class="input-segment">
+        <ion-segment class="segment-custom" [(ngModel)]="partido.numero_sets">
+          <ion-segment-button [value]="3">
+            <ion-label>3</ion-label>
+          </ion-segment-button>
+          <ion-segment-button [value]="5">
+            <ion-label>5</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+      
+    </div>
+
+    <div class="input-text">
+      <label>Fecha</label>
+      <div id="present-alert" id="ion-datatime-picker-1" class="input-datetime">
+        {{partido.fecha?partido.fecha:'DD/MM/YYYY'}}</div>
+      <app-datetimepicker format="DD/MM/YYYY" outputFormat="DD/MM/YYYY" mode="md" presentation="date"
+        trigger="ion-datatime-picker-1" [cancelText]="'CANCELAR'" [doneText]="'CONFIRMAR'" [display]="false"
+        [(ngModel)]="partido.fecha"></app-datetimepicker>
+    </div>
+
+    <div class="input-text">
+      <label>Hora</label>
+      <div id="present-alert" id="ion-datatime-picker-2" class="input-datetime">{{partido.hora?partido.hora:'HH:MM'}}
+      </div>
+      <app-datetimepicker format="HH:mm" outputFormat="HH:mm" mode="md" presentation="time"
+        trigger="ion-datatime-picker-2" [cancelText]="'CANCELAR'" [doneText]="'CONFIRMAR'" [display]="false"
+        [(ngModel)]="partido.hora"></app-datetimepicker>
     </div>
 
     <div class="input-text">
@@ -47,22 +81,6 @@
     </div>
 
     <div class="input-text">
-      <label>Fecha</label>
-      <div id="present-alert" id="ion-datatime-picker-1" class="input-datetime">{{partido.fecha?partido.fecha:'DD/MM/YYYY'}}</div>
-      <app-datetimepicker format="DD/MM/YYYY" outputFormat="DD/MM/YYYY" mode="md" presentation="date" trigger="ion-datatime-picker-1"
-        [cancelText]="'CANCELAR'"
-        [doneText]="'CONFIRMAR'" [display]="false" [(ngModel)]="partido.fecha"></app-datetimepicker>
-    </div>
-
-    <div class="input-text">
-      <label>Hora</label>
-      <div id="present-alert" id="ion-datatime-picker-2" class="input-datetime">{{partido.hora?partido.hora:'HH:MM'}}</div>
-      <app-datetimepicker format="HH:mm" outputFormat="HH:mm" mode="md" presentation="time" trigger="ion-datatime-picker-2"
-        [cancelText]="'CANCELAR'"
-        [doneText]="'CONFIRMAR'" [display]="false" [(ngModel)]="partido.hora"></app-datetimepicker>
-    </div>
-
-    <div class="input-text">
       <label>Primer Arbitro</label>
       <ion-input fill="outline" placeholder="Nombre Primer Arbitro" [(ngModel)]="partido.primer_arbitro"></ion-input>
     </div>
@@ -79,7 +97,8 @@
 
     <div class="input-text">
       <label>Asistente Planillero</label>
-      <ion-input fill="outline" placeholder="Nombre Asistente Planillero" [(ngModel)]="partido.asistente_planillero"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Asistente Planillero"
+        [(ngModel)]="partido.asistente_planillero"></ion-input>
     </div>
 
     <div class="input-text">
@@ -89,7 +108,8 @@
 
     <div class="input-text">
       <label>Segundo Banderin</label>
-      <ion-input fill="outline" placeholder="Nombre Segundo Banderin" [(ngModel)]="partido.segundo_banderin"></ion-input>
+      <ion-input fill="outline" placeholder="Nombre Segundo Banderin"
+        [(ngModel)]="partido.segundo_banderin"></ion-input>
     </div>
 
     <div class="input-text">
