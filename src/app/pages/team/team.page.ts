@@ -15,9 +15,9 @@ export class TeamPage implements OnInit {
   lado: string = '';
   equipo: any;
 
-  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private modalCtrl: ModalController, private router: Router) { }
+  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private modalCtrl: ModalController) { }
   volver() {
-    this.router.navigate(["home"]);
+    this.navCtrl.navigateBack('/home');
   }
 
   ngOnInit() {

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from 'src/app/services/game/game.service';
 import * as moment from 'moment';
-import { AlertController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-game',
@@ -17,9 +17,9 @@ export class GamePage implements OnInit {
   alineacion_a: any = []
   alineacion_b: any = []
   saque: any
-  constructor(private router: Router, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController) { }
+  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController) { }
   volver() {
-    this.router.navigate(["home"]);
+    this.navCtrl.navigateBack('/home');
   }
 
   ngOnInit() {

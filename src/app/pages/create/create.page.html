@@ -2,9 +2,14 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
       <ion-buttons [collapse]="true" slot="start">
-        <ion-back-button default-href="/home" text=""></ion-back-button>
+        <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
       </ion-buttons>
-    <ion-title>Registrar Partido</ion-title>
+    <ion-title>Nuevo Partido</ion-title>
+    <ion-buttons [collapse]="true" slot="end">
+      <ion-button color="primary" (click)="siguiente()">
+        Siguiente
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -12,9 +17,14 @@
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-back-button default-href="/home" text=""></ion-back-button>
+        <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
       </ion-buttons>
-      <ion-title size="large">Registrar Partido</ion-title>
+      <ion-title size="large">Nuevo Partido</ion-title>
+      <ion-buttons [collapse]="true" slot="end">
+        <ion-button color="primary" (click)="siguiente()">
+          Siguiente
+        </ion-button>
+      </ion-buttons>
     </ion-toolbar>
   </ion-header>
 
@@ -131,13 +141,6 @@
       <ion-input fill="outline" placeholder="Nombre Cuarto Banderin" [(ngModel)]="partido.cuarto_banderin"></ion-input>
     </div>
 
-  </div>
-
-  <div style="display: flex; justify-content: center; padding: 0px 20px 20px 20px;">
-    <ion-button class="btn-1" (click)="siguiente()"
-      style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
-      Siguiente
-    </ion-button>
   </div>
 
 </ion-content>
