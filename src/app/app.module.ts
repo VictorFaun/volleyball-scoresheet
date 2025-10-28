@@ -10,7 +10,9 @@ import { CreateJugadorPageModule } from './modals/create-jugador/create-jugador.
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, CreateJugadorPageModule],
+  imports: [BrowserModule, IonicModule.forRoot({
+    mode: 'ios'
+  }), AppRoutingModule, CreateJugadorPageModule],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],
 })
