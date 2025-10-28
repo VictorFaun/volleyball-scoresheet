@@ -1,15 +1,24 @@
-<div
-  style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;">
 
-  <!-- Título -->
-  <div style="padding: 20px;padding-bottom: 0px;display: flex;">
-    <ion-button (click)="volver()" fill="clear"
-      style="margin: 0;width: 40px;height: 40px;--border-radius:100%;--color: var(--color-4);min-height: 0px;"><ion-icon
-        slot="icon-only" name="arrow-back-outline"></ion-icon></ion-button>
-    <p style="font-size: xx-large; font-weight: bold; margin: 0;"> Registrar Partido</p>
-  </div>
+<ion-header [translucent]="true">
+  <ion-toolbar>
+      <ion-buttons [collapse]="true" slot="start">
+        <ion-back-button default-href="/home" text=""></ion-back-button>
+      </ion-buttons>
+    <ion-title>Registrar Partido</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-  <div style="flex: 1; overflow-y: auto;overflow-x: hidden; margin: 20px 20px 20px;">
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-back-button default-href="/home" text=""></ion-back-button>
+      </ion-buttons>
+      <ion-title size="large">Registrar Partido</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div style="margin: 20px 20px 20px;">
 
     <div class="input-text">
       <label>N° Partido</label>
@@ -18,12 +27,12 @@
     </div>
 
     <div class="input-text">
-      <label>Competición <!--<span style="color: var(--color-danger-shade);">*</span>--></label>
+      <label>Competición</label>
       <ion-input fill="outline" placeholder="Nombre Competición" [(ngModel)]="partido.competicion"></ion-input>
     </div>
 
     <div class="input-text">
-      <label>Nro de Sets <!--<span style="color: var(--color-danger-shade);">*</span>--></label>
+      <label>Nro de Sets</label>
       <div class="input-segment">
         <ion-segment class="segment-custom" [(ngModel)]="partido.numero_sets">
           <ion-segment-button [value]="3">
@@ -40,7 +49,7 @@
     <div class="input-text">
       <label>Fecha</label>
       <div id="present-alert" id="ion-datatime-picker-1" class="input-datetime">
-        {{partido.fecha?partido.fecha:'DD/MM/YYYY'}}</div>
+        <p style="margin: 0px;" [style.opacity]="partido.fecha?'1':'0.5'">{{partido.fecha?partido.fecha:'DD/MM/YYYY'}}</p></div>
       <app-datetimepicker format="DD/MM/YYYY" outputFormat="DD/MM/YYYY" mode="md" presentation="date"
         trigger="ion-datatime-picker-1" [cancelText]="'CANCELAR'" [doneText]="'CONFIRMAR'" [display]="false"
         [(ngModel)]="partido.fecha"></app-datetimepicker>
@@ -48,7 +57,7 @@
 
     <div class="input-text">
       <label>Hora</label>
-      <div id="present-alert" id="ion-datatime-picker-2" class="input-datetime">{{partido.hora?partido.hora:'HH:MM'}}
+      <div id="present-alert" id="ion-datatime-picker-2" class="input-datetime"><p style="margin: 0px;" [style.opacity]="partido.hora?'1':'0.5'">{{partido.hora?partido.hora:'HH:MM'}}</p>
       </div>
       <app-datetimepicker format="HH:mm" outputFormat="HH:mm" mode="md" presentation="time"
         trigger="ion-datatime-picker-2" [cancelText]="'CANCELAR'" [doneText]="'CONFIRMAR'" [display]="false"
@@ -130,4 +139,5 @@
       Siguiente
     </ion-button>
   </div>
-</div>
+
+</ion-content>

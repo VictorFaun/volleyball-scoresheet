@@ -16,7 +16,7 @@
                         </ion-col>
                     </ion-row>
                     <div class="fecha">
-                        <div style="position: absolute;height: 2px;top: -1px;width: 100%;background: white; z-index: 1;"></div>
+                        <div style="position: absolute;height: 2px;top: -1px;width: 100%; z-index: 1;"></div>
                         <ion-datetime [min]="min" [max]="max" color="color" [locale]="idioma"
                             [presentation]="presentation" [preferWheel]="preferWheel" [mode]="mode" #datetime
                             [(ngModel)]="innerValue" (ngModelChange)="change($event)" [disabled]="disabled">

@@ -61,193 +61,62 @@
 /* Aplicar la fuente globalmente */
 * {
   font-family: "Inter", sans-serif;
+  --ion-default-font: "Inter", sans-serif;
 }
 
-/* =======================================
- * 4. Estilos globales del body y componentes de Ionic
- * ======================================= */
-body {
-  background: var(--color-3);
-}
-
-ion-content {
-  --background: var(--color-3);
-  --color: var(--color-4);
-}
-
-ion-item {
-  --background: var(--color-3);
-  --color: var(--color-4);
-}
-
-/*
- * Estilos específicos para IONIC en diferentes plataformas
- */
-.is-mobile ion-app {
-  margin-top: 40px;
-}
-
-/* Input y Select */
-.is-ios .input-text ion-input {
-  border: 1px solid rgba(var(--color-4-rgb), .2);
+.input-text ion-input {
+  border: 1px solid var(--ion-item-border-color, var(--ion-border-color, var(--ion-color-step-250, var(--ion-background-color-step-250, #c8c7cc))));
   border-radius: 10px;
+  margin-top: 5px;
   padding-left: 16px !important;
   padding-right: 16px !important;
 }
 
-.is-android .input-text ion-input {
-  --border-color: rgba(var(--color-4-rgb), .2);
-  --border-radius: 10px;
+.segment-custom {
+  margin-top: 5px;
+  height: 44px;
+  ion-segment-button {
+
+    min-height: 44px;    
+    font-size: large;
+    border-radius: 10px;
+    margin: 0px;
+  }
+
+  ion-segment-button::part(indicator-background) {
+    background: var(--ion-color-primary);
+  }
+  .segment-button-checked::part(native) {
+    color: var(--ion-color-primary-contrast);
+  }
 }
 
-.is-ios .select-text ion-select {
-  --padding-start: 16px;
-  --padding-end: 16px;
-  border: 1px solid rgba(var(--color-4-rgb), .2);
+.input-segment {
   border-radius: 10px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
-.is-android .select-text ion-select {
-  --background: var(--color-3);
-  --border-width: 1px;
-  --border-style: solid;
-  --border-color: rgba(var(--color-4-rgb), .2);
-  --border-radius: 10px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-}
-
-/* Datetime */
 .input-datetime {
-  border: 1px solid rgba(var(--color-4-rgb), .2);
+  margin-top: 5px;
+  border: 1px solid var(--ion-item-border-color, var(--ion-border-color, var(--ion-color-step-250, var(--ion-background-color-step-250, #c8c7cc))));
   border-radius: 10px;
   padding-left: 16px !important;
   padding-right: 16px !important;
   height: 44px;
   display: flex;
   align-items: center;
-  color: rgba(var(--color-4-rgb), 0.5);
+  color: inherit;
 }
 
-/* Select */
-.input-select {
-  border: 1px solid rgba(var(--color-4-rgb), .2);
-  border-radius: 10px;
-  min-height: 44px !important;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: rgba(var(--color-4-rgb), 0.5);
-  p{
-    margin: 0px;
-  }
+.btn-round {
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast);
+  min-width: 25px;
+  min-height: 25px;
 }
 
-
-/* Checkbox */
-ion-checkbox {
-  --checkbox-background: var(--color-3);
-  --border-width: 1px;
-  --border-color: rgba(var(--color-4-rgb), 0.2);
-  --checkmark-color: rgba(var(--color-4-rgb), 0.5);
-  --checkmark-width: 2;
-  --checkbox-background-checked: var(--color-3);
-  --border-color-checked: rgba(var(--color-4-rgb), 0.2);
-}
-
-/* =======================================
- * 5. Estilos de alertas y modales
- * ======================================= */
-/* Alert (global) */
-ion-alert {
-  --background: var(--color-3) !important;
-
-  /* Estilos específicos para alert-radio-label y alert-radio-icon */
-  [aria-checked=true].sc-ion-alert-md .alert-radio-label.sc-ion-alert-md,
-  .sc-ion-alert-md .alert-radio-label.sc-ion-alert-md,
-  .alert-radio-label.sc-ion-alert-ios {
-    color: rgba(var(--color-4-rgb), 0.5);
-  }
-
-  .alert-radio-inner.sc-ion-alert-md {
-    background-color: var(--color-1);
-  }
-
-  [aria-checked=true].sc-ion-alert-md .alert-radio-icon.sc-ion-alert-md {
-    border-color: var(--color-1);
-  }
-
-  /* Títulos y mensajes de la alerta */
-  .alert-title.sc-ion-alert-ios,
-  .alert-title.sc-ion-alert-md {
-    color: var(--color-4);
-  }
-
-  .alert-message.sc-ion-alert-ios,
-  .alert-input-group.sc-ion-alert-ios,
-  .alert-message.sc-ion-alert-md,
-  .alert-input-group.sc-ion-alert-md {
-    color: rgba(var(--color-4-rgb), 0.5);
-  }
-
-  .alert-message.sc-ion-alert-ios:empty
-  {
-    padding-left: 0;
-    padding-right: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-
-  /* Botones de la alerta */
-  .alert-button.sc-ion-alert-md,
-  .alert-button.sc-ion-alert-ios {
-    color: var(--color-1);
-  }
-
-  /* Botones destructivos */
-  .alert-button-role-destructive.sc-ion-alert-ios,
-  .alert-button-role-destructive.ion-activated.sc-ion-alert-ios,
-  .alert-button-role-destructive.ion-focused.sc-ion-alert-ios,
-  .alert-button-role-destructive.sc-ion-alert-md,
-  .alert-button-role-destructive.ion-activated.sc-ion-alert-md,
-  .alert-button-role-destructive.ion-focused.sc-ion-alert-md {
-    color: var(--color-danger, #c5000f);
-  }
-  
-  /* Otros estilos del grupo de radio/checkbox y wrapper */
-  .alert-radio-group.sc-ion-alert-md,
-  .alert-checkbox-group.sc-ion-alert-md {
-    border-top: 0px;
-    border-bottom: 0px;
-  }
-  
-  .sc-ion-alert-ios-h {
-    --background: red; /* Este estilo parece un error, revísalo si es necesario */
-  }
-}
-
-/* Custom Alert (clase personalizada) */
-.custom-alert .alert-wrapper {
-  --background: var(--color-3);
-  color: var(--color-4);
-}
-
-.custom-alert .alert-title,
-.custom-alert .alert-sub-title,
-.custom-alert .alert-message,
-.custom-alert .alert-radio-label {
-  color: var(--color-4);
-}
-
-.custom-alert .alert-radio-inner {
-  border-color: var(--color-1) !important;
-}
-
-.custom-alert .alert-button {
-  color: var(--color-1);
-}
-
-/* Modal personalizado */
 .modal-centrado {
   --background: transparent;
   --height: 750px;
@@ -271,99 +140,208 @@ ion-alert {
   }
 }
 
-/* =======================================
- * 6. Clases de utilidad y botones
- * ======================================= */
-/* Botones */
-.btn-1 {
-  --background: var(--color-1);
-  --color: var(--color-3);
-}
-.btn-danger {
-  --background: var(--color-danger);
-  --color: var(--color-3);
-}
 
-.btn-round {
-  --background: var(--color-1);
-  --color: var(--color-3);
-  min-width: 25px;
-  min-height: 25px;
-}
+// /* =======================================
+//  * 4. Estilos globales del body y componentes de Ionic
+//  * ======================================= */
+// body {
+//   background: var(--color-3);
+// }
 
-.btn-round-2 {
-  --background: var(--color-1);
-  --color: var(--color-3);
-  min-width: 50px;
-  min-height: 50px;
-  font-size: 25px !important;
-}
+// ion-content {
+//   --background: var(--color-3);
+//   --color: var(--color-4);
+// }
 
-/* Colores de utilidad para Ionic */
-.ion-color-1 {
-  --ion-color-base: var(--color-1) !important;
-  --ion-color-base-rgb: var(--color-1-rgb) !important;
-  --ion-color-contrast: var(--color-3, #fff) !important;
-  --ion-color-contrast-rgb: var(--color-3-rgb, 255, 255, 255) !important;
-  --ion-color-shade: var(--color-1-shade) !important;
-  --ion-color-tint: var(--color-1-tint) !important;
-}
+// ion-item {
+//   --background: var(--color-3);
+//   --color: var(--color-4);
+// }
 
-.ion-color-2 {
-  --ion-color-base: var(--color-2) !important;
-  --ion-color-base-rgb: var(--color-2-rgb) !important;
-  --ion-color-contrast: var(--color-3, #fff) !important;
-  --ion-color-contrast-rgb: var(--color-3-rgb, 255, 255, 255) !important;
-  --ion-color-shade: var(--color-2-shade) !important;
-  --ion-color-tint: var(--color-2-tint) !important;
-}
+// /*
+//  * Estilos específicos para IONIC en diferentes plataformas
+//  */
+// .is-mobile ion-app {
+//   margin-top: 40px;
+// }
 
-.ion-color-danger {
-  --ion-color-base: var(--color-danger) !important;
-  --ion-color-base-rgb: var(--color-danger-rgb) !important;
-  --ion-color-contrast: var(--color-3, #fff) !important;
-  --ion-color-contrast-rgb: var(--color-3-rgb, 255, 255, 255) !important;
-  --ion-color-shade: var(--color-danger-shade) !important;
-  --ion-color-tint: var(--color-danger-tint) !important;
-}
+// /* Input y Select */
+// .is-ios .input-text ion-input {
+//   border: 1px solid rgba(var(--color-4-rgb), .2);
+//   border-radius: 10px;
+//   padding-left: 16px !important;
+//   padding-right: 16px !important;
+// }
 
-.segment-custom {
-  --background: transparent;
-  height: 44px;
-  ion-segment-button {
-    --background: transparent;
-    --color: rgba(var(--color-4-rgb), 0.4); /* Texto gris */
-    --color-checked: var(--color-3); /* Texto blanco */
-    --background-checked: var(--color-1); /* Fondo azul */
+// .is-android .input-text ion-input {
+//   --border-color: rgba(var(--color-4-rgb), .2);
+//   --border-radius: 10px;
+// }
 
-    min-height: 44px;    
-    font-size: large;
-    /* Bordes redondeados opcionales */
-    border-radius: 8px;
-    margin: 0px;
-  }
+// .is-ios .select-text ion-select {
+//   --padding-start: 16px;
+//   --padding-end: 16px;
+//   border: 1px solid rgba(var(--color-4-rgb), .2);
+//   border-radius: 10px;
+// }
 
-  /* Quitar sombra o bordes si aparecen */
-  ion-segment-button::part(native) {
-    box-shadow: none !important;
-  }
-  --indicator-color: transparent; /* Evita que se dibuje la línea por defecto */
+// .is-android .select-text ion-select {
+//   --background: var(--color-3);
+//   --border-width: 1px;
+//   --border-style: solid;
+//   --border-color: rgba(var(--color-4-rgb), .2);
+//   --border-radius: 10px;
+//   --padding-start: 16px;
+//   --padding-end: 16px;
+// }
 
-  ion-segment-button::part(indicator-background) {
-    display: none !important; /* Oculta completamente el fondo indicador */
-  }
+// /* Datetime */
+// .input-datetime {
+//   border: 1px solid rgba(var(--color-4-rgb), .2);
+//   border-radius: 10px;
+//   padding-left: 16px !important;
+//   padding-right: 16px !important;
+//   height: 44px;
+//   display: flex;
+//   align-items: center;
+//   color: rgba(var(--color-4-rgb), 0.5);
+// }
 
-  ion-segment-button::part(indicator) {
-    display: none !important; /* Oculta también la línea indicador */
-  }
-}
+// /* Select */
+// .input-select {
+//   border: 1px solid rgba(var(--color-4-rgb), .2);
+//   border-radius: 10px;
+//   min-height: 44px !important;
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   color: rgba(var(--color-4-rgb), 0.5);
+//   p{
+//     margin: 0px;
+//   }
+// }
 
-/* Datetime */
-.input-segment {
-  border: 1px solid rgba(var(--color-4-rgb), .2);
-  border-radius: 10px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  color: rgba(var(--color-4-rgb), 0.5);
-}
+
+// /* Checkbox */
+// ion-checkbox {
+//   --checkbox-background: var(--color-3);
+//   --border-width: 1px;
+//   --border-color: rgba(var(--color-4-rgb), 0.2);
+//   --checkmark-color: rgba(var(--color-4-rgb), 0.5);
+//   --checkmark-width: 2;
+//   --checkbox-background-checked: var(--color-3);
+//   --border-color-checked: rgba(var(--color-4-rgb), 0.2);
+// }
+
+// /* =======================================
+//  * 5. Estilos de alertas y modales
+//  * ======================================= */
+// /* Alert (global) */
+// ion-alert {
+//   --background: var(--color-3) !important;
+
+//   /* Estilos específicos para alert-radio-label y alert-radio-icon */
+//   [aria-checked=true].sc-ion-alert-md .alert-radio-label.sc-ion-alert-md,
+//   .sc-ion-alert-md .alert-radio-label.sc-ion-alert-md,
+//   .alert-radio-label.sc-ion-alert-ios {
+//     color: rgba(var(--color-4-rgb), 0.5);
+//   }
+
+//   .alert-radio-inner.sc-ion-alert-md {
+//     background-color: var(--color-1);
+//   }
+
+//   [aria-checked=true].sc-ion-alert-md .alert-radio-icon.sc-ion-alert-md {
+//     border-color: var(--color-1);
+//   }
+
+//   /* Títulos y mensajes de la alerta */
+//   .alert-title.sc-ion-alert-ios,
+//   .alert-title.sc-ion-alert-md {
+//     color: var(--color-4);
+//   }
+
+//   .alert-message.sc-ion-alert-ios,
+//   .alert-input-group.sc-ion-alert-ios,
+//   .alert-message.sc-ion-alert-md,
+//   .alert-input-group.sc-ion-alert-md {
+//     color: rgba(var(--color-4-rgb), 0.5);
+//   }
+
+//   .alert-message.sc-ion-alert-ios:empty
+//   {
+//     padding-left: 0;
+//     padding-right: 0;
+//     padding-top: 0;
+//     padding-bottom: 0;
+//   }
+
+//   /* Botones de la alerta */
+//   .alert-button.sc-ion-alert-md,
+//   .alert-button.sc-ion-alert-ios {
+//     color: var(--color-1);
+//   }
+
+//   /* Botones destructivos */
+//   .alert-button-role-destructive.sc-ion-alert-ios,
+//   .alert-button-role-destructive.ion-activated.sc-ion-alert-ios,
+//   .alert-button-role-destructive.ion-focused.sc-ion-alert-ios,
+//   .alert-button-role-destructive.sc-ion-alert-md,
+//   .alert-button-role-destructive.ion-activated.sc-ion-alert-md,
+//   .alert-button-role-destructive.ion-focused.sc-ion-alert-md {
+//     color: var(--color-danger, #c5000f);
+//   }
+  
+//   /* Otros estilos del grupo de radio/checkbox y wrapper */
+//   .alert-radio-group.sc-ion-alert-md,
+//   .alert-checkbox-group.sc-ion-alert-md {
+//     border-top: 0px;
+//     border-bottom: 0px;
+//   }
+  
+//   .sc-ion-alert-ios-h {
+//     --background: red; /* Este estilo parece un error, revísalo si es necesario */
+//   }
+// }
+
+// /* Custom Alert (clase personalizada) */
+// .custom-alert .alert-wrapper {
+//   --background: var(--color-3);
+//   color: var(--color-4);
+// }
+
+// .custom-alert .alert-title,
+// .custom-alert .alert-sub-title,
+// .custom-alert .alert-message,
+// .custom-alert .alert-radio-label {
+//   color: var(--color-4);
+// }
+
+// .custom-alert .alert-radio-inner {
+//   border-color: var(--color-1) !important;
+// }
+
+// .custom-alert .alert-button {
+//   color: var(--color-1);
+// }
+
+// /* =======================================
+//  * 6. Clases de utilidad y botones
+//  * ======================================= */
+// /* Botones */
+// .btn-1 {
+//   --background: var(--color-1);
+//   --color: var(--color-3);
+// }
+// .btn-danger {
+//   --background: var(--color-danger);
+//   --color: var(--color-3);
+// }
+
+// .btn-round-2 {
+//   --background: var(--color-1);
+//   --color: var(--color-3);
+//   min-width: 50px;
+//   min-height: 50px;
+//   font-size: 25px !important;
+// }

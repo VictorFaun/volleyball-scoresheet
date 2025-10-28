@@ -1,13 +1,25 @@
-<div
-  style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;">
 
-  <!-- Título -->
-  <div style="padding: 20px;padding-bottom: 0px;display: flex;">
-    <ion-button (click)="volver()" fill="clear" style="margin: 0;width: 40px;height: 40px;--border-radius:100%;--color: var(--color-4);min-height: 0px;"><ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon></ion-button>
-    <p style="font-size: xx-large; font-weight: bold; margin: 0;"> Equipo {{lado}}</p>
-  </div>
+<ion-header [translucent]="true">
+  <ion-toolbar>
+      <ion-buttons [collapse]="true" slot="start">
+        <ion-back-button default-href="/home" text=""></ion-back-button>
+      </ion-buttons>
+    <ion-title>Equipo {{lado}}</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-  <div style="flex: 1; overflow-y: auto;overflow-x: hidden; margin: 20px 20px 20px;">
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-back-button default-href="/home" text=""></ion-back-button>
+      </ion-buttons>
+      <ion-title size="large">Equipo {{lado}}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  
+
+  <div style="margin: 20px 20px 20px;">
 
     <div class="input-text">
       <label>Nombre <!-- <span style="color: var(--color-danger-shade);">*</span> --></label>
@@ -76,4 +88,5 @@
       Siguiente
     </ion-button>
   </div>
-</div>
+
+</ion-content>
