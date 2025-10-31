@@ -58,7 +58,7 @@ export class SignaturePage implements OnInit {
         this.resultado_firma = this._game_.partido.firma_planillero;
       }
       if(this.num == 8){
-        this.text = "Asistente Planillero"
+        this.text = "A. Planillero"
         this.firma = this._game_.partido.firma_asistente_planillero;
         this.resultado_firma = this._game_.partido.firma_asistente_planillero;
       }
