@@ -29,27 +29,16 @@ export class SqliteService {
 
   private async createTables() {
     const query = `
-      CREATE TABLE IF NOT EXISTS PARTIDO (
-        ID INTEGER PRIMARY KEY AUTOINCREMENT
-      );
-      CREATE TABLE IF NOT EXISTS EQUIPO (
-        ID INTEGER PRIMARY KEY AUTOINCREMENT
-      );
-      CREATE TABLE IF NOT EXISTS JUGADOR (
-        ID INTEGER PRIMARY KEY AUTOINCREMENT
-      );
-      CREATE TABLE IF NOT EXISTS SET (
-        ID INTEGER PRIMARY KEY AUTOINCREMENT
-      );
-      CREATE TABLE IF NOT EXISTS PARTIDO_LOG (
-        ID INTEGER PRIMARY KEY AUTOINCREMENT
+      CREATE TABLE IF NOT EXISTS test_data (
+        ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        NAME TEXT
       );
     `;
     await this.db?.execute(query);
   }
 
   async addItem(name: string): Promise<number | undefined> {
-    const result = await this.db?.run('INSERT INTO test_data (name) VALUES (?);', [name]);
+    const result = await this.db?.run('INSERT INTO test_data (NAME) VALUES (?);', [name]);
     return result?.changes?.lastId;
   }
 
