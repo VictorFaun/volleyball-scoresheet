@@ -82,10 +82,22 @@ export class GameService {
       }
     }
 
+    let equipoGanador = this.validarGanadorSet(set);
+    if (!equipoGanador) {
+      const alert = await this.alertController.create({
+          header: 'Atención',
+          message: 'Ningún equipo ha ganado el set aún. Debe haber un ganador para continuar.',
+          buttons: ['Entendido']
+      });
+      await alert.present();
+      await alert.onDidDismiss();
+      return;
+  }
+
     if (confirmacion) {
       const alert = await this.alertController.create({
         header: 'Confirmar',
-        message: `¿Está seguro que desea terminar el Set ${set}?`,
+        message: `¿Está seguro que desea terminar el Set ${set}? El equipo ${equipoGanador} ha ganado el set.`,
         buttons: [
           {
             text: 'Cancelar',
@@ -96,40 +108,90 @@ export class GameService {
           },
           {
             text: 'Terminar',
-            handler: () => {
+            handler: async () => {
               if (set == 1) {
                 this.partido.set_1.hora_fin = new Date()
+                this.partido.set_1.victoria = equipoGanador;
                 if(this.partido.estado<10)
                 this.partido.estado = 10
                 this.new_set(2)
               }
               if (set == 2) {
                 this.partido.set_2.hora_fin = new Date()
+                this.partido.set_2.victoria = equipoGanador;
                 if(this.partido.estado<13)
                 this.partido.estado = 13
-                this.new_set(3)
+                
+                let ganador = this.obtenerGanadorPartido()
+                if(ganador){
+                  const alert = await this.alertController.create({
+                    header: 'Resultado',
+                    message: `¡El equipo ${ganador} ha ganado el partido!`,
+                    buttons: ['Aceptar']
+                });
+                await alert.present();
+                await alert.onDidDismiss();
+                this.new_firma(5);
+                }else{
+                  this.new_set(3)
+                }
               }
               if (set == 3) {
                 this.partido.set_3.hora_fin = new Date()
+                this.partido.set_3.victoria = equipoGanador;
                 if(this.partido.estado<16)
                 this.partido.estado = 16
-                if(this.partido.numero_sets == 3){
-                  this.new_firma(5)
+                let ganador = this.obtenerGanadorPartido()
+                if(ganador){
+                  const alert = await this.alertController.create({
+                    header: 'Resultado',
+                    message: `¡El equipo ${ganador} ha ganado el partido!`,
+                    buttons: ['Aceptar']
+                });
+                await alert.present();
+                await alert.onDidDismiss();
+                this.new_firma(5);
                 }else{
                   this.new_set(4)
                 }
               }
               if (set == 4) {
                 this.partido.set_4.hora_fin = new Date()
+                this.partido.set_4.victoria = equipoGanador;
                 if(this.partido.estado<19)
                 this.partido.estado = 19
-                this.new_set(5)
+                let ganador = this.obtenerGanadorPartido()
+                if(ganador){
+                  const alert = await this.alertController.create({
+                    header: 'Resultado',
+                    message: `¡El equipo ${ganador} ha ganado el partido!`,
+                    buttons: ['Aceptar']
+                });
+                await alert.present();
+                await alert.onDidDismiss();
+                this.new_firma(5);
+                }else{
+                  this.new_set(5)
+                }
               }
               if (set == 5) {
-                this.partido.set_4.hora_fin = new Date()
+                this.partido.set_5.hora_fin = new Date()
+                this.partido.set_5.victoria = equipoGanador;
                 if(this.partido.estado<22)
                 this.partido.estado = 22
-                this.new_firma(5)
+                let ganador = this.obtenerGanadorPartido()
+                if(ganador){
+                  const alert = await this.alertController.create({
+                    header: 'Resultado',
+                    message: `¡El equipo ${ganador} ha ganado el partido!`,
+                    buttons: ['Aceptar']
+                });
+                await alert.present();
+                await alert.onDidDismiss();
+                this.new_firma(5);
+                }else{
+                  this.new_firma(5)
+                }
               }
             }
           }
@@ -139,28 +201,58 @@ export class GameService {
       await alert.present();
     } else {
       if (set == 1) {
+        this.partido.set_1.victoria = equipoGanador;
         this.new_set(2)
       }
-      if (set == 2) {
-        this.new_set(3)
+      if (set == 2) { 
+        this.partido.set_2.victoria = equipoGanador;
+        if(this.partido.set_3){
+          this.new_set(3)
+        }else{
+          this.new_firma(5)
+        }
       }
       if (set == 3) {
-        if(this.partido.numero_sets == 3){
-          this.new_firma(5)
-        }else{
+        this.partido.set_3.victoria = equipoGanador;
+        if(this.partido.set_4){
           this.new_set(4)
+        }else{
+          this.new_firma(5)
         }
       }
       if (set == 4) {
-        this.new_set(5)
+        this.partido.set_4.victoria = equipoGanador;
+        if(this.partido.set_5){
+          this.new_set(5)
+        }else{
+          this.new_firma(5)
+        }
       }
       if (set == 5) {
+        this.partido.set_5.victoria = equipoGanador;
         this.new_firma(5)
       }
     }
 
 
   }
+
+  validarGanadorSet(set: number) {
+    const currentSet = this.partido[`set_${set}`];
+    if (!currentSet) return;
+
+    const puntosA = this.contarPuntos(currentSet, 'A');
+    const puntosB = this.contarPuntos(currentSet, 'B');
+    
+    const puntosParaGanar = (set == 5 || (set == 3 && this.partido.numero_sets == 3)) ? 15 : 25;
+    
+    if (puntosA >= puntosParaGanar && puntosA - puntosB >= 2) {
+        return 'A';
+    } else if (puntosB >= puntosParaGanar && puntosB - puntosA >= 2) {
+        return 'B';
+    }
+    return false;
+}
 
   deshacer(set: any) {
     if (set == 1) {
@@ -181,28 +273,35 @@ export class GameService {
   }
 
   punto(set: any, equipo: any) {
-    let log: any = this.clean_log()
+    const currentSet = this.partido[`set_${set}`];
+    if (!currentSet) return;
+
+    const log: any = this.clean_log();
     log.tipo = 1;
     log.hora = new Date();
     log.equipo = equipo;
 
-    if (set == 1) {
-      this.partido.set_1.logs.unshift(log)
-    }
-    if (set == 2) {
-      this.partido.set_2.logs.unshift(log)
-    }
-    if (set == 3) {
-      this.partido.set_3.logs.unshift(log)
-    }
-    if (set == 4) {
-      this.partido.set_4.logs.unshift(log)
-    }
-    if (set == 5) {
-      this.partido.set_5.logs.unshift(log)
-    }
-  }
+    const puntosA = this.contarPuntos(currentSet, 'A');
+    const puntosB = this.contarPuntos(currentSet, 'B');
 
+    let puntosParaGanar = 25;
+    if (set == 5 || (set == 3 && this.partido.numero_sets == 3)) {
+        puntosParaGanar = 15;
+    }
+
+    if (puntosA >= puntosParaGanar && puntosA - puntosB >= 2) {
+    } else if (puntosB >= puntosParaGanar && puntosB - puntosA >= 2) {
+    }else{
+      currentSet.logs.unshift(log);
+    }
+}
+
+  contarPuntos(set:any,equipo: 'A' | 'B'): number {
+      if (!set.logs || set.logs.length == 0) {
+          return 0;
+      }
+      return set.logs.filter((log: any) => log.tipo == 1 && log.equipo == equipo).length;
+  }
   async confirm_set(set: any) {
     let confirmacion = false
     if (set == 1) {
@@ -245,6 +344,7 @@ export class GameService {
           {
             text: 'Iniciar',
             handler: () => {
+              
               this.start_set(set)
             }
           }
@@ -456,6 +556,27 @@ export class GameService {
 
     return true;
   }
+
+  obtenerGanadorPartido(): 'A' | 'B' | false {
+    const setsGanados:any = { A: 0, B: 0 };
+    const setsParaGanar = Math.ceil(this.partido.numero_sets / 2);
+    
+    // Count sets won by each team
+    for (let i = 1; i <= this.partido.numero_sets; i++) {
+        const set = this.partido[`set_${i}`];
+        if (set?.victoria) {
+            setsGanados[set.victoria]++;
+            
+            // Check if a team has won enough sets
+            if (setsGanados[set.victoria] >= setsParaGanar) {
+                return set.victoria;
+            }
+        }
+    }
+    
+    // No winner yet
+    return false;
+}
 
   redireccionar(ruta: string, parametros?: any) {
     if (parametros) {

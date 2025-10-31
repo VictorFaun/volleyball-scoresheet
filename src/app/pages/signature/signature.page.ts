@@ -23,32 +23,32 @@ export class SignaturePage implements OnInit {
       this.clearCanvas()
       this.num = params['num'];
       if(this.num == 1){
-        this.text = "Capitan Equipo A"
+        this.text = "Capitan A"
         this.firma = this._game_.partido.firma_inicio_capitan_a;
         this.resultado_firma = this._game_.partido.firma_inicio_capitan_a;
       }
       if(this.num == 2){
-        this.text = "Entrenador Equipo A"
+        this.text = "Entrenador A"
         this.firma = this._game_.partido.firma_entrenador_a;
         this.resultado_firma = this._game_.partido.firma_entrenador_a;
       }
       if(this.num == 3){
-        this.text = "Capitan Equipo B"
+        this.text = "Capitan B"
         this.firma = this._game_.partido.firma_inicio_capitan_b;
         this.resultado_firma = this._game_.partido.firma_inicio_capitan_b;
       }
       if(this.num == 4){
-        this.text = "Entrenador Equipo B"
+        this.text = "Entrenador B"
         this.firma = this._game_.partido.firma_entrenador_b;
         this.resultado_firma = this._game_.partido.firma_entrenador_b;
       }
       if(this.num == 5){
-        this.text = "Capitan Equipo A"
+        this.text = "Capitan A"
         this.firma = this._game_.partido.firma_fin_capitan_a;
         this.resultado_firma = this._game_.partido.firma_fin_capitan_a;
       }
       if(this.num == 6){
-        this.text = "Capitan Equipo B"
+        this.text = "Capitan B"
         this.firma = this._game_.partido.firma_fin_capitan_b;
         this.resultado_firma = this._game_.partido.firma_fin_capitan_b;
       }
@@ -106,7 +106,9 @@ export class SignaturePage implements OnInit {
 
       this.ctx.lineWidth = 1.5; // Ajusta según el nuevo DPI
       this.ctx.lineCap = 'round';
-      this.ctx.strokeStyle = '#000';
+      // Get the CSS variable value for the dark color
+      const darkColor = getComputedStyle(document.documentElement).getPropertyValue('--ion-color-dark').trim();
+      this.ctx.strokeStyle = darkColor || '#000'; // Fallback to black if variable not found
 
       this.addListeners(canvas);
     }, 100);

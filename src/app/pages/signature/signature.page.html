@@ -1,7 +1,73 @@
+
+<ion-header [translucent]="true">
+  <ion-toolbar>
+      <ion-buttons [collapse]="true" slot="start">
+        <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+      </ion-buttons>
+    <ion-title>{{text?text:"Firmas"}}</ion-title>
+    <ion-buttons [collapse]="true" slot="end">
+      <ion-button color="primary" (click)="siguiente()">
+        Siguiente
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" style="--overflow: hidden;">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+      </ion-buttons>
+      <ion-title size="large">{{text?text:"Firmas"}}</ion-title>
+      <ion-buttons [collapse]="true" slot="end">
+        <ion-button color="primary" (click)="siguiente()">
+          Siguiente
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+
+
+  <div style="margin: 20px 20px 20px; height: calc(100% - 40px - 54px);">
+    <div class="canvas-container">
+    
+      <canvas #canvas></canvas>
+  
+      <div class="boton borrar">
+        <ion-button class="btn-round-2" shape="round" (click)="clearCanvas()" style="margin: 0px;    font-size: initial !important;">
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-button>
+      </div>
+  
+      <div class="boton guardar">
+        <ion-button class="btn-round-2" shape="round" (click)="saveCanvas()" style="margin: 0px;    font-size: initial !important;">
+          <ion-icon slot="icon-only" name="save"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+    
+
+    <div style="height: 50%;">
+      <image-cropper
+          [imageURL]="this.firma"
+          format="png"
+          [maintainAspectRatio]="false"
+          (imageCropped)="imageCropped($event)"
+          (imageLoaded)="imageLoaded($event)"
+          (cropperReady)="cropperReady()"
+          (loadImageFailed)="loadImageFailed()"
+      ></image-cropper>
+    </div>
+  </div>
+
+</ion-content>
+
+<!-- 
 <div
   style="background-color: var(--color-3); color: var(--color-4); height: 100%; display: flex; flex-direction: column;">
 
-  <!-- Título -->
   <div style="padding: 20px;padding-bottom: 0px;display: flex;">
     <ion-button (click)="volver()" fill="clear"
       style="margin: 0;width: 40px;height: 40px;--border-radius:100%;--color: var(--color-4);min-height: 0px;"><ion-icon
@@ -47,4 +113,4 @@
       Siguiente
     </ion-button>
   </div>
-</div>
+</div> -->

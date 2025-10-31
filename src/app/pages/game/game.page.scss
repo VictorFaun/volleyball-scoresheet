@@ -1,310 +1,309 @@
-// .input-text {
-//   padding-bottom: 20px;
+.input-text {
+  padding-bottom: 20px;
 
-//   label {
-//     color: rgba(var(--color-4-rgb), .7);
-//   }
+  label {
+    color: rgba(var(--ion-color-dark-rgb), .7);
+  }
 
-//   ion-input {
-//     min-height: 44px;
-//   }
-// }
+  ion-input {
+    min-height: 44px;
+  }
+}
 
-// /* Contenedor principal de la vista */
-// .vista-partido {
-//   background-color: var(--color-3);
-//   color: var(--color-4);
-//   height: 100%;
-//   display: flex;
-//   flex-direction: column;
-// }
+/* Contenedor principal de la vista */
+.vista-partido {
+  color: var(--ion-color-dark);
+  height: calc(100% - 53px);
+  display: flex;
+  flex-direction: column;
+}
 
-// /* Títulos y subtítulos */
-// .titulo-partido {
-//   padding: 20px 20px 0;
-//   display: flex;
-//   align-items: center;
-// }
+/* Títulos y subtítulos */
+.titulo-partido {
+  padding: 20px 20px 0;
+  display: flex;
+  align-items: center;
+}
 
-// .titulo-partido ion-button {
-//   margin: 0;
-//   width: 40px;
-//   height: 40px;
-//   min-height: 0;
-//   --border-radius: 100%;
-//   --color: var(--color-4);
-// }
+.titulo-partido ion-button {
+  margin: 0;
+  width: 40px;
+  height: 40px;
+  min-height: 0;
+  --border-radius: 100%;
+  --color: var(--ion-color-dark);
+}
 
-// .titulo-partido p {
-//   font-size: xx-large;
-//   font-weight: bold;
-//   margin: 0;
-// }
+.titulo-partido p {
+  font-size: xx-large;
+  font-weight: bold;
+  margin: 0;
+}
 
-// .subtitulo-set {
-//   padding: 0 20px 0;
-// }
+.subtitulo-set {
+  padding: 0 20px 0;
+}
 
-// .subtitulo-set p {
-//   font-size: large;
-//   margin: 0;
-//   text-align: center;
-// }
+.subtitulo-set p {
+  font-size: large;
+  margin: 0;
+  text-align: center;
+}
 
-// /* Contenido principal de la cancha y acciones */
-// .contenido-principal {
-//   flex: 1;
-//   overflow-y: auto;
-//   overflow-x: hidden;
-//   margin-top: 20px;
-//   margin-bottom: 20px;
-//   display: flex;
-//   flex-direction: column;
-//   justify-content: space-between;
-// }
+/* Contenido principal de la cancha y acciones */
+.contenido-principal {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
 
-// /* Marcadores de equipo */
-// .marcador-equipos {
-//   display: flex;
-//   margin-bottom: 5px;
-// }
+/* Marcadores de equipo */
+.marcador-equipos {
+  display: flex;
+  margin-bottom: 5px;
+}
 
-// .nombre-equipo {
-//   width: 50%;
-//   text-align: center;
-//   font-size: x-large;
-//   font-weight: 500;
-// }
+.nombre-equipo {
+  width: 50%;
+  text-align: center;
+  font-size: x-large;
+  font-weight: 500;
+}
 
-// /* Área de la cancha con jugadores */
-// .cancha-container {
-//   border: 1px solid rgba(var(--color-4-rgb), 0.2);
-//   border-radius: 10px;
-//   height: 180px;
-//   display: flex;
-//   width: 70%;
-//   margin: auto;
-// }
+/* Área de la cancha con jugadores */
+.cancha-container {
+  border: 1px solid rgba(var(--ion-color-dark-rgb), 0.2);
+  border-radius: 10px;
+  height: 180px;
+  display: flex;
+  width: 70%;
+  margin: auto;
+}
 
-// .cancha-equipo {
-//   width: 50%;
-//   height: 100%;
-//   position: relative;
-// }
+.cancha-equipo {
+  width: 50%;
+  height: 100%;
+  position: relative;
+}
 
-// .cancha-equipo.equipo-a {
-//   border-right: 1px dashed rgba(var(--color-4-rgb), 0.2);
-// }
+.cancha-equipo.equipo-a {
+  border-right: 1px dashed rgba(var(--ion-color-dark-rgb), 0.2);
+}
 
-// .jugador-posicion {
-//   position: absolute;
-//   border-radius: 100%;
-//   border: 1px solid rgba(var(--color-4-rgb), 0.2);
-//   width: 40px;
-//   height: 40px;
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
-//   transition: transform 1s ease, top 1s ease, left 1s ease, right 1s ease;
-// }
+.jugador-posicion {
+  position: absolute;
+  border-radius: 100%;
+  border: 1px solid rgba(var(--ion-color-dark-rgb), 0.2);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 1s ease, top 1s ease, left 1s ease, right 1s ease;
+}
 
-// .jugador-posicion ion-button {
-//   margin: 0;
-//   width: 100%;
-//   height: 100%;
-//   min-height: 0;
-//   --border-radius: 100%;
-//   --color: var(--color-4);
-// }
+.jugador-posicion ion-button {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  --border-radius: 100%;
+  --color: var(--ion-color-dark);
+}
 
-// /* Posiciones de los jugadores del Equipo A */
+/* Posiciones de los jugadores del Equipo A */
 
-// .saque-a {
-//   .pos-a-1 {
-//     left: calc(calc(calc(100% / 8) *  -1.75) - 20px);
-//     top: calc(calc(calc(100% / 6) * 5) - 20px);
-//   }
-// }
+.saque-a {
+  .pos-a-1 {
+    left: calc(calc(calc(100% / 8) *  -1.75) - 20px);
+    top: calc(calc(calc(100% / 6) * 5) - 20px);
+  }
+}
 
-// .pos-a-1 {
-//   left: calc(calc(calc(100% / 8) *  2.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 5) - 20px);
-// }
+.pos-a-1 {
+  left: calc(calc(calc(100% / 8) *  2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 5) - 20px);
+}
 
-// .pos-a-2 {
-//   left: calc(calc(calc(100% / 8) * 5.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 5) - 20px);
-// }
+.pos-a-2 {
+  left: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 5) - 20px);
+}
 
-// .pos-a-3 {
-//   left: calc(calc(calc(100% / 8) * 5.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 3) - 20px);
-// }
+.pos-a-3 {
+  left: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 3) - 20px);
+}
 
-// .pos-a-4 {
-//   left: calc(calc(calc(100% / 8) * 5.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 1) - 20px);
-// }
+.pos-a-4 {
+  left: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 1) - 20px);
+}
 
-// .pos-a-5 {
-//   left: calc(calc(calc(100% / 8) * 2.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 1) - 20px);
-// }
+.pos-a-5 {
+  left: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 1) - 20px);
+}
 
-// .pos-a-6 {
-//   left: calc(calc(calc(100% / 8) * 2.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 3) - 20px);
-// }
+.pos-a-6 {
+  left: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 3) - 20px);
+}
 
-// /* Posiciones de los jugadores del Equipo B */
-// .saque-b {
-//   .pos-b-1 {
-//     right: calc(calc(calc(100% / 8) * -1.75) - 20px);
-//     top: calc(calc(calc(100% / 6) * 1) - 20px);
-//   }
-// }
+/* Posiciones de los jugadores del Equipo B */
+.saque-b {
+  .pos-b-1 {
+    right: calc(calc(calc(100% / 8) * -1.75) - 20px);
+    top: calc(calc(calc(100% / 6) * 1) - 20px);
+  }
+}
 
-// .pos-b-1 {
-//   right: calc(calc(calc(100% / 8) * 2.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 1) - 20px);
-// }
+.pos-b-1 {
+  right: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 1) - 20px);
+}
 
-// .pos-b-2 {
-//   right: calc(calc(calc(100% / 8) * 5.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 1) - 20px);
-// }
+.pos-b-2 {
+  right: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 1) - 20px);
+}
 
-// .pos-b-3 {
-//   right: calc(calc(calc(100% / 8) * 5.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 3) - 20px);
-// }
+.pos-b-3 {
+  right: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 3) - 20px);
+}
 
-// .pos-b-4 {
-//   right: calc(calc(calc(100% / 8) * 5.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 5) - 20px);
-// }
+.pos-b-4 {
+  right: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 5) - 20px);
+}
 
-// .pos-b-5 {
-//   right: calc(calc(calc(100% / 8) * 2.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 5) - 20px);
-// }
+.pos-b-5 {
+  right: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 5) - 20px);
+}
 
-// .pos-b-6 {
-//   right: calc(calc(calc(100% / 8) * 2.5) - 20px);
-//   top: calc(calc(calc(100% / 6) * 3) - 20px);
-// }
+.pos-b-6 {
+  right: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 3) - 20px);
+}
 
-// /* Contadores de puntos */
-// .puntos-container {
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
-// }
+/* Contadores de puntos */
+.puntos-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-// .puntos-equipo {
-//   width: 60px;
-//   text-align: center;
-//   font-size: xx-large;
-// }
+.puntos-equipo {
+  width: 60px;
+  text-align: center;
+  font-size: xx-large;
+}
 
-// .separador-puntos {
-//   width: 30px;
-//   text-align: center;
-// }
+.separador-puntos {
+  width: 30px;
+  text-align: center;
+}
 
-// /* Botones de acción */
-// .acciones-container {
-//   display: flex;
-// }
+/* Botones de acción */
+.acciones-container {
+  display: flex;
+}
 
-// .accion-equipo {
-//   width: 50%;
-//   text-align: center;
-// }
+.accion-equipo {
+  width: 50%;
+  text-align: center;
+}
 
-// .accion-equipo-a {
-//   margin-right: 5px;
-// }
+.accion-equipo-a {
+  margin-right: 5px;
+}
 
-// .accion-equipo-b {
-//   margin-left: 5px;
-// }
+.accion-equipo-b {
+  margin-left: 5px;
+}
 
-// .accion-boton-container {
-//   border: 1px solid rgba(var(--color-4-rgb), 0.2);
-//   border-radius: 10px;
-//   height: 66px;
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
-// }
+.accion-boton-container {
+  border: 1px solid rgba(var(--ion-color-dark-rgb), 0.2);
+  border-radius: 10px;
+  height: 66px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-// .accion-boton-container ion-button {
-//   margin: 0;
-//   width: 100%;
-//   height: 100%;
-//   --border-radius: 10px;
-//   --color: var(--color-1);
-// }
+.accion-boton-container ion-button {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  --border-radius: 10px;
+  --color: var(--ion-color-primary);
+}
 
-// .boton-deshacer {
-//   border: 1px solid rgba(var(--color-4-rgb), 0.2);
-//   border-radius: 10px;
-//   text-align: center;
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
-//   height: 66px;
-//   margin-top: 10px;
-// }
+.boton-deshacer {
+  border: 1px solid rgba(var(--ion-color-dark-rgb), 0.2);
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 66px;
+  margin-top: 10px;
+}
 
-// .boton-deshacer ion-button {
-//   margin: 0;
-//   width: 100%;
-//   height: 100%;
-//   --border-radius: 10px;
-//   --color: var(--color-1);
-// }
+.boton-deshacer ion-button {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  --border-radius: 10px;
+  --color: var(--ion-color-primary);
+}
 
-// .boton-deshacer ion-icon {
-//   font-size: x-large;
-//   transform: rotate(90deg);
-//   margin-right: 5px;
-// }
+.boton-deshacer ion-icon {
+  font-size: x-large;
+  transform: rotate(90deg);
+  margin-right: 5px;
+}
 
-// /* Historial de acciones */
-// .historial-container {
-//   margin-top: 10px;
-//   margin-right: 20px;
-//   margin-left: 20px;
-// }
+/* Historial de acciones */
+.historial-container {
+  margin-top: 10px;
+  margin-right: 20px;
+  margin-left: 20px;
+}
 
-// .historial-titulo {
-//   font-size: large;
-//   margin: 0;
-//   font-weight: 500;
-// }
+.historial-titulo {
+  font-size: large;
+  margin: 0;
+  font-weight: 500;
+}
 
-// .historial-lista {
-//   padding: 5px 0 0 5px;
-//   height: 115px;
-//   overflow: auto;
-// }
+.historial-lista {
+  padding: 5px 0 0 5px;
+  height: 115px;
+  overflow: auto;
+}
 
-// .historial-lista p {
-//   margin: 0;
-// }
+.historial-lista p {
+  margin: 0;
+}
 
-// /* Contenedor del botón de terminar */
-// .pie-pagina {
-//   display: flex;
-//   justify-content: center;
-//   padding: 0 20px 20px 20px;
-// }
+/* Contenedor del botón de terminar */
+.pie-pagina {
+  display: flex;
+  justify-content: center;
+  padding: 0 20px 20px 20px;
+}
 
-// .pie-pagina ion-button {
-//   width: 100%;
-//   --padding-top: 16px;
-//   --padding-bottom: 16px;
-//   --border-radius: 10px;
-// }
+.pie-pagina ion-button {
+  width: 100%;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+  --border-radius: 10px;
+}
