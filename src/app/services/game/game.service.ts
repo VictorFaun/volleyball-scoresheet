@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+import { LocalstorageService } from '../bd/localstorage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -222,7 +223,9 @@ export class GameService {
   ]
   index: any
 
-  constructor(private router: Router, private alertController: AlertController) { }
+  constructor(private router: Router, private alertController: AlertController, private localStorageService: LocalstorageService) {
+    this.partidos = this.localStorageService.getData();
+  }
 
   async closeSet(set: any) {
     let confirmacion = false
