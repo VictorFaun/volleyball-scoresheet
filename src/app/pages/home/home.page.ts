@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DoCheck, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { GameService } from 'src/app/services/game/game.service';
+import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
+import { Clipboard } from '@capacitor/clipboard';
 
 @Component({
   selector: 'app-home',
@@ -8,12 +10,17 @@ import { GameService } from 'src/app/services/game/game.service';
   styleUrls: ['home.page.scss'],
   standalone: false,
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, DoCheck {
 
   partidos: any = []
 
-  constructor(private _game_: GameService,private alertController: AlertController) { }
+  constructor(private _game_: GameService,private alertController: AlertController, private _localStorage_: LocalstorageService) { }
   ngOnInit(): void {
+  }
+  
+  
+  ngDoCheck() {
+    this._localStorage_.saveData(this._game_.partidos);
   }
 
   new_game(){
@@ -266,6 +273,34 @@ export class HomePage implements OnInit {
     }
     if(estado == 29){
 
+    }
+  }
+  async exportarPartido(index: number) {
+    try {
+      const partido = this._game_.partidos[index];
+      const partidoJson = JSON.stringify(partido, null, 2);
+      
+      // Use Capacitor Clipboard API
+      await Clipboard.write({
+        string: partidoJson
+      });
+      
+      const alert = await this.alertController.create({
+        header: 'Éxito',
+        message: 'El partido se ha copiado al portapapeles',
+        buttons: ['Aceptar']
+      });
+      
+      await alert.present();
+    } catch (error) {
+      console.error('Error al copiar al portapapeles:', error);
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'No se pudo copiar el partido al portapapeles',
+        buttons: ['Aceptar']
+      });
+      
+      await alert.present();
     }
   }
 }

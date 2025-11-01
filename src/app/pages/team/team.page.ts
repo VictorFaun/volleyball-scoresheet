@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DoCheck, OnInit } from '@angular/core';
 import { ModalController, NavController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from 'src/app/services/game/game.service';
 import { CreateJugadorPage } from 'src/app/modals/create-jugador/create-jugador.page';
+import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 
 @Component({
   selector: 'app-team',
@@ -10,16 +11,20 @@ import { CreateJugadorPage } from 'src/app/modals/create-jugador/create-jugador.
   styleUrls: ['./team.page.scss'],
   standalone: false,
 })
-export class TeamPage implements OnInit {
+export class TeamPage implements OnInit, DoCheck {
 
   lado: string = '';
   equipo: any;
 
-  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private modalCtrl: ModalController) { }
+  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private modalCtrl: ModalController, private _localStorage_: LocalstorageService) { }
   volver() {
     this.navCtrl.navigateBack('/home');
   }
 
+  
+  ngDoCheck() {
+    this._localStorage_.saveData(this._game_.partidos);
+  }
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.lado = params['lado'];

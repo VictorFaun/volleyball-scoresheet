@@ -27,10 +27,10 @@ export class LocalstorageService {
   getData(): any {
     try {
       const jsonData = localStorage.getItem(this.STORAGE_KEY);
-      return jsonData ? JSON.parse(jsonData) : null;
+      return jsonData ? JSON.parse(jsonData) : [];
     } catch (error) {
       console.error('Error retrieving data from localStorage:', error);
-      return null;
+      return [];
     }
   }
 

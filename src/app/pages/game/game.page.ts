@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DoCheck, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from 'src/app/services/game/game.service';
 import * as moment from 'moment';
 import { AlertController, NavController } from '@ionic/angular';
+import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 
 @Component({
   selector: 'app-game',
@@ -10,16 +11,21 @@ import { AlertController, NavController } from '@ionic/angular';
   styleUrls: ['./game.page.scss'],
   standalone: false,
 })
-export class GamePage implements OnInit {
+export class GamePage implements OnInit, DoCheck {
 
   set: any
   logs: any = []
   alineacion_a: any = []
   alineacion_b: any = []
   saque: any
-  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController) { }
+  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController, private _localStorage_: LocalstorageService) { }
   volver() {
     this.navCtrl.navigateBack('/home');
+  }
+  
+  
+  ngDoCheck() {
+    this._localStorage_.saveData(this._game_.partidos);
   }
 
   ngOnInit() {

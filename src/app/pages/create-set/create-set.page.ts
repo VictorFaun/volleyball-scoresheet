@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DoCheck, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular';
 import { GameService } from 'src/app/services/game/game.service';
+import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 
 @Component({
   selector: 'app-create-set',
@@ -9,13 +10,18 @@ import { GameService } from 'src/app/services/game/game.service';
   styleUrls: ['./create-set.page.scss'],
   standalone: false,
 })
-export class CreateSetPage implements OnInit {
+export class CreateSetPage implements OnInit, DoCheck {
 
   num: any;
 
   set: any;
 
-  constructor(private router: Router, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController) { }
+  constructor(private router: Router, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController, private _localStorage_: LocalstorageService) { }
+  
+  
+  ngDoCheck() {
+    this._localStorage_.saveData(this._game_.partidos);
+  }
 
   volver() {
     this.router.navigate(["home"]);

@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DoCheck, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
+import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 import { GameService } from 'src/app/services/game/game.service';
 
 @Component({
@@ -8,11 +9,11 @@ import { GameService } from 'src/app/services/game/game.service';
   styleUrls: ['./create.page.scss'],
   standalone: false,
 })
-export class CreatePage implements OnInit {
+export class CreatePage implements OnInit, DoCheck {
 
   partido:any;
 
-  constructor(private navCtrl: NavController,private _game_: GameService) { }
+  constructor(private navCtrl: NavController,private _game_: GameService, private _localStorage_: LocalstorageService) { }
   volver() {
     this.navCtrl.navigateBack('/home');
   }
@@ -23,6 +24,10 @@ export class CreatePage implements OnInit {
 
   siguiente(){
     this._game_.new_equipo("A")
+  }
+  
+  ngDoCheck() {
+    this._localStorage_.saveData(this._game_.partidos);
   }
 
 }

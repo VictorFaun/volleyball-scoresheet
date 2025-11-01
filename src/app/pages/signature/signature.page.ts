@@ -1,8 +1,9 @@
-import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
+import { Component, DoCheck, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
 import { GameService } from 'src/app/services/game/game.service';
+import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 
 @Component({
   selector: 'app-signature',
@@ -10,13 +11,17 @@ import { GameService } from 'src/app/services/game/game.service';
   styleUrls: ['./signature.page.scss'],
   standalone: false,
 })
-export class SignaturePage implements OnInit {
+export class SignaturePage implements OnInit, DoCheck {
 
   num:any;
   text:any
 
-  constructor(private router: Router, private navCtrl: NavController,private route: ActivatedRoute,private _game_: GameService) { }
+  constructor(private router: Router, private navCtrl: NavController,private route: ActivatedRoute,private _game_: GameService, private _localStorage_: LocalstorageService) { }
 
+  
+  ngDoCheck() {
+    this._localStorage_.saveData(this._game_.partidos);
+  }
   ngOnInit() {
     
     this.route.queryParams.subscribe(params => {
