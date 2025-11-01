@@ -27,6 +27,7 @@ export class GamePage implements OnInit {
       this.set = params['set'];
       this.updateLogs()
     });
+    console.log(this._game_.partido)
   }
 
   updateLogs() {
@@ -81,6 +82,24 @@ export class GamePage implements OnInit {
     if (tipo == 3) {
       return "Deshacer"
     }
+    if (tipo == 4) {
+      return "Tiempo"
+    }
+    if (tipo == 5) {
+      return "Demora"
+    }
+    if (tipo == 6) {
+      return "Tarjeta Amarilla"
+    }
+    if (tipo == 7) {
+      return "Tarjeta Roja"
+    }
+    if (tipo == 8) {
+      return "Solicitud improcedente"
+    }
+    if (tipo == 9) {
+      return "Expulsión"
+    }
     return tipo
   }
 
@@ -115,7 +134,7 @@ export class GamePage implements OnInit {
       return 0;
     }
 
-    return this.logs.filter((log: any) => log.tipo === 1 && log.equipo === equipo).length;
+    return this.logs.filter((log: any) => (log.tipo === 1 && log.equipo === equipo) || (log.tipo === 7 && log.equipo !== equipo)).length;
   }
 
   async siguiente() {
@@ -234,6 +253,7 @@ export class GamePage implements OnInit {
               nuevoLog.hora = new Date();
 
               this.logs.unshift(nuevoLog);
+              this.updateLogs();
             }
           }
         ]
@@ -283,6 +303,7 @@ export class GamePage implements OnInit {
             nuevoLog.hora = new Date();
 
             this.logs.unshift(nuevoLog);
+            this.updateLogs();
           }
         }
       ]
@@ -322,5 +343,115 @@ export class GamePage implements OnInit {
     return numeroJugador;
   }
 
+  async tiempo(equipo: 'A' | 'B') {
 
+    //valida que no pase de 2 tiempos
+    let tiempo = this.logs.filter((log: any) => log.tipo === 4 && log.equipo === equipo).length;
+    if (tiempo >= 2) {
+      const alertaMaxTiempos = await this.alertController.create({
+        header: 'Máximo de tiempos',
+        message: 'Se ha superado el límite de tiempos permitidos.',
+        buttons: ['Aceptar']
+      });
+      await alertaMaxTiempos.present();
+      return;
+    }
+    const nuevoLog: any = this._game_.clean_log();
+    nuevoLog.tipo = 4;
+    nuevoLog.equipo = equipo;
+    nuevoLog.hora = new Date();
+
+    this.logs.unshift(nuevoLog);
+    this.updateLogs();
+  }
+
+  async amonestacion(equipo: 'A' | 'B') {
+    const alert = await this.alertController.create({
+      header: 'Amonestación',
+      message: `Seleccione el tipo de amonestación para el equipo ${equipo}`,
+      buttons: [
+        {
+          text: 'Demora',
+          handler: () => this.registrarAmonestacion(equipo, 5, 'Demora')
+        },
+        {
+          text: 'Tarjeta Amarilla',
+          handler: () => this.seleccionarJugador(equipo, 6, 'Tarjeta Amarilla')
+        },
+        {
+          text: 'Tarjeta Roja',
+          handler: () => this.seleccionarJugador(equipo, 7, 'Tarjeta Roja')
+        },
+        {
+          text: 'Solicitud Improcedente',
+          handler: () => this.registrarAmonestacion(equipo, 8, 'Solicitud Improcedente')
+        },
+        {
+          text: 'Expulsión',
+          handler: () => this.seleccionarJugador(equipo, 9, 'Expulsión')
+        },
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async seleccionarJugador(equipo: 'A' | 'B', tipoAmonestacion: number, nombreAmonestacion: string) {
+    const jugadores = equipo === 'A' ? this.alineacion_a : this.alineacion_b;
+    const equipoData = equipo === 'A' ? this._game_.partido.equipo_a : this._game_.partido.equipo_b;
+    
+    const inputs = jugadores.map((numeroJugador: number) => {
+      const jugador = equipoData.jugadores.find((j: any) => j.numero === numeroJugador);
+      return {
+        name: 'jugador',
+        type: 'radio',
+        label: `${jugador.numero} - ${jugador.nombre}`,
+        value: jugador.numero,
+        checked: false
+      };
+    });
+
+    const alert = await this.alertController.create({
+      header: `Seleccionar Jugador - ${nombreAmonestacion}`,
+      inputs: inputs,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Aceptar',
+          handler: (data) => {
+            if (data) {
+              this.registrarAmonestacion(equipo, tipoAmonestacion, nombreAmonestacion, data);
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async registrarAmonestacion(equipo: 'A' | 'B', tipoAmonestacion: number, nombreAmonestacion: string, jugadorNumero?: number) {
+
+    const nuevoLog: any = this._game_.clean_log();
+    nuevoLog.tipo = tipoAmonestacion;
+    nuevoLog.equipo = equipo;
+    nuevoLog.jugador = jugadorNumero || null;
+    nuevoLog.hora = new Date();
+
+    this.logs.unshift(nuevoLog);
+    this.updateLogs();
+
+    // Si es expulsión, aquí podrías agregar lógica adicional para manejar la sustitución
+    if (tipoAmonestacion === 9) {
+      // Lógica para manejar expulsión y sustitución
+      console.log(`Se debe realizar sustitución para el jugador ${jugadorNumero} del equipo ${equipo}`);
+    }
+  }
 }

@@ -110,16 +110,29 @@
             </div>
           </div>
         </div>
-  
+
         <div class="acciones-container" style="margin-top: 10px;">
           <div class="accion-equipo accion-equipo-a">
             <div class="accion-boton-container">
-              <ion-button fill="clear">Amonestación</ion-button>
+              <ion-button (click)="tiempo('A')" fill="clear"><ion-icon name="timer-outline" style="margin-right: 5px;"></ion-icon>Tiempo</ion-button>
             </div>
           </div>
           <div class="accion-equipo accion-equipo-b">
             <div class="accion-boton-container">
-              <ion-button fill="clear">Amonestación</ion-button>
+              <ion-button (click)="tiempo('B')" fill="clear"><ion-icon name="timer-outline" style="margin-right: 5px;"></ion-icon>Tiempo</ion-button>
+            </div>
+          </div>
+        </div>
+  
+        <div class="acciones-container" style="margin-top: 10px;">
+          <div class="accion-equipo accion-equipo-a">
+            <div class="accion-boton-container">
+              <ion-button (click)="amonestacion('A')" fill="clear">Amonestación</ion-button>
+            </div>
+          </div>
+          <div class="accion-equipo accion-equipo-b">
+            <div class="accion-boton-container">
+              <ion-button (click)="amonestacion('B')" fill="clear">Amonestación</ion-button>
             </div>
           </div>
         </div>

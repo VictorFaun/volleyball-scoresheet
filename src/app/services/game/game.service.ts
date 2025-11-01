@@ -45,11 +45,181 @@ export class GameService {
   //1: + punto
   //2: cambio jugador
   //3: desaher cambio
-  //4: Amonestación
-  //5:
+  //4: tiempo
+  //5: amonestación demora
+  //6: amonestación tarjeta amarilla (a un jugador de un equipo)
+  //7: amonestación tarjeta roja (a un jugador de un equipo) + punto equipo contrario
+  //8: amonestación solicitud improcedente (a un equipo) a la segunda se marca como demora
+  //9: amonestación expulsion  (a un jugador de un equipo) (se hace sustitucion con otro jugador)
 
   partido: any
-  partidos: any = []
+  partidos: any = [
+  //   {
+  //     "id": null,
+  //     "numero_partido": 1,
+  //     "competicion": "Test",
+  //     "ciudad": null,
+  //     "pais": null,
+  //     "gimnasio": null,
+  //     "division": null,
+  //     "categoria": null,
+  //     "fecha": null,
+  //     "hora": null,
+  //     "primer_arbitro": null,
+  //     "segundo_arbitro": null,
+  //     "planillero": null,
+  //     "asistente_planillero": null,
+  //     "primer_banderin": null,
+  //     "segundo_banderin": null,
+  //     "tercer_banderin": null,
+  //     "cuarto_banderin": null,
+  //     "numero_sets": 3,
+  //     "set_1": {
+  //         "equipo_saque": "A",
+  //         "alineacion_a": [
+  //             83,
+  //             22,
+  //             21,
+  //             23,
+  //             4,
+  //             5
+  //         ],
+  //         "alineacion_b": [
+  //             10,
+  //             2,
+  //             3,
+  //             1,
+  //             4,
+  //             11
+  //         ],
+  //         "hora_inicio": "2025-11-01T03:42:42.569Z",
+  //         "hora_fin": null,
+  //         "logs": [],
+  //         "victoria": null
+  //     },
+  //     "set_2": null,
+  //     "set_3": null,
+  //     "set_4": null,
+  //     "set_5": null,
+  //     "equipo_a": {
+  //         "id": null,
+  //         "nombre": "R UBB",
+  //         "jugadores": [
+  //             {
+  //                 "id": null,
+  //                 "numero": 83,
+  //                 "nombre": "Ariel",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             },
+  //             {
+  //                 "id": null,
+  //                 "numero": 22,
+  //                 "nombre": "Faundez",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             },
+  //             {
+  //                 "id": null,
+  //                 "numero": 21,
+  //                 "nombre": "Marshall",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             },
+  //             {
+  //                 "id": null,
+  //                 "numero": 23,
+  //                 "nombre": "Olate",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             },
+  //             {
+  //                 "id": null,
+  //                 "numero": 4,
+  //                 "nombre": "Chino",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             },
+  //             {
+  //                 "id": null,
+  //                 "numero": 5,
+  //                 "nombre": "Dany",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             }
+  //         ],
+  //         "entrenador": null,
+  //         "primer_asistente": null,
+  //         "segundo_asistente": null,
+  //         "medico": null,
+  //         "fisioterapeuta": null
+  //     },
+  //     "equipo_b": {
+  //         "id": null,
+  //         "nombre": "Insama",
+  //         "jugadores": [
+  //             {
+  //                 "id": null,
+  //                 "numero": 10,
+  //                 "nombre": "Akiles",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             },
+  //             {
+  //                 "id": null,
+  //                 "numero": 2,
+  //                 "nombre": "Paul",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             },
+  //             {
+  //                 "id": null,
+  //                 "numero": 3,
+  //                 "nombre": "Bicho",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             },
+  //             {
+  //                 "id": null,
+  //                 "numero": 1,
+  //                 "nombre": "Pinguino",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             },
+  //             {
+  //                 "id": null,
+  //                 "numero": 4,
+  //                 "nombre": "G. Rantul",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             },
+  //             {
+  //                 "id": null,
+  //                 "numero": 11,
+  //                 "nombre": "D. Rantul",
+  //                 "capitan": null,
+  //                 "libero": null
+  //             }
+  //         ],
+  //         "entrenador": null,
+  //         "primer_asistente": null,
+  //         "segundo_asistente": null,
+  //         "medico": null,
+  //         "fisioterapeuta": null
+  //     },
+  //     "firma_inicio_capitan_a": null,
+  //     "firma_inicio_capitan_b": null,
+  //     "firma_fin_capitan_a": null,
+  //     "firma_fin_capitan_b": null,
+  //     "firma_entrenador_a": null,
+  //     "firma_entrenador_b": null,
+  //     "firma_planillero": null,
+  //     "firma_asistente_planillero": null,
+  //     "firma_primer_arbitro": null,
+  //     "firma_segundo_arbitro": null,
+  //     "estado": 9
+  // }
+  ]
   index: any
 
   constructor(private router: Router, private alertController: AlertController) { }
@@ -300,7 +470,7 @@ export class GameService {
       if (!set.logs || set.logs.length == 0) {
           return 0;
       }
-      return set.logs.filter((log: any) => log.tipo == 1 && log.equipo == equipo).length;
+      return set.logs.filter((log: any) => (log.tipo == 1 && log.equipo == equipo) || (log.tipo == 7 && log.equipo !== equipo)).length;
   }
   async confirm_set(set: any) {
     let confirmacion = false

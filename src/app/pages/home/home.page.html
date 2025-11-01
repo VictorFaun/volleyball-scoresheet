@@ -28,22 +28,23 @@
         shape="round"
         style="--border-radius: 10px; border-radius: 10px; border: 1px solid var(--ion-item-border-color, var(--ion-border-color, var(--ion-color-step-250, var(--ion-background-color-step-250, #c8c7cc)))); width: 100%;margin:0px;"
       >
-        <div style="width: 100%; padding: 20px;">
+        <div style="width: 100%; padding: 20px; padding-top: 2px;">
+          <div style="display: flex; justify-content: end; align-items: center;margin-top: 5px;">
+            <p style="margin: 0; color: rgba(var(--color-4-rgb), 0.5);">{{partido.estado}}</p>
+          </div>
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <p style="margin: 0; font-weight: 500; font-size: x-large;text-align: left;">{{partido.torneo?partido.torneo:'Partido N° '+partido.numero_partido}}</p>
-            <p style="margin: 0; color: rgba(var(--color-4-rgb), 0.5);" *ngIf="!partido.torneo">{{partido.estado}}</p>
           </div>
           <div *ngIf="partido.torneo" style="display: flex; justify-content: space-between; align-items: center;margin-top: 5px;">
             <p style="margin: 0; font-weight: 400; font-size: small;text-align: left;">{{'Partido N° '+partido.numero_partido}}</p>
-            <p style="margin: 0; color: rgba(var(--color-4-rgb), 0.5);">{{partido.estado}}</p>
           </div>
           <div style="display: flex; justify-content: space-between; margin-top: 10px;padding-left: 10px;padding-right: 10px;">
             <p style="margin: 0;">{{partido.equipoA}}</p>
-            <p style="margin: 0;">{{partido.setsA?partido.setsA + " sets":"-"}}</p>
+            <p style="margin: 0;">{{partido.setsA === 0 && partido.setsB === 0 ? '-' : partido.setsA + ' sets'}}</p>
           </div>
           <div style="display: flex; justify-content: space-between; margin-top: 10px;padding-left: 10px;padding-right: 10px;">
             <p style="margin: 0;">{{partido.equipoB}}</p>
-            <p style="margin: 0;">{{partido.setsB? partido.setsB + " sets": "-"}}</p>
+            <p style="margin: 0;">{{partido.setsA === 0 && partido.setsB === 0 ? '-' : partido.setsB + ' sets'}}</p>
           </div>
         </div>
       </ion-button>
