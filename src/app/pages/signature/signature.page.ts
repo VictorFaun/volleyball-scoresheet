@@ -1,9 +1,11 @@
 import { Component, DoCheck, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { AlertController, NavController, Platform } from '@ionic/angular';
 import { ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
 import { GameService } from 'src/app/services/game/game.service';
 import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
+import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-signature',
@@ -15,8 +17,15 @@ export class SignaturePage implements OnInit, DoCheck {
 
   num:any;
   text:any
+  firmaImage:any;
 
-  constructor(private router: Router, private navCtrl: NavController,private route: ActivatedRoute,private _game_: GameService, private _localStorage_: LocalstorageService) { }
+  constructor(
+    private router: Router, 
+    private route: ActivatedRoute,
+    private _game_: GameService, 
+    private _localStorage_: LocalstorageService,
+    private alertController: AlertController
+  ) { }
 
   
   ngDoCheck() {
@@ -24,57 +33,67 @@ export class SignaturePage implements OnInit, DoCheck {
   }
   ngOnInit() {
     
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe(async params => {
       this.clearCanvas()
       this.num = params['num'];
       if(this.num == 1){
         this.text = "Capitan A"
         this.firma = this._game_.partido.firma_inicio_capitan_a;
+        this.firmaImage = await this.getSignatureImage(this._game_.partido.firma_inicio_capitan_a);
         this.resultado_firma = this._game_.partido.firma_inicio_capitan_a;
       }
       if(this.num == 2){
         this.text = "Entrenador A"
         this.firma = this._game_.partido.firma_entrenador_a;
+        this.firmaImage = await this.getSignatureImage(this._game_.partido.firma_entrenador_a);
         this.resultado_firma = this._game_.partido.firma_entrenador_a;
       }
       if(this.num == 3){
         this.text = "Capitan B"
         this.firma = this._game_.partido.firma_inicio_capitan_b;
+        this.firmaImage = await this.getSignatureImage(this._game_.partido.firma_inicio_capitan_b);
         this.resultado_firma = this._game_.partido.firma_inicio_capitan_b;
       }
       if(this.num == 4){
         this.text = "Entrenador B"
         this.firma = this._game_.partido.firma_entrenador_b;
+        this.firmaImage = await this.getSignatureImage(this._game_.partido.firma_entrenador_b);
         this.resultado_firma = this._game_.partido.firma_entrenador_b;
       }
       if(this.num == 5){
         this.text = "Capitan A"
         this.firma = this._game_.partido.firma_fin_capitan_a;
+        this.firmaImage = await this.getSignatureImage(this._game_.partido.firma_fin_capitan_a);
         this.resultado_firma = this._game_.partido.firma_fin_capitan_a;
       }
       if(this.num == 6){
         this.text = "Capitan B"
         this.firma = this._game_.partido.firma_fin_capitan_b;
+        this.firmaImage = await this.getSignatureImage(this._game_.partido.firma_fin_capitan_b);
         this.resultado_firma = this._game_.partido.firma_fin_capitan_b;
       }
       if(this.num == 7){
         this.text = "Planillero"
         this.firma = this._game_.partido.firma_planillero;
+        this.firmaImage = await this.getSignatureImage(this._game_.partido.firma_planillero);
         this.resultado_firma = this._game_.partido.firma_planillero;
       }
       if(this.num == 8){
         this.text = "A. Planillero"
         this.firma = this._game_.partido.firma_asistente_planillero;
+        this.firmaImage = await this.getSignatureImage(this._game_.partido.firma_asistente_planillero);
         this.resultado_firma = this._game_.partido.firma_asistente_planillero;
       }
       if(this.num == 9){
         this.text = "Segundo Arbitro"
         this.firma = this._game_.partido.firma_segundo_arbitro;
+        this.firmaImage = await this.getSignatureImage(this._game_.partido.firma_segundo_arbitro);
         this.resultado_firma = this._game_.partido.firma_segundo_arbitro;
       }
       if(this.num == 10){
         this.text = "Primer Arbitro"
         this.firma = this._game_.partido.firma_primer_arbitro;
+        this.firmaImage = await this.getSignatureImage(this._game_.partido.firma_primer_arbitro);
         this.resultado_firma = this._game_.partido.firma_primer_arbitro;
       }
     });
@@ -197,30 +216,50 @@ export class SignaturePage implements OnInit, DoCheck {
   }
 
 
-  clearCanvas() {
+  async clearCanvas() {
     if (!this.canvasRef) {
-      return
+      return;
     }
     const canvas = this.canvasRef.nativeElement;
 
-    if (!this.ctx) {
-      return
+    if (this.ctx) {
+      this.ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
-    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    this.firma = null;
-    this.resultado_firma = null
-
+    // Clear the current signature
+    if (this.firma) {
+      this.firma = null;
+      this.firmaImage = null;
+    }
+    this.resultado_firma = null;
   }
 
-  saveCanvas() {
+  async saveCanvas() {
     if (!this.canvasRef) {
-      return
+      return null;
     }
     const canvas = this.canvasRef.nativeElement;
     const dataURL = canvas.toDataURL('image/png');
-
-    this.firma = dataURL;
+    
+    try {
+      const fileName = `signature_${new Date().getTime()}.png`;
+      const base64Data = dataURL.split(',')[1];
+      
+      await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: Directory.Data,
+        encoding: Encoding.UTF8
+      });
+      
+      this.firma = fileName; // Store only the filename
+      this.resultado_firma = fileName;
+      this.firmaImage = await this.getSignatureImage(fileName);
+      return fileName;
+    } catch (e) {
+      console.error('Error saving signature:', e);
+      return null;
+    }
   }
 
   redireccionar(ruta: string, parametros?: any) {
@@ -238,10 +277,23 @@ export class SignaturePage implements OnInit, DoCheck {
   resultado_firma:any;
 
   async imageCropped(event: ImageCroppedEvent) {
-    this.resultado_firma = await this.blobToBase64(event.blob);
+    try {
+      const base64Data = await this.blobToBase64(event.blob);
+      const fileName = `signature_cropped_${new Date().getTime()}.png`;
+      
+      await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data.split(',')[1],
+        directory: Directory.Data,
+        encoding: Encoding.UTF8
+      });
+      
+      this.resultado_firma = fileName; // Store only the filename
+    } catch (e) {
+      console.error('Error saving cropped image:', e);
+    }
   }
   imageLoaded(image: LoadedImage) {
-      // show cropper
   }
   cropperReady() {
       // cropper ready
@@ -264,49 +316,159 @@ export class SignaturePage implements OnInit, DoCheck {
       reader.readAsDataURL(blob); // convierte a base64
     });
   }
+  // Function to get signature image as base64
+  async getSignatureImage(filename: string): Promise<string | undefined> {
+    if (!filename) return undefined;
+    console.log(filename);
+    try {
+      const contents = await Filesystem.readFile({
+        path: filename,
+        directory: Directory.Data,
+        encoding: Encoding.UTF8
+      });
+      return `data:image/png;base64,${contents.data}`;
+    } catch (e) {
+      console.error('Error reading signature file:', e);
+      return undefined;
+    }
+  }
 
-  siguiente(){
-    if(this.num == 1){
+  // Function to delete a signature file
+  async deleteSignatureFile(filename: string) {
+    if (!filename) return;
+    
+    try {
+      await Filesystem.deleteFile({
+        path: filename,
+        directory: Directory.Data
+      });
+    } catch (e) {
+      console.error('Error deleting signature file:', e);
+    }
+  }
+
+  async siguiente(){
+    if(this.resultado_firma == null){
+      await this.saveCanvas();
+    }
+
+    // alert con mensaje para confirmar la firma y muestrala ahi en el alert
+    const signatureBase64 = await this.getSignatureImage(this.resultado_firma);
+
+    if(!signatureBase64){
+      //alert con mensaje de error
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'No se pudo obtener la firma',
+        buttons: ['OK']
+      });
+      await alert.present();
+      return;
+    }
+  
+  // Create alert with image
+  const alert = await this.alertController.create({
+    cssClass: 'no-padding-header no-padding-message',
+    htmlAttributes: {
+      innerHTML: `
+      <h2 class="alert-title sc-ion-alert-ios" style="text-align: center;padding-top: 12px;">Confirmar firma</h2>
+      <div style="text-align: center; padding: 10px;">
+        <div class="alert-message sc-ion-alert-ios">¿Estás seguro de guardar esta firma?</div>
+        ${signatureBase64 ? `<img src="${signatureBase64}" style="max-width: 100% margin: 10px auto; display: block;" />` : ''}
+      </div>
+    `,
+    },
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel',
+        handler: () => {
+          console.log('Firma cancelada');
+        }
+      },
+      {
+        text: 'Confirmar',
+        handler: async () => {
+          // Delete old signature file if it exists
+    if (this.num == 1) {
+      if(this._game_.partido.firma_inicio_capitan_a){
+        await this.deleteSignatureFile(this._game_.partido.firma_inicio_capitan_a);
+      }
       this._game_.partido.firma_inicio_capitan_a = this.resultado_firma;
-      this._game_.new_firma(2)
+      this._game_.new_firma(2);
     }
-    if(this.num == 2){
+    if(this.num == 2) {
+      if (this._game_.partido.firma_entrenador_a) {
+        await this.deleteSignatureFile(this._game_.partido.firma_entrenador_a);
+      }
       this._game_.partido.firma_entrenador_a = this.resultado_firma;
-      this._game_.new_firma(3)
+      this._game_.new_firma(3);
     }
-    if(this.num == 3){
+    if(this.num == 3) {
+      if (this._game_.partido.firma_inicio_capitan_b) {
+        await this.deleteSignatureFile(this._game_.partido.firma_inicio_capitan_b);
+      }
       this._game_.partido.firma_inicio_capitan_b = this.resultado_firma;
-      this._game_.new_firma(4)
+      this._game_.new_firma(4);
     }
-    if(this.num == 4){
+    if(this.num == 4) {
+      if (this._game_.partido.firma_entrenador_b) {
+        await this.deleteSignatureFile(this._game_.partido.firma_entrenador_b);
+      }
       this._game_.partido.firma_entrenador_b = this.resultado_firma;
       this._game_.new_set(1);
     }
 
-    if(this.num == 5){
-      this._game_.partido.firma_fin_capitan_a = this.resultado_firma ;
-      this._game_.new_firma(6)
+    if(this.num == 5) {
+      if (this._game_.partido.firma_fin_capitan_a) {
+        await this.deleteSignatureFile(this._game_.partido.firma_fin_capitan_a);
+      }
+      this._game_.partido.firma_fin_capitan_a = this.resultado_firma;
+      this._game_.new_firma(6);
     }
-    if(this.num == 6){
+    if(this.num == 6) {
+      if (this._game_.partido.firma_fin_capitan_b) {
+        await this.deleteSignatureFile(this._game_.partido.firma_fin_capitan_b);
+      }
       this._game_.partido.firma_fin_capitan_b = this.resultado_firma;
-      this._game_.new_firma(7)
+      this._game_.new_firma(7);
     }
-    if(this.num == 7){
+    if(this.num == 7) {
+      if (this._game_.partido.firma_planillero) {
+        await this.deleteSignatureFile(this._game_.partido.firma_planillero);
+      }
       this._game_.partido.firma_planillero = this.resultado_firma;
-      this._game_.new_firma(8)
+      this._game_.new_firma(8);
     }
-    if(this.num == 8){
+    if(this.num == 8) {
+      if (this._game_.partido.firma_asistente_planillero) {
+        await this.deleteSignatureFile(this._game_.partido.firma_asistente_planillero);
+      }
       this._game_.partido.firma_asistente_planillero = this.resultado_firma;
-      this._game_.new_firma(9)
+      this._game_.new_firma(9);
     }
-    if(this.num == 9){
+    if(this.num == 9) {
+      if (this._game_.partido.firma_segundo_arbitro) {
+        await this.deleteSignatureFile(this._game_.partido.firma_segundo_arbitro);
+      }
       this._game_.partido.firma_segundo_arbitro = this.resultado_firma;
-      this._game_.new_firma(10)
+      this._game_.new_firma(10);
     }
-    if(this.num == 10){
+    if(this.num == 10) {
+      if (this._game_.partido.firma_primer_arbitro) {
+        await this.deleteSignatureFile(this._game_.partido.firma_primer_arbitro);
+      }
       this._game_.partido.firma_primer_arbitro = this.resultado_firma;
-      this._game_.terminoPartido()
+      this._game_.terminoPartido();
     }
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+
+    
   }
 
 }

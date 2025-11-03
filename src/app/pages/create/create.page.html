@@ -30,15 +30,15 @@
 
   <div style="margin: 20px 20px 20px;">
 
+    <div class="input-text" style="position: relative;">
+      <label>Competición <ion-button *ngIf="autocompletar" fill="clear" size="small" style="position: absolute; right: 0px; top: -7px;" (click)="autocompletarDatos()">Autocompletar datos</ion-button></label>
+      <ion-input fill="outline" placeholder="Nombre Competición" [(ngModel)]="partido.competicion" (ionInput)="buscar_torneo()"></ion-input>
+    </div>
+
     <div class="input-text">
       <label>N° Partido</label>
       <ion-input fill="outline" placeholder="Numero Partido" type="number"
         [(ngModel)]="partido.numero_partido"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Competición</label>
-      <ion-input fill="outline" placeholder="Nombre Competición" [(ngModel)]="partido.competicion"></ion-input>
     </div>
 
     <div class="input-text">

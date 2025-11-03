@@ -12,7 +12,7 @@ import { Clipboard } from '@capacitor/clipboard';
 })
 export class HomePage implements OnInit, DoCheck {
 
-  partidos: any = []
+  torneos: any = []
 
   constructor(private _game_: GameService,private alertController: AlertController, private _localStorage_: LocalstorageService) { }
   ngOnInit(): void {
@@ -38,7 +38,7 @@ export class HomePage implements OnInit, DoCheck {
   }
 
   cargaPartidos(){
-    this.partidos = [];
+    this.torneos = [];
     for (let index = 0; index < this._game_.partidos.length; index++) {
       let partido:any = {
         torneo: "",
@@ -48,10 +48,14 @@ export class HomePage implements OnInit, DoCheck {
         setsB: 0,
         estado: null,
         index: index,
-        numero_partido: 0
+        numero_partido: 0,
+        fecha: ""
       }
       if(this._game_.partidos[index].competicion){
         partido.torneo = this._game_.partidos[index].competicion
+      }
+      if(this._game_.partidos[index].fecha){
+        partido.fecha = this._game_.partidos[index].fecha
       }
       if(this._game_.partidos[index].numero_partido){
         partido.numero_partido = this._game_.partidos[index].numero_partido
@@ -109,26 +113,26 @@ export class HomePage implements OnInit, DoCheck {
       if (this._game_.partidos[index].estado) {
         const estado = this._game_.partidos[index].estado;
         const estadosTexto:any = {
-          1: 'Config',
-          2: 'Config',
-          3: 'Config',
+          1: 'Configuración',
+          2: 'Configuración',
+          3: 'Configuración',
           4: 'Firmas',
           5: 'Firmas',
           6: 'Firmas',
           7: 'Firmas',
-          8: 'Config Set 1',
+          8: 'R-5 Set 1',
           9: 'Inicio Set 1',
           10: 'Fin Set 1',
-          11: 'Config Set 2',
+          11: 'R-5 Set 2',
           12: 'Inicio Set 2',
           13: 'Fin Set 2',
-          14: 'Config Set 3',
+          14: 'R-5 Set 3',
           15: 'Inicio Set 3',
           16: 'Fin Set 3',
-          17: 'Config Set 4',
+          17: 'R-5 Set 4',
           18: 'Inicio Set 4',
           19: 'Fin Set 4',
-          20: 'Config Set 5',
+          20: 'R-5 Set 5',
           21: 'Inicio Set 5',
           22: 'Fin Set 5',
           23: 'Firmas',
@@ -140,16 +144,30 @@ export class HomePage implements OnInit, DoCheck {
           29: 'Finalizado',
         };
       
-        partido.estado = estadosTexto[estado] || 'Config';
+        partido.estado = estadosTexto[estado] || 'Configuración';
       }else{
-        partido.estado = 'Config';
+        partido.estado = 'Configuración';
       }
       
-      
-      this.partidos.push(partido)
+      let torneo = this.torneos.find((t:any) => t.torneo == partido.torneo)
+      if(!torneo){
+        this.torneos.push({torneo: partido.torneo, partidos: [partido]})
+      }else{
+        torneo.partidos.push(partido)
+      }
     }
+
+    // Ordenar torneos (primero los sin nombre, luego por fecha)
+    this.torneos.sort((a: any, b: any) => {
+      if (!a.torneo) return -1;
+      if (!b.torneo) return 1;
+      const fechaA = a.partidos[0]?.fecha ? new Date(a.partidos[0].fecha).getTime() : 0;
+      const fechaB = b.partidos[0]?.fecha ? new Date(b.partidos[0].fecha).getTime() : 0;
+      return fechaB - fechaA;
+    });
+
   }
-  async eliminarPartido(index: number) {
+  async eliminarPartido(indexTorneo:number, indexPartido: number, index:number) {
     const alert = await this.alertController.create({
       header: 'Confirmar eliminación',
       message: '¿Estás seguro de que deseas eliminar este partido?',
@@ -165,11 +183,11 @@ export class HomePage implements OnInit, DoCheck {
           text: 'Eliminar',
           role: 'destructive',
           handler: () => {
+
             if (index >= 0 && index < this._game_.partidos.length) {
               this._game_.partidos.splice(index, 1);
-              this.partidos.splice(index, 1); // si tienes un arreglo visual también
+              this.torneos[indexTorneo].partidos.splice(indexPartido, 1);
               this.cargaPartidos()
-              console.log(`Partido ${index} eliminado`);
             } else {
               console.warn('Índice inválido. No se eliminó el partido.');
             }

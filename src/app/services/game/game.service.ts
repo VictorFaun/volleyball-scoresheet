@@ -700,6 +700,7 @@ export class GameService {
 
     this.partido = this.clean_partido();
     this.partidos.push(this.partido)
+    this.index = this.partidos.length - 1;
     this.redireccionar('create');
   }
   edit_game(index: any) {

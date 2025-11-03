@@ -43,7 +43,7 @@
   
       <div class="boton guardar">
         <ion-button class="btn-round-2" shape="round" (click)="saveCanvas()" style="margin: 0px;    font-size: initial !important;">
-          <ion-icon slot="icon-only" name="save"></ion-icon>
+          <ion-icon slot="icon-only" name="crop"></ion-icon>
         </ion-button>
       </div>
     </div>
@@ -51,7 +51,7 @@
 
     <div style="height: 50%;">
       <image-cropper
-          [imageURL]="this.firma"
+          [imageURL]="this.firmaImage"
           format="png"
           [maintainAspectRatio]="false"
           (imageCropped)="imageCropped($event)"

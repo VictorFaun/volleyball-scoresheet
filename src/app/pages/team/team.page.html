@@ -31,9 +31,9 @@
 
   <div style="margin: 20px 20px 20px;">
 
-    <div class="input-text">
-      <label>Nombre <!-- <span style="color: var(--color-danger-shade);">*</span> --></label>
-      <ion-input fill="outline" placeholder="Nombre Equipo" [(ngModel)]="equipo.nombre"></ion-input>
+    <div class="input-text" style="position: relative;">
+      <label>Nombre  <ion-button *ngIf="autocompletar" fill="clear" size="small" style="position: absolute; right: 0px; top: -7px;" (click)="autocompletarDatos()">Autocompletar datos</ion-button></label>
+      <ion-input fill="outline" placeholder="Nombre Equipo" [(ngModel)]="equipo.nombre" (ionInput)="buscarTeam()"></ion-input>
     </div>
 
     <div class="players">
