@@ -3,6 +3,10 @@ import { AlertController } from '@ionic/angular';
 import { GameService } from 'src/app/services/game/game.service';
 import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 import { Clipboard } from '@capacitor/clipboard';
+import { PDFDocument, rgb } from 'pdf-lib';
+import { Directory, Filesystem } from '@capacitor/filesystem';
+import { FileOpener } from '@capacitor-community/file-opener';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-home',
@@ -294,31 +298,118 @@ export class HomePage implements OnInit, DoCheck {
     }
   }
   async exportarPartido(index: number) {
-    try {
-      const partido = this._game_.partidos[index];
-      const partidoJson = JSON.stringify(partido, null, 2);
+    this.completarPlanilla(this._game_.partidos[index])
+    // try {
+    //   const partido = this._game_.partidos[index];
+    //   const partidoJson = JSON.stringify(partido, null, 2);
       
-      // Use Capacitor Clipboard API
-      await Clipboard.write({
-        string: partidoJson
-      });
+    //   // Use Capacitor Clipboard API
+    //   await Clipboard.write({
+    //     string: partidoJson
+    //   });
       
-      const alert = await this.alertController.create({
-        header: 'Éxito',
-        message: 'El partido se ha copiado al portapapeles',
-        buttons: ['Aceptar']
-      });
+    //   const alert = await this.alertController.create({
+    //     header: 'Éxito',
+    //     message: 'El partido se ha copiado al portapapeles',
+    //     buttons: ['Aceptar']
+    //   });
       
-      await alert.present();
-    } catch (error) {
-      console.error('Error al copiar al portapapeles:', error);
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'No se pudo copiar el partido al portapapeles',
-        buttons: ['Aceptar']
-      });
+    //   await alert.present();
+    // } catch (error) {
+    //   console.error('Error al copiar al portapapeles:', error);
+    //   const alert = await this.alertController.create({
+    //     header: 'Error',
+    //     message: 'No se pudo copiar el partido al portapapeles',
+    //     buttons: ['Aceptar']
+    //   });
       
-      await alert.present();
+    //   await alert.present();
+    // }
+  }
+
+  async completarPlanilla(partido:any) {
+    const pdfBase = await fetch('assets/scoresheet.pdf').then(res => res.arrayBuffer());
+    const pdfDoc = await PDFDocument.load(pdfBase);
+    const page = pdfDoc.getPages()[0];
+
+    page.drawText('Equipo Local: Los Tigres', {
+      x: 100,
+      y: 700,
+      size: 12,
+      color: rgb(0, 0, 0),
+    });
+
+    page.drawText('Equipo Visitante: Las Águilas', {
+      x: 100,
+      y: 680,
+      size: 12,
+      color: rgb(0, 0, 0),
+    });
+
+    page.drawText('Fecha: 03/11/2025', {
+      x: 400,
+      y: 700,
+      size: 12,
+      color: rgb(0, 0, 0),
+    });
+
+    const pdfBytes = await pdfDoc.save();
+
+    const fileName = `planilla_temp_${Date.now()}.pdf`;
+    await Filesystem.writeFile({
+      path: fileName,
+      data: this.arrayBufferToBase64(pdfBytes),
+      directory: Directory.Cache,
+    });
+
+    const { uri } = await Filesystem.getUri({
+      directory: Directory.Cache,
+      path: fileName,
+    });
+
+    if (Capacitor.getPlatform() === 'web') {
+      // WEB 👉 Crear blob temporal y abrir
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
+    } else {
+      // NATIVO 👉 Guardar en cache temporal y abrir con FileOpener
+      const tempPath = `${Capacitor.convertFileSrc('cache')}/planilla_temp_${Date.now()}.pdf`;
+  
+      // En vez de usar Filesystem, escribimos el archivo directo en la ruta temporal si ya lo tienes como blob/uri
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const reader = new FileReader();
+  
+      reader.onloadend = async () => {
+        const base64data = (reader.result as string).split(',')[1];
+  
+        // Guardar archivo temporalmente en la cache de Capacitor
+        const { uri } = await Filesystem.writeFile({
+          path: `planilla_temp_${Date.now()}.pdf`,
+          data: base64data,
+          directory: Directory.Cache,
+        });
+  
+        await FileOpener.open({
+          filePath: uri,
+          contentType: 'application/pdf',
+        });
+      };
+  
+      reader.readAsDataURL(blob);
     }
+
+
+  }
+
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, i + chunkSize);
+      binary += String.fromCharCode.apply(null, Array.from(chunk));
+    }
+    return btoa(binary);
   }
 }
