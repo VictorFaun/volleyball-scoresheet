@@ -3,10 +3,7 @@ import { AlertController } from '@ionic/angular';
 import { GameService } from 'src/app/services/game/game.service';
 import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 import { Clipboard } from '@capacitor/clipboard';
-import { PDFDocument, rgb } from 'pdf-lib';
-import { Directory, Filesystem } from '@capacitor/filesystem';
-import { FileOpener } from '@capacitor-community/file-opener';
-import { Capacitor } from '@capacitor/core';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 @Component({
   selector: 'app-home',
@@ -299,108 +296,356 @@ export class HomePage implements OnInit, DoCheck {
   }
   async exportarPartido(index: number) {
     this.completarPlanilla(this._game_.partidos[index])
-    // try {
-    //   const partido = this._game_.partidos[index];
-    //   const partidoJson = JSON.stringify(partido, null, 2);
-      
-    //   // Use Capacitor Clipboard API
-    //   await Clipboard.write({
-    //     string: partidoJson
-    //   });
-      
-    //   const alert = await this.alertController.create({
-    //     header: 'Éxito',
-    //     message: 'El partido se ha copiado al portapapeles',
-    //     buttons: ['Aceptar']
-    //   });
-      
-    //   await alert.present();
-    // } catch (error) {
-    //   console.error('Error al copiar al portapapeles:', error);
-    //   const alert = await this.alertController.create({
-    //     header: 'Error',
-    //     message: 'No se pudo copiar el partido al portapapeles',
-    //     buttons: ['Aceptar']
-    //   });
-      
-    //   await alert.present();
-    // }
+    
   }
 
-  async completarPlanilla(partido:any) {
-    const pdfBase = await fetch('assets/scoresheet.pdf').then(res => res.arrayBuffer());
-    const pdfDoc = await PDFDocument.load(pdfBase);
-    const page = pdfDoc.getPages()[0];
+  async copiarPartido(index: number) {
+    try {
+      const partido = this._game_.partidos[index];
+      const partidoJson = JSON.stringify(partido, null, 2);
+      
+      // Use Capacitor Clipboard API
+      await Clipboard.write({
+        string: partidoJson
+      });
+      
+      const alert = await this.alertController.create({
+        header: 'Éxito',
+        message: 'El partido se ha copiado al portapapeles',
+        buttons: ['Aceptar']
+      });
+      
+      await alert.present();
+    } catch (error) {
+      console.error('Error al copiar al portapapeles:', error);
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'No se pudo copiar el partido al portapapeles',
+        buttons: ['Aceptar']
+      });
+      
+      await alert.present();
+    }
+  }
 
-    page.drawText('Equipo Local: Los Tigres', {
-      x: 100,
-      y: 700,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
+  async completarPlanilla(partido: any) {
+  console.log(partido);
 
-    page.drawText('Equipo Visitante: Las Águilas', {
-      x: 100,
-      y: 680,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
+  // 1. Validar si el partido es de 3 sets como pide la regla
+  if (partido.numero_sets !== 3) {
+    try{
 
-    page.drawText('Fecha: 03/11/2025', {
-      x: 400,
-      y: 700,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
+     const urlPlantilla = 'assets/planilla_5.pdf';
+    const pdfBytesPlantilla = await fetch(urlPlantilla).then(res => res.arrayBuffer());
 
-    const pdfBytes = await pdfDoc.save();
+    if (!pdfBytesPlantilla) throw new Error('No se pudo cargar la plantilla PDF.');
 
-    const fileName = `planilla_temp_${Date.now()}.pdf`;
-    await Filesystem.writeFile({
-      path: fileName,
-      data: this.arrayBufferToBase64(pdfBytes),
-      directory: Directory.Cache,
-    });
+    const pdfDoc = await PDFDocument.load(pdfBytesPlantilla);
+    const paginas = pdfDoc.getPages();
+    const primeraPagina = paginas[0]; 
 
-    const { uri } = await Filesystem.getUri({
-      directory: Directory.Cache,
-      path: fileName,
-    });
+    //completar partido 5 sets
 
-    if (Capacitor.getPlatform() === 'web') {
-      // WEB 👉 Crear blob temporal y abrir
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const blobUrl = URL.createObjectURL(blob);
-      window.open(blobUrl, '_blank');
-    } else {
-      // NATIVO 👉 Guardar en cache temporal y abrir con FileOpener
-      const tempPath = `${Capacitor.convertFileSrc('cache')}/planilla_temp_${Date.now()}.pdf`;
-  
-      // En vez de usar Filesystem, escribimos el archivo directo en la ruta temporal si ya lo tienes como blob/uri
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const reader = new FileReader();
-  
-      reader.onloadend = async () => {
-        const base64data = (reader.result as string).split(',')[1];
-  
-        // Guardar archivo temporalmente en la cache de Capacitor
-        const { uri } = await Filesystem.writeFile({
-          path: `planilla_temp_${Date.now()}.pdf`,
-          data: base64data,
-          directory: Directory.Cache,
-        });
-  
-        await FileOpener.open({
-          filePath: uri,
-          contentType: 'application/pdf',
-        });
-      };
-  
-      reader.readAsDataURL(blob);
+    const pdfBytesModificado = await pdfDoc.save();
+    this.descargarPdf(pdfBytesModificado, `planilla_partido_${partido.numero_partido || 'final'}.pdf`);
+    } catch (error) {
+    console.error('Error procesando la planilla PDF:', error);
+  }
+
+    return;
+  }
+
+  try {
+    const urlPlantilla = 'assets/planilla_3.pdf';
+    const pdfBytesPlantilla = await fetch(urlPlantilla).then(res => res.arrayBuffer());
+
+    if (!pdfBytesPlantilla) throw new Error('No se pudo cargar la plantilla PDF.');
+
+    const pdfDoc = await PDFDocument.load(pdfBytesPlantilla);
+    const paginas = pdfDoc.getPages();
+    const primeraPagina = paginas[0]; 
+
+    // =========================================================================
+    // 1. CABECERA PRINCIPAL (Dinámica desde el objeto partido)
+    // =========================================================================
+    
+    
+    // Nombre de la Competencia, Ciudad y Código de País
+    primeraPagina.drawText(partido.competicion || '', { x: 140, y: 490, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+    primeraPagina.drawText(partido.ciudad || '', { x: 60, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+    primeraPagina.drawText(partido.pais === 'chile' ? 'CHL' : (partido.pais || ''), { x: 300, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+
+    // Número de Partido
+    if(partido.numero_partido > 10){
+
+    primeraPagina.drawText(String(partido.numero_partido || ''), { x: 312, y: 518-57, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+    }else{
+    primeraPagina.drawText(String('0'), { x: 312, y: 518-57, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+    primeraPagina.drawText(String(partido.numero_partido || ''), { x: 325, y: 518-57, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
     }
 
+    // Fecha (D / M / Y)
+    if (partido.fecha) {
+      const [d, m, a] = partido.fecha.split('/');
+      primeraPagina.drawText(d || '', { x: 364, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      primeraPagina.drawText(m || '', { x: 386, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      primeraPagina.drawText(a || '', { x: 411, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+    }
 
+    // Hora de programación de la planilla (H / mn)
+    if (partido.hora) {
+      const [h, mn] = partido.hora.split(':');
+      primeraPagina.drawText(h || '', { x: 470, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      primeraPagina.drawText(mn || '', { x: 495, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+    }
+
+    // Nombres de los Equipos (Cabecera central A vs B)
+    primeraPagina.drawText('A', { x: 358, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+    primeraPagina.drawText(partido.equipo_a?.nombre || '', { x: 373, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+    primeraPagina.drawText('B', { x: 500, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+    primeraPagina.drawText(partido.equipo_b?.nombre || '', { x: 455, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+
+
+    // =========================================================================
+    // 2. CUADRANTES DE JUEGO (SET 1 & SET 2 extraídos dinámicamente)
+    // =========================================================================
+
+    // // --- SET 1 ---
+    // if (partido.set_1) {
+    //   // Horas extraídas del JSON
+    //   primeraPagina.drawText(partido.set_1.hora_inicio || '', { x: 165, y: 472, size: 8 }); 
+    //   primeraPagina.drawText(partido.set_1.hora_fin || '', { x: 322, y: 472, size: 8 }); 
+
+    //   // Cuadros de Saque/Recepción basados en equipo_saque
+    //   if (partido.set_1.equipo_saque === 'A') {
+    //     primeraPagina.drawText('X', { x: 147, y: 456, size: 9 }); // S en Equipo A
+    //     primeraPagina.drawText('X', { x: 350, y: 456, size: 9 }); // R en Equipo B
+    //   } else if (partido.set_1.equipo_saque === 'B') {
+    //     primeraPagina.drawText('X', { x: 147, y: 456, size: 9 }); // R en Equipo A
+    //     primeraPagina.drawText('X', { x: 350, y: 456, size: 9 }); // S en Equipo B
+    //   }
+
+    //   // Formación inicial del Equipo A
+    //   if (partido.set_1.alineacion_a) {
+    //     partido.set_1.alineacion_a.forEach((num: number, index: number) => {
+    //       primeraPagina.drawText(String(num), { x: 164 + (index * 24), y: 438, size: 9 });
+    //     });
+    //   }
+
+    //   // Formación inicial del Equipo B
+    //   if (partido.set_1.alineacion_b) {
+    //     partido.set_1.alineacion_b.forEach((num: number, index: number) => {
+    //       primeraPagina.drawText(String(num), { x: 368 + (index * 24), y: 438, size: 9 });
+    //     });
+    //   }
+    // }
+
+    // // --- SET 2 ---
+    // if (partido.set_2) {
+    //   // Horas del Set 2
+    //   primeraPagina.drawText(partido.set_2.hora_inicio || '', { x: 592, y: 472, size: 8 }); 
+    //   primeraPagina.drawText(partido.set_2.hora_fin || '', { x: 748, y: 472, size: 8 }); 
+
+    //   // Saque/Recepción Set 2
+    //   if (partido.set_2.equipo_saque === 'B') {
+    //     primeraPagina.drawText('X', { x: 574, y: 456, size: 9 }); // S en Equipo B (Lado izquierdo del Set 2)
+    //     primeraPagina.drawText('X', { x: 775, y: 456, size: 9 }); // R en Equipo A (Lado derecho del Set 2)
+    //   } else if (partido.set_2.equipo_saque === 'A') {
+    //     primeraPagina.drawText('X', { x: 574, y: 456, size: 9 }); // R en Equipo B
+    //     primeraPagina.drawText('X', { x: 775, y: 456, size: 9 }); // S en Equipo A
+    //   }
+
+    //   // Formación inicial del Equipo A (en el cuadrante izquierdo del Set 2)
+    //   if (partido.set_2.alineacion_a) {
+    //     partido.set_2.alineacion_a.forEach((num: number, index: number) => {
+    //       primeraPagina.drawText(String(num), { x: 590 + (index * 24), y: 438, size: 9 });
+    //     });
+    //   }
+
+    //   // Formación inicial del Equipo B (en el cuadrante derecho del Set 2)
+    //   if (partido.set_2.alineacion_b) {
+    //     partido.set_2.alineacion_b.forEach((num: number, index: number) => {
+    //       primeraPagina.drawText(String(num), { x: 794 + (index * 24), y: 438, size: 9 });
+    //     });
+    //   }
+    // }
+
+
+    // =========================================================================
+    // 3. TABLA DE RESULTADOS DE SETS (RESULTS - Abajo a la derecha)
+    // =========================================================================
+    
+    // Encabezados de la tabla pequeña de control
+    // primeraPagina.drawText(partido.equipo_a?.nombre || '', { x: 590, y: 242, size: 9 });
+    // primeraPagina.drawText(partido.equipo_b?.nombre || '', { x: 720, y: 242, size: 9 });
+
+    // // --- Datos Dinámicos del Set 1 ---
+    // if (partido.set_1) {
+    //   primeraPagina.drawText(String(partido.set_1.puntos_a ?? '0'), { x: 635, y: 218, size: 9 });
+    //   primeraPagina.drawText(String(partido.set_1.duracion || '0'), { x: 668, y: 218, size: 8 }); 
+    //   primeraPagina.drawText(String(partido.set_1.puntos_b ?? '0'), { x: 695, y: 218, size: 9 });
+      
+    //   // Marcar 1 al ganador del Set 1 en la columna W (Won)
+    //   if (partido.set_1.puntos_a > partido.set_1.puntos_b) {
+    //     primeraPagina.drawText('1', { x: 618, y: 218, size: 8 }); // Ganó A
+    //   } else {
+    //     primeraPagina.drawText('1', { x: 712, y: 218, size: 8 }); // Ganó B
+    //   }
+    // }
+
+    // // --- Datos Dinámicos del Set 2 ---
+    // if (partido.set_2) {
+    //   primeraPagina.drawText(String(partido.set_2.puntos_a ?? '0'), { x: 635, y: 204, size: 9 });
+    //   primeraPagina.drawText(String(partido.set_2.duracion || '0'), { x: 668, y: 204, size: 8 }); 
+    //   primeraPagina.drawText(String(partido.set_2.puntos_b ?? '0'), { x: 695, y: 204, size: 9 });
+      
+    //   // Marcar 1 al ganador del Set 2 en la columna W (Won)
+    //   if (partido.set_2.puntos_a > partido.set_2.puntos_b) {
+    //     primeraPagina.drawText('1', { x: 618, y: 204, size: 8 }); // Ganó A
+    //   } else {
+    //     primeraPagina.drawText('1', { x: 712, y: 204, size: 8 }); // Ganó B
+    //   }
+    // }
+
+    // // --- Fila de Totales Generales ---
+    // const totalPuntosA = (partido.set_1?.puntos_a || 0) + (partido.set_2?.puntos_a || 0);
+    // const totalPuntosB = (partido.set_1?.puntos_b || 0) + (partido.set_2?.puntos_b || 0);
+    // const totalDuracion = (partido.set_1?.duracion || 0) + (partido.set_2?.duracion || 0);
+
+    // primeraPagina.drawText(String(totalPuntosA), { x: 635, y: 152, size: 10 }); 
+    // primeraPagina.drawText(String(totalDuracion), { x: 668, y: 152, size: 9 });   
+    // primeraPagina.drawText(String(totalPuntosB), { x: 695, y: 152, size: 10 }); 
+    
+    // // Suma total de sets ganados por cada uno
+    // primeraPagina.drawText(String(partido.totales?.sets_ganados_a ?? '0'), { x: 618, y: 152, size: 9 });
+    // primeraPagina.drawText(String(partido.totales?.sets_ganados_b ?? '0'), { x: 712, y: 152, size: 9 });
+
+
+    // =========================================================================
+    // 4. TIEMPOS GLOBALES Y CUADRO WINNER (100% Dinámicos)
+    // =========================================================================
+    
+    // if (partido.totales?.hora_inicio_partido && partido.totales?.hora_fin_partido) {
+    //   const [startH, startMn] = partido.totales.hora_inicio_partido.split(':');
+    //   const [endH, endMn] = partido.totales.hora_fin_partido.split(':');
+      
+    //   primeraPagina.drawText(startH || '', { x: 595, y: 102, size: 8 });
+    //   primeraPagina.drawText(startMn || '', { x: 612, y: 102, size: 8 });
+    //   primeraPagina.drawText(endH || '', { x: 658, y: 102, size: 8 });
+    //   primeraPagina.drawText(endMn || '', { x: 675, y: 102, size: 8 });
+    // }
+
+    // if (partido.totales?.duracion_total_partido) {
+    //   const [totH, totMn] = partido.totales.duracion_total_partido.split(':');
+    //   primeraPagina.drawText(totH || '00', { x: 724, y: 102, size: 8 });
+    //   primeraPagina.drawText(totMn || '00', { x: 745, y: 102, size: 8 });
+    // }
+
+    // // Nombre del equipo ganador y su marcador final de sets
+    // primeraPagina.drawText(partido.ganador?.nombre || '', { x: 625, y: 84, size: 11 }); 
+    // primeraPagina.drawText(String(partido.ganador?.sets_totales || ''), { x: 742, y: 84, size: 11 });
+
+    // 5. Compilar y descargar el documento resultante
+    const pdfBytesModificado = await pdfDoc.save();
+    this.descargarPdf(pdfBytesModificado, `planilla_partido_${partido.numero_partido || 'final'}.pdf`);
+
+  } catch (error) {
+    console.error('Error procesando la planilla PDF:', error);
   }
+}
+
+  // Función auxiliar para forzar la descarga del Blob de manera limpia
+  descargarPdf(bytes: Uint8Array, nombreArchivo: string) {
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = nombreArchivo;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // async completarPlanilla(partido:any) {
+  //   console.log(partido)
+
+  //   return
+  //   const pdfBytes1 = await fetch('assets/ilovepdf_merged.pdf').then(r => r.arrayBuffer());
+  //   const pdfDoc = await PDFDocument.load(pdfBytes1);
+  
+  //   // Obtener las dos páginas
+  //   const [page1, page2] = pdfDoc.getPages();
+  
+  //   // --- Recortar las secciones que quieres ---
+  //   page1.setCropBox(0, 0, 2000, 405);    // Parte inferior de la primera
+  //   page2.setCropBox(0, 560, 2000, 350);  // Parte superior de la segunda
+  
+  //   // Crear nuevo PDF
+  //   const newPdf = await PDFDocument.create();
+  
+  //   // Importar las páginas recortadas
+  //   const [embeddedPage1] = await newPdf.embedPages([page1]);
+  //   const [embeddedPage2] = await newPdf.embedPages([page2]);
+  
+  //   // Definir el ancho y alto del nuevo documento
+  //   const width = Math.max(page1.getWidth(), page2.getWidth());
+  //   const height = 405 + 350; // suma de ambas alturas recortadas
+  
+  //   const newPage = newPdf.addPage([width, height]);
+  
+  //   // Dibujar la parte de arriba (segunda página recortada)
+  //   newPage.drawPage(embeddedPage2, { x: 0, y: 405 }); // encima
+  //   // Dibujar la parte de abajo (primera página recortada)
+  //   newPage.drawPage(embeddedPage1, { x: 0, y: 0 });
+  
+  //   // Guardar el resultado final
+  //   const pdfBytes = await newPdf.save();
+
+  //   const fileName = `planilla_temp_${Date.now()}.pdf`;
+  //   await Filesystem.writeFile({
+  //     path: fileName,
+  //     data: this.arrayBufferToBase64(pdfBytes),
+  //     directory: Directory.Cache,
+  //   });
+
+  //   const { uri } = await Filesystem.getUri({
+  //     directory: Directory.Cache,
+  //     path: fileName,
+  //   });
+
+  //   if (Capacitor.getPlatform() === 'web') {
+  //     // WEB 👉 Crear blob temporal y abrir
+  //     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  //     const blobUrl = URL.createObjectURL(blob);
+  //     window.open(blobUrl, '_blank');
+  //   } else {
+  //     // NATIVO 👉 Guardar en cache temporal y abrir con FileOpener
+  //     const tempPath = `${Capacitor.convertFileSrc('cache')}/planilla_temp_${Date.now()}.pdf`;
+  
+  //     // En vez de usar Filesystem, escribimos el archivo directo en la ruta temporal si ya lo tienes como blob/uri
+  //     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  //     const reader = new FileReader();
+  
+  //     reader.onloadend = async () => {
+  //       const base64data = (reader.result as string).split(',')[1];
+  
+  //       // Guardar archivo temporalmente en la cache de Capacitor
+  //       const { uri } = await Filesystem.writeFile({
+  //         path: `planilla_temp_${Date.now()}.pdf`,
+  //         data: base64data,
+  //         directory: Directory.Cache,
+  //       });
+  
+  //       await FileOpener.open({
+  //         filePath: uri,
+  //         contentType: 'application/pdf',
+  //       });
+  //     };
+  
+  //     reader.readAsDataURL(blob);
+  //   }
+
+
+  // }
 
   private arrayBufferToBase64(buffer: ArrayBuffer): string {
     let binary = '';

@@ -54,6 +54,9 @@
           <ion-item-option *ngIf="partido.estado=='Finalizado' || true" (click)="exportarPartido(partido.index)"  color="secondary" style="border-radius: 0px;">
             <ion-icon slot="icon-only" name="document-text-outline"></ion-icon>
           </ion-item-option>
+          <ion-item-option (click)="copiarPartido(partido.index)" color="success" style="border-radius: 0px;">
+            <ion-icon slot="icon-only" name="copy"></ion-icon>
+          </ion-item-option>
           <ion-item-option (click)="eliminarPartido(j, i, partido.index)" color="danger" style="border-radius: 10px;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">
             <ion-icon slot="icon-only" name="trash"></ion-icon>
           </ion-item-option>
