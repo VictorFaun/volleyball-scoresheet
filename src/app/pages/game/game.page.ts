@@ -212,6 +212,18 @@ export class GamePage implements OnInit {
     return this.logs.filter((log: any) => (log.tipo === 1 && log.equipo === equipo) || (log.tipo === 7 && log.equipo !== equipo)).length;
   }
 
+  // Puntos necesarios para ganar el set actual (15 en el set decisivo, 25 en el resto).
+  puntosParaGanarSet(): number {
+    return (this.set == 5 || (this.set == 3 && this._game_.partido.numero_sets == 3)) ? 15 : 25;
+  }
+
+  // El equipo ya está ganando el set (alcanzó el puntaje máximo con diferencia de 2).
+  esGanadorSet(equipo: 'A' | 'B'): boolean {
+    const propios = this.contarPuntos(equipo);
+    const rival = this.contarPuntos(equipo === 'A' ? 'B' : 'A');
+    return propios >= this.puntosParaGanarSet() && propios - rival >= 2;
+  }
+
   async siguiente() {
     this._game_.closeSet(this.set)
   }
@@ -351,7 +363,7 @@ export class GamePage implements OnInit {
     const inputs = jugadoresDisponibles.map((j: any) => ({
       name: `${j.numero}`,
       type: 'radio',
-      label: `[ ${j.numero} ] ${j.nombre}`,
+      label: `[ ${j.numero} ]${j.nombre ? ' ' + j.nombre : ''}`,
       value: j.numero
     }));
 
@@ -485,7 +497,7 @@ export class GamePage implements OnInit {
       return {
         name: 'jugador',
         type: 'radio',
-        label: `${jugador.numero} - ${jugador.nombre}`,
+        label: `${jugador.numero}${jugador.nombre ? ' - ' + jugador.nombre : ''}`,
         value: jugador.numero,
         checked: false
       };

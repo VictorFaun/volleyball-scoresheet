@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="false">
   <ion-toolbar>
     <ion-buttons [collapse]="true" slot="start">
       <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
@@ -86,13 +86,13 @@
       </div>
   
       <div class="puntos-container" [class.orden-invertido]="invertido">
-        <div class="puntos-equipo">
+        <div class="puntos-equipo" [class.puntos-equipo-ganador]="esGanadorSet('A')">
           <b>{{contarPuntos('A')}}</b>
         </div>
         <div class="separador-puntos">
           <b>vs</b>
         </div>
-        <div class="puntos-equipo">
+        <div class="puntos-equipo" [class.puntos-equipo-ganador]="esGanadorSet('B')">
           <b>{{contarPuntos('B')}}</b>
         </div>
       </div>

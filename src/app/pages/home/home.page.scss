@@ -2,3 +2,16 @@ ion-item{
   --inner-padding-end:0px;
   --padding-start:0px;
 }
+
+.marcador-set {
+  margin: 0;
+  width: 26px;
+  text-align: center;
+}
+
+/* Mismo resalte que el marcador del set en la vista de juego (game.page.scss). */
+.marcador-set-ganador {
+  color: var(--ion-color-primary);
+  font-weight: 600;
+  text-shadow: 0 0 12px rgba(var(--ion-color-primary-rgb), 0.9), 0 0 24px rgba(var(--ion-color-primary-rgb), 0.5);
+}

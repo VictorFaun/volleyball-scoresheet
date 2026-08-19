@@ -1,7 +1,3 @@
   
-- agregar a la vista inicial configuracion que firmas pedir y en que momento (inicio y final)
-- alerta de termino de partido nombrar al equipo y entre parentesis si es A o B
-- card inicial mostrar los resultados de cada set
-- crear sistema para coordenadas dependiendo la rotacion y posicion del armador
-- cuando un equipo este como ganador del set marcar de alguna forma el puntaje (brillo por ejemplo)
+- completar amonestaciones
 - completar planilla

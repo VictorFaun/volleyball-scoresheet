@@ -88,7 +88,7 @@ export class CreateSetPage implements OnInit {
     const inputs = jugadoresFiltrados.map((j: any) => ({
       name: `jugador-${j.numero}`,
       type: 'radio',
-      label: `[ ${j.numero} ] ${j.nombre}`,
+      label: `[ ${j.numero} ]${j.nombre ? ' ' + j.nombre : ''}`,
       value: j.numero,
       checked: alineacion[pos] === j.numero
     }));

@@ -38,9 +38,8 @@ export class HomePage implements OnInit {
       let partido:any = {
         torneo: "",
         equipoA: "Equipo A",
-        setsA: 0,
         equipoB: "Equipo B",
-        setsB: 0,
+        sets: [],
         estado: null,
         index: index,
         numero_partido: 0,
@@ -68,44 +67,14 @@ export class HomePage implements OnInit {
       if(equipoLadoB?.nombre){
         partido.equipoB = equipoLadoB.nombre
       }
-      if( this._game_.partidos[index].set_1 && this._game_.partidos[index].set_1.victoria){
-        if(this._game_.partidos[index].set_1.victoria == "A"){
-          partido.setsA ++;
-        }
-        if(this._game_.partidos[index].set_1.victoria == "B"){
-          partido.setsB ++;
-        }
-      }
-      if( this._game_.partidos[index].set_2 && this._game_.partidos[index].set_2.victoria){
-        if(this._game_.partidos[index].set_2.victoria == "A"){
-          partido.setsA ++;
-        }
-        if(this._game_.partidos[index].set_2.victoria == "B"){
-          partido.setsB ++;
-        }
-      }
-      if( this._game_.partidos[index].set_3 && this._game_.partidos[index].set_3.victoria){
-        if(this._game_.partidos[index].set_3.victoria == "A"){
-          partido.setsA ++;
-        }
-        if(this._game_.partidos[index].set_3.victoria == "B"){
-          partido.setsB ++;
-        }
-      }
-      if( this._game_.partidos[index].set_4 && this._game_.partidos[index].set_4.victoria){
-        if(this._game_.partidos[index].set_4.victoria == "A"){
-          partido.setsA ++;
-        }
-        if(this._game_.partidos[index].set_4.victoria == "B"){
-          partido.setsB ++;
-        }
-      }
-      if( this._game_.partidos[index].set_5 && this._game_.partidos[index].set_5.victoria){
-        if(this._game_.partidos[index].set_5.victoria == "A"){
-          partido.setsA ++;
-        }
-        if(this._game_.partidos[index].set_5.victoria == "B"){
-          partido.setsB ++;
+      for (let numSet = 1; numSet <= 5; numSet++) {
+        const set = this._game_.partidos[index][`set_${numSet}`];
+        if (set && set.victoria) {
+          partido.sets.push({
+            a: this._game_.contarPuntos(set, 'A'),
+            b: this._game_.contarPuntos(set, 'B'),
+            victoria: set.victoria
+          });
         }
       }
       if (this._game_.partidos[index].estado) {
@@ -305,8 +274,147 @@ export class HomePage implements OnInit {
       this._game_.new_firma(10)
     }
     if(estado == 33){
-
+      this.mostrarResumenPartido(i)
     }
+  }
+
+  // "Amonestación" agrupa demora, tarjeta amarilla/roja, solicitud
+  // improcedente y expulsión (ver GamePage.amonestacion()).
+  private readonly TIPOS_AMONESTACION = [5, 6, 7, 8, 9];
+
+  private formatearDuracion(ms: number): string {
+    if (!isFinite(ms) || ms < 0) return '-';
+    const totalSegundos = Math.floor(ms / 1000);
+    const horas = Math.floor(totalSegundos / 3600);
+    const minutos = Math.floor((totalSegundos % 3600) / 60);
+    const segundos = totalSegundos % 60;
+    const mm = minutos.toString().padStart(horas > 0 ? 2 : 1, '0');
+    const ss = segundos.toString().padStart(2, '0');
+    return horas > 0 ? `${horas}:${mm}:${ss}` : `${mm}:${ss}`;
+  }
+
+  // Duración de un set ya jugado, o null si falta alguna de las dos horas.
+  private duracionSetMs(set: any): number | null {
+    if (!set?.hora_inicio || !set?.hora_fin) return null;
+    const ms = new Date(set.hora_fin).getTime() - new Date(set.hora_inicio).getTime();
+    return isNaN(ms) ? null : ms;
+  }
+
+  // Muestra un resumen del partido finalizado (equipos, marcador, tiempos y
+  // amonestaciones de cada set, duración y ganador), con el mismo estilo de
+  // alert usado en el resto de la app (ver la confirmación de firma en
+  // SignaturePage).
+  async mostrarResumenPartido(index: any) {
+    const partido = this._game_.partidos[index];
+    const nombreA = this._game_.obtenerEquipoPorLado('A')?.nombre || 'Equipo A';
+    const nombreB = this._game_.obtenerEquipoPorLado('B')?.nombre || 'Equipo B';
+
+    let setsGanadosA = 0;
+    let setsGanadosB = 0;
+    let tiemposA = 0;
+    let tiemposB = 0;
+    let amonestacionesA = 0;
+    let amonestacionesB = 0;
+    let duracionTotalMs = 0;
+    let filasSets = '';
+
+    for (let numSet = 1; numSet <= 5; numSet++) {
+      const set = partido[`set_${numSet}`];
+      if (!set || !set.victoria) continue;
+
+      const puntosA = this._game_.contarPuntos(set, 'A');
+      const puntosB = this._game_.contarPuntos(set, 'B');
+      if (set.victoria === 'A') setsGanadosA++;
+      if (set.victoria === 'B') setsGanadosB++;
+
+      const logs = set.logs || [];
+      tiemposA += logs.filter((l: any) => l.tipo === 4 && l.equipo === 'A').length;
+      tiemposB += logs.filter((l: any) => l.tipo === 4 && l.equipo === 'B').length;
+      amonestacionesA += logs.filter((l: any) => this.TIPOS_AMONESTACION.includes(l.tipo) && l.equipo === 'A').length;
+      amonestacionesB += logs.filter((l: any) => this.TIPOS_AMONESTACION.includes(l.tipo) && l.equipo === 'B').length;
+
+      const duracionMs = this.duracionSetMs(set);
+      if (duracionMs !== null) duracionTotalMs += duracionMs;
+
+      const tiemposSetA = logs.filter((l: any) => l.tipo === 4 && l.equipo === 'A').length;
+      const tiemposSetB = logs.filter((l: any) => l.tipo === 4 && l.equipo === 'B').length;
+      const amonestacionesSetA = logs.filter((l: any) => this.TIPOS_AMONESTACION.includes(l.tipo) && l.equipo === 'A').length;
+      const amonestacionesSetB = logs.filter((l: any) => this.TIPOS_AMONESTACION.includes(l.tipo) && l.equipo === 'B').length;
+
+      const estiloGanador = 'color: var(--ion-color-primary); font-weight: 700;';
+      const estiloSubLabel = 'padding: 2px 8px 2px 20px; text-align: left; font-size: 10px; white-space: nowrap; color: rgba(var(--ion-color-dark-rgb), 0.4);';
+      const estiloSubValor = 'padding: 2px 8px; text-align: center; font-size: 12px; color: rgba(var(--ion-color-dark-rgb), 0.7);';
+      filasSets += `
+        <tr>
+          <td style="padding: 6px 8px 2px; ${numSet > 1 ? 'border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);' : ''} font-size: 11px; color: rgba(var(--ion-color-dark-rgb), 0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <span>Set ${numSet}</span>
+              <span>${duracionMs !== null ? this.formatearDuracion(duracionMs) : ''}</span>
+            </div>
+          </td>
+          <td style="padding: 6px 8px 2px; ${numSet > 1 ? 'border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);' : ''} text-align: center; ${set.victoria === 'A' ? estiloGanador : ''}">${puntosA}</td>
+          <td style="padding: 6px 8px 2px; ${numSet > 1 ? 'border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);' : ''} text-align: center; ${set.victoria === 'B' ? estiloGanador : ''}">${puntosB}</td>
+        </tr>
+        <tr>
+          <td style="${estiloSubLabel}">Tiempos</td>
+          <td style="${estiloSubValor}">${tiemposSetA}</td>
+          <td style="${estiloSubValor}">${tiemposSetB}</td>
+        </tr>
+        <tr>
+          <td style="${estiloSubLabel}">Amonestaciones</td>
+          <td style="${estiloSubValor}">${amonestacionesSetA}</td>
+          <td style="${estiloSubValor}">${amonestacionesSetB}</td>
+        </tr>`;
+    }
+
+    const ganador = this._game_.obtenerGanadorPartido();
+    const textoGanador = ganador ? this._game_.textoEquipoGanador(ganador) : null;
+    const filaBorde = 'border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.15);';
+
+    const alert = await this.alertController.create({
+      cssClass: 'no-padding-header no-padding-message',
+      htmlAttributes: {
+        innerHTML: `
+        <h2 class="alert-title sc-ion-alert-ios" style="text-align: center; padding-top: 12px;">Resumen del Partido</h2>
+        <div style="text-align: center; padding: 4px 16px 12px;">
+          <div class="alert-message sc-ion-alert-ios" style="margin-bottom: 4px;">
+            ${partido.competicion ? partido.competicion + ' &middot; ' : ''}Partido N° ${partido.numero_partido || ''}
+          </div>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 8px; table-layout: fixed;">
+            <tr>
+              <td style="padding: 4px 8px; width: 44%;"></td>
+              <td style="padding: 4px 8px; width: 28%; text-align: center; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${nombreA}</td>
+              <td style="padding: 4px 8px; width: 28%; text-align: center; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${nombreB}</td>
+            </tr>
+            ${filasSets}
+            <tr>
+              <td colspan="3" style="padding: 10px 8px 2px; ${filaBorde} text-align: left; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(var(--ion-color-dark-rgb), 0.4);">Total</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 8px; text-align: left; font-size: 11px; white-space: nowrap; color: rgba(var(--ion-color-dark-rgb), 0.5);">Sets</td>
+              <td style="padding: 4px 8px; text-align: center; font-weight: 700;">${setsGanadosA}</td>
+              <td style="padding: 4px 8px; text-align: center; font-weight: 700;">${setsGanadosB}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 8px; text-align: left; font-size: 11px; white-space: nowrap; color: rgba(var(--ion-color-dark-rgb), 0.5);">Tiempos</td>
+              <td style="padding: 4px 8px; text-align: center;">${tiemposA}</td>
+              <td style="padding: 4px 8px; text-align: center;">${tiemposB}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 8px; text-align: left; font-size: 11px; white-space: nowrap; color: rgba(var(--ion-color-dark-rgb), 0.5);">Amonestaciones</td>
+              <td style="padding: 4px 8px; text-align: center;">${amonestacionesA}</td>
+              <td style="padding: 4px 8px; text-align: center;">${amonestacionesB}</td>
+            </tr>
+          </table>
+          <div style="margin-top: 10px; font-size: 13px; color: rgba(var(--ion-color-dark-rgb), 0.6);">Duración total: ${this.formatearDuracion(duracionTotalMs)}</div>
+          ${textoGanador ? `<div style="margin-top: 8px; font-weight: 600;">Ganador: ${textoGanador}</div>` : ''}
+        </div>
+      `,
+      },
+      buttons: ['Cerrar']
+    });
+
+    await alert.present();
   }
   async exportarPartido(index: number) {
     this.completarPlanilla(this._game_.partidos[index])

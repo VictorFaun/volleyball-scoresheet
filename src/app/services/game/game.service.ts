@@ -397,7 +397,7 @@ export class GameService {
                 if(ganador){
                   const alert = await this.alertController.create({
                     header: 'Resultado',
-                    message: `¡El equipo ${ganador} ha ganado el partido!`,
+                    message: `¡El equipo ${this.textoEquipoGanador(ganador)} ha ganado el partido!`,
                     buttons: ['Aceptar']
                 });
                 await alert.present();
@@ -416,7 +416,7 @@ export class GameService {
                 if(ganador){
                   const alert = await this.alertController.create({
                     header: 'Resultado',
-                    message: `¡El equipo ${ganador} ha ganado el partido!`,
+                    message: `¡El equipo ${this.textoEquipoGanador(ganador)} ha ganado el partido!`,
                     buttons: ['Aceptar']
                 });
                 await alert.present();
@@ -435,7 +435,7 @@ export class GameService {
                 if(ganador){
                   const alert = await this.alertController.create({
                     header: 'Resultado',
-                    message: `¡El equipo ${ganador} ha ganado el partido!`,
+                    message: `¡El equipo ${this.textoEquipoGanador(ganador)} ha ganado el partido!`,
                     buttons: ['Aceptar']
                 });
                 await alert.present();
@@ -454,7 +454,7 @@ export class GameService {
                 if(ganador){
                   const alert = await this.alertController.create({
                     header: 'Resultado',
-                    message: `¡El equipo ${ganador} ha ganado el partido!`,
+                    message: `¡El equipo ${this.textoEquipoGanador(ganador)} ha ganado el partido!`,
                     buttons: ['Aceptar']
                 });
                 await alert.present();
@@ -762,73 +762,100 @@ export class GameService {
     this.new_sorteo(5);
   }
 
+  // Una firma está habilitada salvo que se haya desactivado explícitamente
+  // en la configuración del partido (los partidos guardados antes de que
+  // existiera esta opción no tienen el campo, y se tratan como activadas).
+  firmaHabilitada(num: any): boolean {
+    return this.partido.firmas_habilitadas?.[num] !== false;
+  }
+
+  // A qué paso del flujo se avanza después de resolver (o saltar) la firma
+  // "num". Usado tanto por SignaturePage al confirmar una firma como por
+  // new_firma() cuando la firma está desactivada.
+  avanzarDespuesDeFirma(num: any) {
+    if (num == 1) this.new_firma(2);
+    if (num == 2) this.new_firma(3);
+    if (num == 3) this.new_firma(4);
+    if (num == 4) this.new_sorteo(1);
+    if (num == 5) this.new_firma(6);
+    if (num == 6) this.new_firma(7);
+    if (num == 7) this.new_firma(8);
+    if (num == 8) this.new_firma(9);
+    if (num == 9) this.new_firma(10);
+    if (num == 10) this.terminoPartido();
+  }
+
   async new_firma(num: any) {
     if (num == 1) {
       if (await this.validarJugadores(2)) {
         if (this.partido.estado < 5)
           this.partido.estado = 5
-        this.redireccionar('signature', { num });
+        if (this.firmaHabilitada(1)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(1);
       }
     }
     if (num == 2) {
       if (this.partido.estado < 6)
         this.partido.estado = 6
-      this.redireccionar('signature', { num });
+      if (this.firmaHabilitada(2)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(2);
     }
     if (num == 3) {
       if (this.partido.estado < 7)
         this.partido.estado = 7
-      this.redireccionar('signature', { num });
+      if (this.firmaHabilitada(3)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(3);
     }
     if (num == 4) {
       if (this.partido.estado < 8)
         this.partido.estado = 8
-      this.redireccionar('signature', { num });
+      if (this.firmaHabilitada(4)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(4);
     }
     if (num == 5) {
       if (this.partido.estado < 27)
         this.partido.estado = 27
-      this.redireccionar('signature', { num });
+      if (this.firmaHabilitada(5)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(5);
     }
     if (num == 6) {
       if (this.partido.estado < 28)
         this.partido.estado = 28
-      this.redireccionar('signature', { num });
+      if (this.firmaHabilitada(6)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(6);
     }
     if (num == 7) {
       if (this.partido.estado < 29)
         this.partido.estado = 29
-      this.redireccionar('signature', { num });
+      if (this.firmaHabilitada(7)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(7);
     }
     if (num == 8) {
       if (this.partido.estado < 30)
         this.partido.estado = 30
-      this.redireccionar('signature', { num });
+      if (this.firmaHabilitada(8)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(8);
     }
     if (num == 9) {
       if (this.partido.estado < 31)
         this.partido.estado = 31
-      this.redireccionar('signature', { num });
+      if (this.firmaHabilitada(9)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(9);
     }
     if (num == 10) {
       if (this.partido.estado < 32)
         this.partido.estado = 32
-      this.redireccionar('signature', { num });
+      if (this.firmaHabilitada(10)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(10);
     }
   }
 
   async terminoPartido() {
     if(this.partido.estado < 33){
       this.partido.estado = 33
+      const ganador = this.obtenerGanadorPartido();
+      const mensaje = ganador
+        ? `El partido ha finalizado. ¡El equipo ${this.textoEquipoGanador(ganador)} ha ganado el partido!`
+        : 'El partido se ha finalizado correctamente.';
       const alert = await this.alertController.create({
         header: 'Partido Finalizado',
-        message: 'El partido se ha finalizado correctamente.',
+        message: mensaje,
         buttons: ['Aceptar']
       });
-  
+
       await alert.present();
     }
-    
+
     this.redireccionar('home');
   }
 
@@ -929,6 +956,13 @@ export class GameService {
     if (this.partido.equipo_1?.lado === lado) return this.partido.equipo_1;
     if (this.partido.equipo_2?.lado === lado) return this.partido.equipo_2;
     return null;
+  }
+
+  // Nombre del equipo ganador seguido de su letra entre paréntesis (A/B),
+  // para usar en los mensajes que anuncian el resultado del partido.
+  textoEquipoGanador(lado: 'A' | 'B'): string {
+    const nombre = this.obtenerEquipoPorLado(lado)?.nombre || `Equipo ${lado}`;
+    return `${nombre} (${lado})`;
   }
 
   obtenerGanadorPartido(): 'A' | 'B' | false {
@@ -1065,10 +1099,17 @@ export class GameService {
       firma_segundo_arbitro: null,
       estado: 1,
       // Si está activo, en el set decisivo se avisa con una alerta y se
-      // cambia de lado cuando un equipo llega a 8 puntos. Apagado por
+      // cambia de lado cuando un equipo llega a 8 puntos. Activado por
       // defecto (se configura en la primera vista).
-      cambio_lado_ultimo_set: false
+      cambio_lado_ultimo_set: true,
+      // Qué firmas del flujo se piden. Activadas por defecto; al
+      // desactivar una, new_firma() la salta directo al siguiente paso.
+      firmas_habilitadas: this.clean_firmas_habilitadas()
     }
+  }
+
+  clean_firmas_habilitadas() {
+    return { 1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: true, 9: true, 10: true };
   }
 
   clean_equipo() {

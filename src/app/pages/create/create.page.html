@@ -1,5 +1,5 @@
 
-<ion-header [translucent]="true">
+<ion-header [translucent]="false">
   <ion-toolbar>
       <ion-buttons [collapse]="true" slot="start">
         <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
@@ -59,6 +59,20 @@
     <div class="input-text" style="display: flex; align-items: center; justify-content: space-between;">
       <label style="margin: 0;">Cambio de lado último set</label>
       <ion-toggle [(ngModel)]="partido.cambio_lado_ultimo_set"></ion-toggle>
+    </div>
+
+    <div class="input-text" style="margin-top: 10px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <label style="margin: 0;">Firmas</label>
+        <div>
+          <ion-button fill="clear" size="small" (click)="activarTodasLasFirmas()">Activar todo</ion-button>
+          <ion-button fill="clear" size="small" (click)="desactivarTodasLasFirmas()">Desactivar todo</ion-button>
+        </div>
+      </div>
+      <div *ngFor="let firma of firmasConfig" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.1);">
+        <label style="margin: 0;">{{firma.label}}</label>
+        <ion-toggle [(ngModel)]="partido.firmas_habilitadas[firma.num]"></ion-toggle>
+      </div>
     </div>
 
   </div>

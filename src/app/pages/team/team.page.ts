@@ -58,6 +58,7 @@ export class TeamPage implements OnInit {
       inputs: [
         {
           name: 'dorsal',
+          id: 'input-dorsal-nuevo-jugador',
           type: 'number',
           placeholder: 'Número de camiseta',
           value: ''
@@ -65,7 +66,7 @@ export class TeamPage implements OnInit {
         {
           name: 'nombre',
           type: 'text',
-          placeholder: 'Nombre del jugador',
+          placeholder: 'Nombre del jugador (opcional)',
           value: ''
         },
       ],
@@ -77,23 +78,23 @@ export class TeamPage implements OnInit {
         {
           text: 'Agregar',
           handler: (data) => {
-            if (!data.nombre || !data.dorsal) {
+            if (data.dorsal === '' || data.dorsal === null || data.dorsal === undefined) {
               return false;
             }
-  
+
             const dorsal = parseInt(data.dorsal, 10);
-  
+
             // Verificar si el dorsal ya está en uso
             if (this.equipo.jugadores && this.equipo.jugadores.some((j: any) => j.numero === dorsal)) {
               this.mostrarError('Este número de camiseta ya está en uso');
               return false;
             }
-  
-            // Si todo está bien, agregar el jugador
+
+            // Si todo está bien, agregar el jugador (el nombre es opcional)
             let jugador: any = this._game_.clean_jugador();
             jugador.numero = dorsal;
-            jugador.nombre = data.nombre.trim();
-            
+            jugador.nombre = data.nombre?.trim() || null;
+
             if (!this.equipo.jugadores) {
               this.equipo.jugadores = [jugador];
             } else {
@@ -105,8 +106,12 @@ export class TeamPage implements OnInit {
         }
       ]
     });
-  
+
     await alert.present();
+
+    // Foco automático en el campo N° al crear (no al editar).
+    const inputDorsal = alert.querySelector<HTMLInputElement>('#input-dorsal-nuevo-jugador');
+    inputDorsal?.focus();
   }
   
   // Método auxiliar para mostrar mensajes de error
@@ -170,27 +175,27 @@ export class TeamPage implements OnInit {
         {
           text: 'Guardar',
           handler: (data) => {
-            if (!data.nombre || !data.dorsal) {
+            if (data.dorsal === '' || data.dorsal === null || data.dorsal === undefined) {
               return false;
             }
-  
+
             const nuevoDorsal = parseInt(data.dorsal, 10);
-  
+
             // Si el dorsal cambió, verificar que no esté en uso
             if (nuevoDorsal !== dorsalOriginal) {
               const dorsalEnUso = this.equipo.jugadores.some(
-                (j: any, index: number) => 
+                (j: any, index: number) =>
                   index !== i && j.numero === nuevoDorsal
               );
-              
+
               if (dorsalEnUso) {
                 this.mostrarError('Este número de camiseta ya está en uso');
                 return false;
               }
             }
-  
-            // Si todo está bien, actualizar el jugador
-            this.equipo.jugadores[i].nombre = data.nombre.trim();
+
+            // Si todo está bien, actualizar el jugador (el nombre es opcional)
+            this.equipo.jugadores[i].nombre = data.nombre?.trim() || null;
             this.equipo.jugadores[i].numero = nuevoDorsal;
             this._game_.guardar();
             return true;

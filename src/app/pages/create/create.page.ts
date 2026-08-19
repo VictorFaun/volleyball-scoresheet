@@ -14,6 +14,22 @@ export class CreatePage implements OnInit, ComponentCanDeactivate {
   partido:any;
   autocompletar:boolean = false;
 
+  // Firmas que se piden durante el flujo del partido, en el orden en que
+  // aparecen. Cada una se puede desactivar para saltarla directo al
+  // siguiente paso (ver GameService.new_firma / avanzarDespuesDeFirma).
+  firmasConfig = [
+    { num: 1, label: 'Capitán A (inicio)' },
+    { num: 2, label: 'Entrenador A' },
+    { num: 3, label: 'Capitán B (inicio)' },
+    { num: 4, label: 'Entrenador B' },
+    { num: 5, label: 'Capitán A (fin)' },
+    { num: 6, label: 'Capitán B (fin)' },
+    { num: 7, label: 'Planillero' },
+    { num: 8, label: 'Asistente Planillero' },
+    { num: 9, label: 'Segundo Árbitro' },
+    { num: 10, label: 'Primer Árbitro' },
+  ];
+
   constructor(private navCtrl: NavController, private _game_: GameService, private alertController: AlertController) { }
 
   volver() {
@@ -60,11 +76,23 @@ export class CreatePage implements OnInit, ComponentCanDeactivate {
 
   ngOnInit() {
     this.partido = this._game_.partido;
+    // Partidos creados antes de que existiera esta opción no traen el campo.
+    if (!this.partido.firmas_habilitadas) {
+      this.partido.firmas_habilitadas = this._game_.clean_firmas_habilitadas();
+    }
   }
 
   siguiente(){
     this._game_.crearPartido();
     this._game_.new_informacion();
+  }
+
+  activarTodasLasFirmas() {
+    this.firmasConfig.forEach(f => this.partido.firmas_habilitadas[f.num] = true);
+  }
+
+  desactivarTodasLasFirmas() {
+    this.firmasConfig.forEach(f => this.partido.firmas_habilitadas[f.num] = false);
   }
 
   buscar_torneo(){
