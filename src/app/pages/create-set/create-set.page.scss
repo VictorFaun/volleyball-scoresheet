@@ -10,6 +10,21 @@
     p{
         color: rgba(var(--ion-color-dark-rgb),.5);
     }
+    label{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+// Ícono que marca, al final de la fila del label, qué equipo tiene el saque.
+// Tamaño fijo en px (no font-size) para agrandarlo sin afectar el texto ni
+// el alto/espaciado del resto de la fila.
+.icono-saque {
+  color: var(--ion-color-primary);
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
 }
 .select-text{
     padding-bottom: 20px;

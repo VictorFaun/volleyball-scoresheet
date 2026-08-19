@@ -1,8 +1,7 @@
-import { Component, DoCheck, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController, NavController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from 'src/app/services/game/game.service';
-import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 
 @Component({
   selector: 'app-team',
@@ -10,38 +9,42 @@ import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
   styleUrls: ['./team.page.scss'],
   standalone: false,
 })
-export class TeamPage implements OnInit, DoCheck {
+export class TeamPage implements OnInit {
 
-  lado: string = '';
+  numero: any;
+  titulo: string = '';
   equipo: any;
   autocompletar: boolean = false;
 
-  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController, private _localStorage_: LocalstorageService) { }
+  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController) { }
   volver() {
-    this.navCtrl.navigateBack('/home');
+    this._game_.guardar();
+    this.navCtrl.navigateBack('/home', { replaceUrl: true });
   }
 
-
-  ngDoCheck() {
-    this._localStorage_.saveData(this._game_.partidos);
+  ionViewWillLeave() {
+    this._game_.guardar();
   }
+
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      this.lado = params['lado'];
-      if (this.lado == "A") {
-        this.equipo = this._game_.partido.equipo_a;
+      this.numero = Number(params['numero']);
+      if (this.numero == 1) {
+        this.equipo = this._game_.partido.equipo_1;
+        this.titulo = 'Primer Equipo';
       }
-      if (this.lado == "B") {
-        this.equipo = this._game_.partido.equipo_b;
+      if (this.numero == 2) {
+        this.equipo = this._game_.partido.equipo_2;
+        this.titulo = 'Segundo Equipo';
       }
     });
   }
 
   siguiente() {
-    if (this.lado == "A") {
-      this._game_.new_equipo("B");
+    if (this.numero == 1) {
+      this._game_.new_equipo(2);
     }
-    if (this.lado == "B") {
+    if (this.numero == 2) {
       this._game_.new_firma(1);
     }
   }
@@ -96,6 +99,7 @@ export class TeamPage implements OnInit, DoCheck {
             } else {
               this.equipo.jugadores.push(jugador);
             }
+            this._game_.guardar();
             return true;
           }
         }
@@ -154,6 +158,7 @@ export class TeamPage implements OnInit, DoCheck {
                   text: 'Eliminar',
                   handler: () => {
                     this.equipo.jugadores.splice(i, 1);
+                    this._game_.guardar();
                   }
                 }
               ]
@@ -187,6 +192,7 @@ export class TeamPage implements OnInit, DoCheck {
             // Si todo está bien, actualizar el jugador
             this.equipo.jugadores[i].nombre = data.nombre.trim();
             this.equipo.jugadores[i].numero = nuevoDorsal;
+            this._game_.guardar();
             return true;
           }
         }
@@ -202,14 +208,14 @@ export class TeamPage implements OnInit, DoCheck {
       return;
     }
     
-    const existeEquipo = this._game_.partidos.some((partido: any, index: number) => 
+    const existeEquipo = this._game_.partidos.some((partido: any, index: number) =>
       index !== this._game_.index &&
     partido.competicion == this._game_.partido.competicion &&
     (
-      partido.equipo_a && 
-      partido.equipo_a.nombre.toLowerCase() === this.equipo.nombre.toLowerCase() ||
-      partido.equipo_b && 
-      partido.equipo_b.nombre.toLowerCase() === this.equipo.nombre.toLowerCase()
+      partido.equipo_1 &&
+      partido.equipo_1.nombre.toLowerCase() === this.equipo.nombre.toLowerCase() ||
+      partido.equipo_2 &&
+      partido.equipo_2.nombre.toLowerCase() === this.equipo.nombre.toLowerCase()
     )
     );
     
@@ -220,11 +226,11 @@ export class TeamPage implements OnInit, DoCheck {
     const partido = this.buscarPartido();
     let equipo = null;
     if (partido) {
-      if (this.equipo && this.equipo.nombre && partido.equipo_a && partido.equipo_a.nombre && this.equipo.nombre.toLowerCase() == partido.equipo_a.nombre.toLowerCase()) {
-        equipo = partido.equipo_a;
+      if (this.equipo && this.equipo.nombre && partido.equipo_1 && partido.equipo_1.nombre && this.equipo.nombre.toLowerCase() == partido.equipo_1.nombre.toLowerCase()) {
+        equipo = partido.equipo_1;
       }else{
-        if (this.equipo && this.equipo.nombre && partido.equipo_b && partido.equipo_b.nombre && this.equipo.nombre.toLowerCase() == partido.equipo_b.nombre.toLowerCase()) {
-          equipo = partido.equipo_b;
+        if (this.equipo && this.equipo.nombre && partido.equipo_2 && partido.equipo_2.nombre && this.equipo.nombre.toLowerCase() == partido.equipo_2.nombre.toLowerCase()) {
+          equipo = partido.equipo_2;
         }
       }
     }
@@ -238,17 +244,18 @@ export class TeamPage implements OnInit, DoCheck {
       this.equipo.nombre = equipo.nombre;
     }
     this.autocompletar = false;
+    this._game_.guardar();
   }
 
   buscarPartido(){
-    const partidos = this._game_.partidos.filter((partido: any, index: number) => 
+    const partidos = this._game_.partidos.filter((partido: any, index: number) =>
       index !== this._game_.index &&
       partido.competicion == this._game_.partido.competicion &&
       (
-        partido.equipo_a && 
-        partido.equipo_a.nombre.toLowerCase() === this.equipo.nombre.toLowerCase() ||
-        partido.equipo_b && 
-        partido.equipo_b.nombre.toLowerCase() === this.equipo.nombre.toLowerCase()
+        partido.equipo_1 &&
+        partido.equipo_1.nombre.toLowerCase() === this.equipo.nombre.toLowerCase() ||
+        partido.equipo_2 &&
+        partido.equipo_2.nombre.toLowerCase() === this.equipo.nombre.toLowerCase()
       )
     );
 

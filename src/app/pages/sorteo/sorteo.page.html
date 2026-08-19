@@ -1,0 +1,82 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons [collapse]="true" slot="start">
+      <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+    </ion-buttons>
+    <ion-title>Sorteo</ion-title>
+    <ion-buttons [collapse]="true" slot="end">
+      <ion-button color="primary" (click)="confirmar()">
+        Siguiente
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+      </ion-buttons>
+      <ion-title size="large">Sorteo</ion-title>
+      <ion-buttons [collapse]="true" slot="end">
+        <ion-button color="primary" (click)="confirmar()">
+          Siguiente
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <div style="margin: 20px 20px 20px;">
+
+    <ng-container *ngIf="mostrarLados">
+      <div class="select-text">
+        <label>Equipo A</label>
+        <ion-select fill="outline" interface="popover" label-placement="stacked" [interfaceOptions]="opcionesPopoverSelect" placeholder="Selecciona el Equipo A"
+          [(ngModel)]="equipoALado" (ionChange)="onCambioEquipoA($event.detail.value)">
+          <ion-select-option [value]="1">{{equipo1?.nombre || 'Primer Equipo'}}</ion-select-option>
+          <ion-select-option [value]="2">{{equipo2?.nombre || 'Segundo Equipo'}}</ion-select-option>
+        </ion-select>
+      </div>
+
+      <div class="select-text">
+        <label>Equipo B</label>
+        <ion-select fill="outline" interface="popover" label-placement="stacked" [interfaceOptions]="opcionesPopoverSelect" placeholder="Selecciona el Equipo B"
+          [(ngModel)]="equipoBLado" (ionChange)="onCambioEquipoB($event.detail.value)">
+          <ion-select-option [value]="1">{{equipo1?.nombre || 'Primer Equipo'}}</ion-select-option>
+          <ion-select-option [value]="2">{{equipo2?.nombre || 'Segundo Equipo'}}</ion-select-option>
+        </ion-select>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!mostrarLados">
+      <div class="select-text">
+        <label>Equipo Lado Izquierdo</label>
+        <ion-select fill="outline" interface="popover" label-placement="stacked" [interfaceOptions]="opcionesPopoverSelect" placeholder="Selecciona el equipo"
+          [(ngModel)]="equipoIzquierda" (ionChange)="onCambioEquipoIzquierda($event.detail.value)">
+          <ion-select-option value="A">{{nombreEquipoLado('A')}} (A)</ion-select-option>
+          <ion-select-option value="B">{{nombreEquipoLado('B')}} (B)</ion-select-option>
+        </ion-select>
+      </div>
+
+      <div class="select-text">
+        <label>Equipo Lado Derecho</label>
+        <ion-select fill="outline" interface="popover" label-placement="stacked" [interfaceOptions]="opcionesPopoverSelect" placeholder="Selecciona el equipo"
+          [(ngModel)]="equipoDerecha" (ionChange)="onCambioEquipoDerecha($event.detail.value)">
+          <ion-select-option value="A">{{nombreEquipoLado('A')}} (A)</ion-select-option>
+          <ion-select-option value="B">{{nombreEquipoLado('B')}} (B)</ion-select-option>
+        </ion-select>
+      </div>
+    </ng-container>
+
+    <div class="select-text">
+      <label>Equipo al Saque</label>
+      <ion-select fill="outline" interface="popover" label-placement="stacked" [interfaceOptions]="opcionesPopoverSelect" placeholder="Selecciona quién saca" [selectedText]="textoEquipoSaqueSeleccionado" [(ngModel)]="equipoSaque">
+        <ion-select-option value="A">Equipo A ({{nombreEquipoLado('A')}})</ion-select-option>
+        <ion-select-option value="B">Equipo B ({{nombreEquipoLado('B')}})</ion-select-option>
+      </ion-select>
+    </div>
+
+  </div>
+
+</ion-content>

@@ -1,14 +1,12 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { CreatePage } from './create.page';
-import { CanDeactivateGuard } from 'src/app/guards/can-deactivate.guard';
+import { SorteoPage } from './sorteo.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: CreatePage,
-    canDeactivate: [CanDeactivateGuard]
+    component: SorteoPage
   }
 ];
 
@@ -16,4 +14,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class CreatePageRoutingModule {}
+export class SorteoPageRoutingModule {}

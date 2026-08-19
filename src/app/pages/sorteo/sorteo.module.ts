@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { CreatePageRoutingModule } from './create-routing.module';
+import { SorteoPageRoutingModule } from './sorteo-routing.module';
 
-import { CreatePage } from './create.page';
+import { SorteoPage } from './sorteo.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    CreatePageRoutingModule
+    SorteoPageRoutingModule
   ],
-  declarations: [CreatePage]
+  declarations: [SorteoPage]
 })
-export class CreatePageModule {}
+export class SorteoPageModule {}

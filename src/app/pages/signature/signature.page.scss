@@ -44,6 +44,11 @@ canvas {
     display: block;
   }
 }
-image-cropper canvas {
-    background-color: #000 !important;
-  }
+// ngx-image-cropper pinta el área fuera de la selección de recorte usando
+// estas variables, con blanco sólido por defecto (pensado para fondos claros).
+// Las enlazamos al fondo del tema actual para que no se vea un recuadro
+// blanco en modo oscuro.
+image-cropper {
+  --cropper-overlay-color: var(--ion-background-color, #fff);
+  --cropper-outline-color: rgba(var(--ion-background-color-rgb, 255, 255, 255), 0.6);
+}

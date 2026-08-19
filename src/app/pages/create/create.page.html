@@ -53,92 +53,12 @@
           </ion-segment-button>
         </ion-segment>
       </div>
-      
+
     </div>
 
-    <div class="input-text">
-      <label>Fecha</label>
-      <div id="present-alert" id="ion-datatime-picker-1" class="input-datetime">
-        <p style="margin: 0px;" [style.opacity]="partido.fecha?'1':'0.5'">{{partido.fecha?partido.fecha:'DD/MM/YYYY'}}</p></div>
-      <app-datetimepicker format="DD/MM/YYYY" outputFormat="DD/MM/YYYY" mode="md" presentation="date"
-        trigger="ion-datatime-picker-1" [cancelText]="'CANCELAR'" [doneText]="'CONFIRMAR'" [display]="false"
-        [(ngModel)]="partido.fecha"></app-datetimepicker>
-    </div>
-
-    <div class="input-text">
-      <label>Hora</label>
-      <div id="present-alert" id="ion-datatime-picker-2" class="input-datetime"><p style="margin: 0px;" [style.opacity]="partido.hora?'1':'0.5'">{{partido.hora?partido.hora:'HH:MM'}}</p>
-      </div>
-      <app-datetimepicker format="HH:mm" outputFormat="HH:mm" mode="md" presentation="time"
-        trigger="ion-datatime-picker-2" [cancelText]="'CANCELAR'" [doneText]="'CONFIRMAR'" [display]="false"
-        [(ngModel)]="partido.hora"></app-datetimepicker>
-    </div>
-
-    <div class="input-text">
-      <label>Ciudad</label>
-      <ion-input fill="outline" placeholder="Nombre Ciudad" [(ngModel)]="partido.ciudad"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Pais</label>
-      <ion-input fill="outline" placeholder="Nombre Pais" [(ngModel)]="partido.pais"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Gimnasio</label>
-      <ion-input fill="outline" placeholder="Nombre Gimnasio" [(ngModel)]="partido.gimnasio"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Division</label>
-      <ion-input fill="outline" placeholder="Nombre Division" [(ngModel)]="partido.division"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Categoria</label>
-      <ion-input fill="outline" placeholder="Nombre Categoria" [(ngModel)]="partido.categoria"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Primer Arbitro</label>
-      <ion-input fill="outline" placeholder="Nombre Primer Arbitro" [(ngModel)]="partido.primer_arbitro"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Segundo Arbitro</label>
-      <ion-input fill="outline" placeholder="Nombre Segundo Arbitro" [(ngModel)]="partido.segundo_arbitro"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Planillero</label>
-      <ion-input fill="outline" placeholder="Nombre Planillero" [(ngModel)]="partido.planillero"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Asistente Planillero</label>
-      <ion-input fill="outline" placeholder="Nombre Asistente Planillero"
-        [(ngModel)]="partido.asistente_planillero"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Primer Banderin</label>
-      <ion-input fill="outline" placeholder="Nombre Primer Banderin" [(ngModel)]="partido.primer_banderin"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Segundo Banderin</label>
-      <ion-input fill="outline" placeholder="Nombre Segundo Banderin"
-        [(ngModel)]="partido.segundo_banderin"></ion-input>
-    </div>
-
-    <div class="input-text">
-      <label>Tercer Banderin</label>
-      <ion-input fill="outline" placeholder="Nombre Tercer Banderin" [(ngModel)]="partido.tercer_banderin"></ion-input>
-    </div>
-
-    <div class="input-text" style="padding-bottom: 0px;">
-      <label>Cuarto Banderin</label>
-      <ion-input fill="outline" placeholder="Nombre Cuarto Banderin" [(ngModel)]="partido.cuarto_banderin"></ion-input>
+    <div class="input-text" style="display: flex; align-items: center; justify-content: space-between;">
+      <label style="margin: 0;">Cambio de lado último set</label>
+      <ion-toggle [(ngModel)]="partido.cambio_lado_ultimo_set"></ion-toggle>
     </div>
 
   </div>

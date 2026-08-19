@@ -1,7 +1,6 @@
-import { Component, DoCheck, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { GameService } from 'src/app/services/game/game.service';
-import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 import { Clipboard } from '@capacitor/clipboard';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
@@ -11,21 +10,16 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
   styleUrls: ['home.page.scss'],
   standalone: false,
 })
-export class HomePage implements OnInit, DoCheck {
+export class HomePage implements OnInit {
 
   torneos: any = []
 
-  constructor(private _game_: GameService,private alertController: AlertController, private _localStorage_: LocalstorageService) { }
+  constructor(private _game_: GameService,private alertController: AlertController) { }
   ngOnInit(): void {
   }
-  
-  
-  ngDoCheck() {
-    this._localStorage_.saveData(this._game_.partidos);
-  }
 
-  new_game(){
-    this._game_.new_game();
+  async new_game(){
+    await this._game_.new_game();
   }
   edit_game(index:any){
     console.log(index)
@@ -61,15 +55,18 @@ export class HomePage implements OnInit, DoCheck {
       if(this._game_.partidos[index].numero_partido){
         partido.numero_partido = this._game_.partidos[index].numero_partido
       }
-      if(this._game_.partidos[index].equipo_a){
-        if(this._game_.partidos[index].equipo_a.nombre){
-          partido.equipoA = this._game_.partidos[index].equipo_a.nombre
-        }
+      // El equipo que juega como "A"/"B" se define recién en el R-5 del
+      // set 1 (equipo.lado). Antes de eso, mostramos equipo_1/equipo_2 en
+      // ese orden para no dejar la lista vacía mientras se configura.
+      const equipo1 = this._game_.partidos[index].equipo_1;
+      const equipo2 = this._game_.partidos[index].equipo_2;
+      const equipoLadoA = [equipo1, equipo2].find((e: any) => e?.lado === 'A') || equipo1;
+      const equipoLadoB = [equipo1, equipo2].find((e: any) => e?.lado === 'B') || equipo2;
+      if(equipoLadoA?.nombre){
+        partido.equipoA = equipoLadoA.nombre
       }
-      if(this._game_.partidos[index].equipo_b){
-        if(this._game_.partidos[index].equipo_b.nombre){
-          partido.equipoB = this._game_.partidos[index].equipo_b.nombre
-        }
+      if(equipoLadoB?.nombre){
+        partido.equipoB = equipoLadoB.nombre
       }
       if( this._game_.partidos[index].set_1 && this._game_.partidos[index].set_1.victoria){
         if(this._game_.partidos[index].set_1.victoria == "A"){
@@ -117,32 +114,36 @@ export class HomePage implements OnInit, DoCheck {
           1: 'Configuración',
           2: 'Configuración',
           3: 'Configuración',
-          4: 'Firmas',
+          4: 'Configuración',
           5: 'Firmas',
           6: 'Firmas',
           7: 'Firmas',
-          8: 'R-5 Set 1',
-          9: 'Inicio Set 1',
-          10: 'Fin Set 1',
-          11: 'R-5 Set 2',
-          12: 'Inicio Set 2',
-          13: 'Fin Set 2',
-          14: 'R-5 Set 3',
-          15: 'Inicio Set 3',
-          16: 'Fin Set 3',
-          17: 'R-5 Set 4',
-          18: 'Inicio Set 4',
-          19: 'Fin Set 4',
-          20: 'R-5 Set 5',
-          21: 'Inicio Set 5',
-          22: 'Fin Set 5',
-          23: 'Firmas',
-          24: 'Firmas',
-          25: 'Firmas',
-          26: 'Firmas',
+          8: 'Firmas',
+          9: 'Sorteo',
+          10: 'R-5 Set 1',
+          11: 'Inicio Set 1',
+          12: 'Fin Set 1',
+          13: 'R-5 Set 2',
+          14: 'Inicio Set 2',
+          15: 'Fin Set 2',
+          16: 'Sorteo',
+          17: 'R-5 Set 3',
+          18: 'Inicio Set 3',
+          19: 'Fin Set 3',
+          20: 'R-5 Set 4',
+          21: 'Inicio Set 4',
+          22: 'Fin Set 4',
+          23: 'Sorteo',
+          24: 'R-5 Set 5',
+          25: 'Inicio Set 5',
+          26: 'Fin Set 5',
           27: 'Firmas',
           28: 'Firmas',
-          29: 'Finalizado',
+          29: 'Firmas',
+          30: 'Firmas',
+          31: 'Firmas',
+          32: 'Firmas',
+          33: 'Finalizado',
         };
       
         partido.estado = estadosTexto[estado] || 'Configuración';
@@ -183,10 +184,12 @@ export class HomePage implements OnInit, DoCheck {
         {
           text: 'Eliminar',
           role: 'destructive',
-          handler: () => {
+          handler: async () => {
 
             if (index >= 0 && index < this._game_.partidos.length) {
-              this._game_.partidos.splice(index, 1);
+              const partidoAEliminar = this._game_.partidos[index];
+              await this._game_.eliminarFirmasPartido(partidoAEliminar);
+              this._game_.eliminarPartido(partidoAEliminar);
               this.torneos[indexTorneo].partidos.splice(indexPartido, 1);
               this.cargaPartidos()
             } else {
@@ -209,88 +212,99 @@ export class HomePage implements OnInit, DoCheck {
       this._game_.edit_game(i)
     }
     if(estado == 2){
-      this._game_.new_equipo("A")
+      this._game_.new_informacion()
     }
     if(estado == 3){
-      this._game_.new_equipo("B")
+      this._game_.new_equipo(1)
     }
     if(estado == 4){
-      this._game_.new_firma(1)
+      this._game_.new_equipo(2)
     }
     if(estado == 5){
-      this._game_.new_firma(2)
+      this._game_.new_firma(1)
     }
     if(estado == 6){
-      this._game_.new_firma(3)
+      this._game_.new_firma(2)
     }
     if(estado == 7){
-      this._game_.new_firma(4)
+      this._game_.new_firma(3)
     }
     if(estado == 8){
-      this._game_.new_set(1)
+      this._game_.new_firma(4)
     }
     if(estado == 9){
-      this._game_.start_set(1)
+      this._game_.new_sorteo(1)
     }
-
     if(estado == 10){
-      this._game_.closeSet(1)
+      this._game_.new_set(1)
     }
     if(estado == 11){
-      this._game_.new_set(2)
+      this._game_.start_set(1)
     }
     if(estado == 12){
-      this._game_.start_set(2)
+      this._game_.closeSet(1)
     }
     if(estado == 13){
-      this._game_.closeSet(2)
+      this._game_.new_set(2)
     }
     if(estado == 14){
-      this._game_.new_set(3)
+      this._game_.start_set(2)
     }
     if(estado == 15){
-      this._game_.start_set(3)
+      this._game_.closeSet(2)
     }
     if(estado == 16){
-      this._game_.closeSet(3)
+      this._game_.new_sorteo(3)
     }
     if(estado == 17){
-      this._game_.new_set(4)
+      this._game_.new_set(3)
     }
     if(estado == 18){
-      this._game_.start_set(4)
+      this._game_.start_set(3)
     }
     if(estado == 19){
-      this._game_.closeSet(4)
+      this._game_.closeSet(3)
     }
     if(estado == 20){
-      this._game_.new_set(5)
+      this._game_.new_set(4)
     }
     if(estado == 21){
-      this._game_.start_set(5)
+      this._game_.start_set(4)
     }
     if(estado == 22){
-      this._game_.closeSet(5)
+      this._game_.closeSet(4)
     }
     if(estado == 23){
-      this._game_.new_firma(5)
+      this._game_.new_sorteo(5)
     }
     if(estado == 24){
-      this._game_.new_firma(6)
+      this._game_.new_set(5)
     }
     if(estado == 25){
-      this._game_.new_firma(7)
+      this._game_.start_set(5)
     }
     if(estado == 26){
-      this._game_.new_firma(8)
+      this._game_.closeSet(5)
     }
     if(estado == 27){
-      this._game_.new_firma(9)
+      this._game_.new_firma(5)
     }
     if(estado == 28){
-      this._game_.new_firma(10)
+      this._game_.new_firma(6)
     }
     if(estado == 29){
+      this._game_.new_firma(7)
+    }
+    if(estado == 30){
+      this._game_.new_firma(8)
+    }
+    if(estado == 31){
+      this._game_.new_firma(9)
+    }
+    if(estado == 32){
+      this._game_.new_firma(10)
+    }
+    if(estado == 33){
 
     }
   }
@@ -400,10 +414,12 @@ export class HomePage implements OnInit, DoCheck {
     }
 
     // Nombres de los Equipos (Cabecera central A vs B)
+    const equipoPlanillaA = [partido.equipo_1, partido.equipo_2].find((e: any) => e?.lado === 'A');
+    const equipoPlanillaB = [partido.equipo_1, partido.equipo_2].find((e: any) => e?.lado === 'B');
     primeraPagina.drawText('A', { x: 358, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-    primeraPagina.drawText(partido.equipo_a?.nombre || '', { x: 373, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+    primeraPagina.drawText(equipoPlanillaA?.nombre || '', { x: 373, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
     primeraPagina.drawText('B', { x: 500, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-    primeraPagina.drawText(partido.equipo_b?.nombre || '', { x: 455, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+    primeraPagina.drawText(equipoPlanillaB?.nombre || '', { x: 455, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
 
 
     // =========================================================================

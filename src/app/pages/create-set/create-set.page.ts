@@ -1,8 +1,7 @@
-import { Component, DoCheck, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular';
 import { GameService } from 'src/app/services/game/game.service';
-import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 
 @Component({
   selector: 'app-create-set',
@@ -10,21 +9,21 @@ import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
   styleUrls: ['./create-set.page.scss'],
   standalone: false,
 })
-export class CreateSetPage implements OnInit, DoCheck {
+export class CreateSetPage implements OnInit {
 
   num: any;
 
   set: any;
 
-  constructor(private router: Router, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController, private _localStorage_: LocalstorageService) { }
-  
-  
-  ngDoCheck() {
-    this._localStorage_.saveData(this._game_.partidos);
+  constructor(private router: Router, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController) { }
+
+  ionViewWillLeave() {
+    this._game_.guardar();
   }
 
   volver() {
-    this.router.navigate(["home"]);
+    this._game_.guardar();
+    this.router.navigate(["home"], { replaceUrl: true });
   }
 
   ngOnInit() {
@@ -52,18 +51,6 @@ export class CreateSetPage implements OnInit, DoCheck {
   async siguiente() {
   const aCompleto = this.set.alineacion_a.every((j:any) => j && typeof j === 'number');
   const bCompleto = this.set.alineacion_b.every((j:any) => j && typeof j === 'number');
-  const saqueValido = this.set.equipo_saque === 'A' || this.set.equipo_saque === 'B';
-
-  if (!saqueValido) {
-    const alert = await this.alertController.create({
-      header: 'Saque inválido',
-      cssClass: 'custom-alert',
-      message: 'Debes seleccionar un equipo válido para el saque (A o B).',
-      buttons: ['Aceptar']
-    });
-    await alert.present();
-    return;
-  }
 
   if (!aCompleto || !bCompleto) {
     const equipo = !aCompleto ? 'A' : 'B';
@@ -82,11 +69,14 @@ export class CreateSetPage implements OnInit, DoCheck {
   this._game_.confirm_set(this.num);
 }
 
+  // Nombre del equipo que corresponde a un lado, para mostrarlo entre
+  // paréntesis junto a "Equipo A"/"Equipo B".
+  nombreEquipoLado(lado: 'A' | 'B'): string {
+    return this._game_.obtenerEquipoPorLado(lado)?.nombre || `Equipo ${lado}`;
+  }
 
   async alineacion(equipo: 'A' | 'B', pos: number) {
-    const jugadores = equipo === 'A'
-      ? this._game_.partido.equipo_a.jugadores
-      : this._game_.partido.equipo_b.jugadores;
+    const jugadores = this._game_.obtenerEquipoPorLado(equipo).jugadores;
 
     const alineacion = equipo === 'A'
       ? this.set.alineacion_a
@@ -124,43 +114,7 @@ export class CreateSetPage implements OnInit, DoCheck {
             }
 
             alineacion[pos] = selectedValue;
-          }
-        }
-      ]
-    });
-
-    await alert.present();
-  }
-
-  async seleccionar_equipo() {
-    const alert = await this.alertController.create({
-      header: 'Selecciona un equipo',
-      cssClass: 'custom-alert',
-      inputs: [
-        {
-          name: 'A',
-          type: 'radio',
-          label: 'Equipo A',
-          value: 'A',
-          checked: this.set.equipo_saque == "A"
-        },
-        {
-          name: 'B',
-          type: 'radio',
-          label: 'Equipo B',
-          value: 'B',
-          checked: this.set.equipo_saque == "B"
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Aceptar',
-          handler: (selectedValue) => {
-            this.set.equipo_saque = selectedValue;
+            this._game_.guardar();
           }
         }
       ]

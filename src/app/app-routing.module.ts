@@ -16,8 +16,16 @@ const routes: Routes = [
     loadChildren: () => import('./pages/create/create.module').then( m => m.CreatePageModule)
   },
   {
+    path: 'informacion',
+    loadChildren: () => import('./pages/informacion/informacion.module').then( m => m.InformacionPageModule)
+  },
+  {
     path: 'team',
     loadChildren: () => import('./pages/team/team.module').then( m => m.TeamPageModule)
+  },
+  {
+    path: 'sorteo',
+    loadChildren: () => import('./pages/sorteo/sorteo.module').then( m => m.SorteoPageModule)
   },
   {
     path: 'create-set',

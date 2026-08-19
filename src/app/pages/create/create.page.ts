@@ -1,7 +1,7 @@
-import { Component, DoCheck, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
-import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
+import { Component, OnInit } from '@angular/core';
+import { AlertController, NavController } from '@ionic/angular';
 import { GameService } from 'src/app/services/game/game.service';
+import { ComponentCanDeactivate } from 'src/app/guards/can-deactivate.guard';
 
 @Component({
   selector: 'app-create',
@@ -9,14 +9,53 @@ import { GameService } from 'src/app/services/game/game.service';
   styleUrls: ['./create.page.scss'],
   standalone: false,
 })
-export class CreatePage implements OnInit, DoCheck {
+export class CreatePage implements OnInit, ComponentCanDeactivate {
 
   partido:any;
   autocompletar:boolean = false;
 
-  constructor(private navCtrl: NavController,private _game_: GameService, private _localStorage_: LocalstorageService) { }
+  constructor(private navCtrl: NavController, private _game_: GameService, private alertController: AlertController) { }
+
   volver() {
-    this.navCtrl.navigateBack('/home');
+    this.navCtrl.navigateBack('/home', { replaceUrl: true });
+  }
+
+  // Se ejecuta ante cualquier intento de salir de esta vista: el botón
+  // "volver", el botón/gesto físico de retroceso de Android, etc. Si el
+  // partido aún no fue confirmado (no existe en la lista de partidos), avisa
+  // antes de descartarlo en vez de perderlo silenciosamente.
+  canDeactivate(): boolean | Promise<boolean> {
+    if (this._game_.index !== null && this._game_.index !== undefined) {
+      this._game_.guardar();
+      return true;
+    }
+
+    return new Promise<boolean>(resolve => {
+      this.alertController.create({
+        header: 'Partido no guardado',
+        message: 'Este partido todavía no se ha guardado. ¿Deseas salir de todas formas o guardarlo antes de salir?',
+        backdropDismiss: false,
+        buttons: [
+          {
+            text: 'Salir de todas formas',
+            role: 'destructive',
+            handler: () => resolve(true)
+          },
+          {
+            text: 'Guardar y salir',
+            handler: () => {
+              this._game_.crearPartido();
+              this._game_.guardar();
+              resolve(true);
+            }
+          }
+        ]
+      }).then(alert => alert.present());
+    });
+  }
+
+  ionViewWillLeave() {
+    this._game_.guardar();
   }
 
   ngOnInit() {
@@ -24,7 +63,8 @@ export class CreatePage implements OnInit, DoCheck {
   }
 
   siguiente(){
-    this._game_.new_equipo("A")
+    this._game_.crearPartido();
+    this._game_.new_informacion();
   }
 
   buscar_torneo(){
@@ -32,16 +72,14 @@ export class CreatePage implements OnInit, DoCheck {
       this.autocompletar = false;
       return;
     }
-    
-    const existeTorneo = this._game_.partidos.some((partido: any, index: number) => 
+
+    const existeTorneo = this._game_.partidos.some((partido: any, index: number) =>
       index !== this._game_.index &&
-      partido.competicion && 
+      partido.competicion &&
       partido.competicion.toLowerCase() === this.partido.competicion.toLowerCase()
     );
-    
-    this.autocompletar = existeTorneo;
 
-    console.log(this._game_.index)
+    this.autocompletar = existeTorneo;
   }
 
   autocompletarDatos(){
@@ -67,13 +105,14 @@ export class CreatePage implements OnInit, DoCheck {
       this.partido.cuarto_banderin = partido.cuarto_banderin;
     }
     this.autocompletar = false;
+    this._game_.guardar();
   }
 
   buscarPartido(){
     // Filter matching games (excluding current one)
-    const partidos = this._game_.partidos.filter((partido: any, index: number) => 
+    const partidos = this._game_.partidos.filter((partido: any, index: number) =>
       index !== this._game_.index &&
-      partido.competicion && 
+      partido.competicion &&
       partido.competicion.toLowerCase() === this.partido.competicion.toLowerCase()
     );
 
@@ -84,18 +123,18 @@ export class CreatePage implements OnInit, DoCheck {
     partidos.sort((a: any, b: any) => {
       const numA = a.numero_partido || 0;
       const numB = b.numero_partido || 0;
-      
+
       // If both have numero_partido and they're different, sort by numero_partido (highest first)
       if (numA > 0 && numB > 0 && numA !== numB) {
         return numB - numA;
       }
-      
+
       // If both have the same numero_partido or one/both don't have it, sort by date and time
       const dateA = a.fecha ? new Date(a.fecha).getTime() : 0;
       const timeA = a.hora ? new Date(`1970-01-01T${a.hora}`).getTime() : 0;
       const dateB = b.fecha ? new Date(b.fecha).getTime() : 0;
       const timeB = b.hora ? new Date(`1970-01-01T${b.hora}`).getTime() : 0;
-      
+
       // If both have dates, compare them
       if (dateA > 0 && dateB > 0) {
         // If dates are different, sort by date (newest first)
@@ -103,20 +142,16 @@ export class CreatePage implements OnInit, DoCheck {
         // If same date, sort by time (newest first)
         return timeB - timeA;
       }
-      
+
       // If only one has a date, prioritize the one with date
       if (dateA > 0) return -1;
       if (dateB > 0) return 1;
-      
+
       // If neither has a date, maintain original order (last created first)
       return 0;
     });
 
     return partidos[0];
-  }
-    
-  ngDoCheck() {
-    this._localStorage_.saveData(this._game_.partidos);
   }
 
 }

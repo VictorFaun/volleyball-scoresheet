@@ -1,9 +1,8 @@
-import { Component, DoCheck, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from 'src/app/services/game/game.service';
 import * as moment from 'moment';
 import { AlertController, NavController } from '@ionic/angular';
-import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 
 @Component({
   selector: 'app-game',
@@ -11,21 +10,30 @@ import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
   styleUrls: ['./game.page.scss'],
   standalone: false,
 })
-export class GamePage implements OnInit, DoCheck {
+export class GamePage implements OnInit {
 
   set: any
   logs: any = []
   alineacion_a: any = []
   alineacion_b: any = []
   saque: any
-  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController, private _localStorage_: LocalstorageService) { }
-  volver() {
-    this.navCtrl.navigateBack('/home');
+  // Qué equipo arranca el set del lado izquierdo de la cancha.
+  ladoIzquierda: 'A' | 'B' = 'A'
+  constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController) { }
+
+  // Si el Equipo B está a la izquierda, se invierte el orden visual del
+  // marcador/cancha/botones (ver .orden-invertido en el scss), sin tocar
+  // ninguna lógica de rotación/posición, que sigue siendo por equipo A/B.
+  get invertido(): boolean {
+    return this.ladoIzquierda === 'B';
   }
-  
-  
-  ngDoCheck() {
-    this._localStorage_.saveData(this._game_.partidos);
+  volver() {
+    this._game_.guardar();
+    this.navCtrl.navigateBack('/home', { replaceUrl: true });
+  }
+
+  ionViewWillLeave() {
+    this._game_.guardar();
   }
 
   ngOnInit() {
@@ -36,42 +44,100 @@ export class GamePage implements OnInit, DoCheck {
     console.log(this._game_.partido)
   }
 
+  // Nombre del equipo que corresponde a un lado, para mostrarlo junto a la
+  // letra ("A"/"B") en el marcador.
+  nombreEquipoLado(lado: 'A' | 'B'): string {
+    return this._game_.obtenerEquipoPorLado(lado)?.nombre || `Equipo ${lado}`;
+  }
+
   updateLogs() {
     if (this.set == 1) {
       this.logs = this._game_.partido.set_1.logs
       this.alineacion_a = this._game_.partido.set_1.alineacion_a
       this.alineacion_b = this._game_.partido.set_1.alineacion_b
       this.saque = this._game_.partido.set_1.equipo_saque
+      this.ladoIzquierda = this._game_.partido.set_1.lado_izquierda || 'A'
     }
     if (this.set == 2) {
       this.logs = this._game_.partido.set_2.logs
       this.alineacion_a = this._game_.partido.set_2.alineacion_a
       this.alineacion_b = this._game_.partido.set_2.alineacion_b
       this.saque = this._game_.partido.set_2.equipo_saque
+      this.ladoIzquierda = this._game_.partido.set_2.lado_izquierda || 'A'
     }
     if (this.set == 3) {
       this.logs = this._game_.partido.set_3.logs
       this.alineacion_a = this._game_.partido.set_3.alineacion_a
       this.alineacion_b = this._game_.partido.set_3.alineacion_b
       this.saque = this._game_.partido.set_3.equipo_saque
+      this.ladoIzquierda = this._game_.partido.set_3.lado_izquierda || 'A'
     }
     if (this.set == 4) {
       this.logs = this._game_.partido.set_4.logs
       this.alineacion_a = this._game_.partido.set_4.alineacion_a
       this.alineacion_b = this._game_.partido.set_4.alineacion_b
       this.saque = this._game_.partido.set_4.equipo_saque
+      this.ladoIzquierda = this._game_.partido.set_4.lado_izquierda || 'A'
     }
     if (this.set == 5) {
       this.logs = this._game_.partido.set_5.logs
       this.alineacion_a = this._game_.partido.set_5.alineacion_a
       this.alineacion_b = this._game_.partido.set_5.alineacion_b
       this.saque = this._game_.partido.set_5.equipo_saque
+      this.ladoIzquierda = this._game_.partido.set_5.lado_izquierda || 'A'
     }
   }
 
-  punto(equipo: any) {
+  async punto(equipo: any) {
     this._game_.punto(this.set, equipo);
     this.updateLogs()
+    await this.verificarCambioDeLado();
+  }
+
+  // Si la opción "Cambio de lado último set" está activa y este es el set
+  // decisivo (3 a 3 sets, o 5 a 5 sets), avisa una sola vez por set cuando
+  // algún equipo llega a 8 puntos, y al cerrar la alerta intercambia los
+  // lados.
+  async verificarCambioDeLado() {
+    if (!this._game_.partido.cambio_lado_ultimo_set) return;
+
+    const esSetDecisivo = this.set == 5 || (this.set == 3 && this._game_.partido.numero_sets == 3);
+    if (!esSetDecisivo) return;
+
+    const setActual = this._game_.partido[`set_${this.set}`];
+    if (setActual.cambio_lado_realizado) return;
+
+    if (this.contarPuntos('A') !== 8 && this.contarPuntos('B') !== 8) return;
+
+    setActual.cambio_lado_realizado = true;
+
+    const alert = await this.alertController.create({
+      header: 'Cambio de lado',
+      message: 'Los equipos deberán hacer un cambio de lado.',
+      backdropDismiss: false,
+      buttons: [
+        {
+          text: 'Aceptar',
+          handler: () => {
+            setActual.lado_izquierda = this._game_.alternarEquipo(setActual.lado_izquierda);
+            this.ladoIzquierda = setActual.lado_izquierda;
+
+            // Se registra como log, ligado al punto n°8 que lo provocó (que
+            // queda justo debajo): al deshacer, GameService.deshacer()
+            // revierte ambos juntos en una sola acción.
+            const logCambioLado: any = this._game_.clean_log();
+            logCambioLado.tipo = 10;
+            logCambioLado.hora = new Date();
+            logCambioLado.equipo = setActual.lado_izquierda;
+            this.logs.unshift(logCambioLado);
+            this.updateLogs();
+
+            this._game_.guardar();
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   formatoHora(date: any) {
@@ -105,6 +171,9 @@ export class GamePage implements OnInit, DoCheck {
     }
     if (tipo == 9) {
       return "Expulsión"
+    }
+    if (tipo == 10) {
+      return "Cambio de lado"
     }
     return tipo
   }
@@ -188,9 +257,7 @@ export class GamePage implements OnInit, DoCheck {
   }
 
   async cambiarJugador(equipo: 'A' | 'B', jugadorSeleccionado: number) {
-    const jugadoresEquipo = equipo === 'A'
-      ? this._game_.partido.equipo_a.jugadores
-      : this._game_.partido.equipo_b.jugadores;
+    const jugadoresEquipo = this._game_.obtenerEquipoPorLado(equipo).jugadores;
 
     const alineacionInicial = equipo === 'A'
       ? this.alineacion_a
@@ -260,6 +327,7 @@ export class GamePage implements OnInit, DoCheck {
 
               this.logs.unshift(nuevoLog);
               this.updateLogs();
+              this._game_.guardar();
             }
           }
         ]
@@ -310,6 +378,7 @@ export class GamePage implements OnInit, DoCheck {
 
             this.logs.unshift(nuevoLog);
             this.updateLogs();
+            this._game_.guardar();
           }
         }
       ]
@@ -369,6 +438,7 @@ export class GamePage implements OnInit, DoCheck {
 
     this.logs.unshift(nuevoLog);
     this.updateLogs();
+    this._game_.guardar();
   }
 
   async amonestacion(equipo: 'A' | 'B') {
@@ -408,7 +478,7 @@ export class GamePage implements OnInit, DoCheck {
 
   async seleccionarJugador(equipo: 'A' | 'B', tipoAmonestacion: number, nombreAmonestacion: string) {
     const jugadores = equipo === 'A' ? this.alineacion_a : this.alineacion_b;
-    const equipoData = equipo === 'A' ? this._game_.partido.equipo_a : this._game_.partido.equipo_b;
+    const equipoData = this._game_.obtenerEquipoPorLado(equipo);
     
     const inputs = jugadores.map((numeroJugador: number) => {
       const jugador = equipoData.jugadores.find((j: any) => j.numero === numeroJugador);
@@ -453,6 +523,7 @@ export class GamePage implements OnInit, DoCheck {
 
     this.logs.unshift(nuevoLog);
     this.updateLogs();
+    this._game_.guardar();
 
     // Si es expulsión, aquí podrías agregar lógica adicional para manejar la sustitución
     if (tipoAmonestacion === 9) {

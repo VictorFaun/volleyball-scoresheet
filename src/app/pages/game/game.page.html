@@ -36,12 +36,12 @@
     <div class="contenido-principal">
   
       <div>
-        <div class="marcador-equipos">
-          <div class="nombre-equipo">Equipo A</div>
-          <div class="nombre-equipo">Equipo B</div>
+        <div class="marcador-equipos" [class.orden-invertido]="invertido">
+          <div class="nombre-equipo">{{nombreEquipoLado('A')}} (A)</div>
+          <div class="nombre-equipo">{{nombreEquipoLado('B')}} (B)</div>
         </div>
-      
-        <div class="cancha-container">
+
+        <div class="cancha-container" [class.orden-invertido]="invertido">
           <div class="cancha-equipo equipo-a" [class]="(this.saqueActual() == 'A'?'saque-a':'')">
             <div class="jugador-posicion" [class]="'pos-a-'+((((6 + 1 - this.contarRotaciones('A') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('A',alineacion_a[0])" fill="clear">{{validaCambio('A',alineacion_a[0])}}</ion-button>
@@ -64,28 +64,28 @@
           </div>
           <div class="cancha-equipo equipo-b" [class]="(this.saqueActual() == 'B'?'saque-b':'')">
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 1 - this.contarRotaciones('B') % 6) % 6) || 6))">
-              <ion-button (click)="cambiarJugador('B',alineacion_a[0])"  fill="clear">{{validaCambio('B',alineacion_b[0])}}</ion-button>
+              <ion-button (click)="cambiarJugador('B',alineacion_b[0])"  fill="clear">{{validaCambio('B',alineacion_b[0])}}</ion-button>
             </div>
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 2 - this.contarRotaciones('B') % 6) % 6) || 6))">
-              <ion-button (click)="cambiarJugador('B',alineacion_a[1])" fill="clear">{{validaCambio('B',alineacion_b[1])}}</ion-button>
+              <ion-button (click)="cambiarJugador('B',alineacion_b[1])" fill="clear">{{validaCambio('B',alineacion_b[1])}}</ion-button>
             </div>
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 3 - this.contarRotaciones('B') % 6) % 6) || 6))">
-              <ion-button (click)="cambiarJugador('B',alineacion_a[2])" fill="clear">{{validaCambio('B',alineacion_b[2])}}</ion-button>
+              <ion-button (click)="cambiarJugador('B',alineacion_b[2])" fill="clear">{{validaCambio('B',alineacion_b[2])}}</ion-button>
             </div>
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 4 - this.contarRotaciones('B') % 6) % 6) || 6))">
-              <ion-button (click)="cambiarJugador('B',alineacion_a[3])" fill="clear">{{validaCambio('B',alineacion_b[3])}}</ion-button>
+              <ion-button (click)="cambiarJugador('B',alineacion_b[3])" fill="clear">{{validaCambio('B',alineacion_b[3])}}</ion-button>
             </div>
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 5 - this.contarRotaciones('B') % 6) % 6) || 6))">
-              <ion-button (click)="cambiarJugador('B',alineacion_a[4])" fill="clear">{{validaCambio('B',alineacion_b[4])}}</ion-button>
+              <ion-button (click)="cambiarJugador('B',alineacion_b[4])" fill="clear">{{validaCambio('B',alineacion_b[4])}}</ion-button>
             </div>
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 0 - this.contarRotaciones('B') % 6) % 6) || 6))">
-              <ion-button (click)="cambiarJugador('B',alineacion_a[5])" fill="clear">{{validaCambio('B',alineacion_b[5])}}</ion-button>
+              <ion-button (click)="cambiarJugador('B',alineacion_b[5])" fill="clear">{{validaCambio('B',alineacion_b[5])}}</ion-button>
             </div>
           </div>
         </div>
       </div>
   
-      <div class="puntos-container">
+      <div class="puntos-container" [class.orden-invertido]="invertido">
         <div class="puntos-equipo">
           <b>{{contarPuntos('A')}}</b>
         </div>
@@ -96,9 +96,9 @@
           <b>{{contarPuntos('B')}}</b>
         </div>
       </div>
-  
+
       <div style="margin-left: 20px;margin-right: 20px;">
-        <div class="acciones-container">
+        <div class="acciones-container" [class.orden-invertido]="invertido">
           <div class="accion-equipo accion-equipo-a">
             <div class="accion-boton-container">
               <ion-button (click)="punto('A')" fill="clear">+1 Punto</ion-button>
@@ -111,7 +111,7 @@
           </div>
         </div>
 
-        <div class="acciones-container" style="margin-top: 10px;">
+        <div class="acciones-container" [class.orden-invertido]="invertido" style="margin-top: 10px;">
           <div class="accion-equipo accion-equipo-a">
             <div class="accion-boton-container">
               <ion-button (click)="tiempo('A')" fill="clear"><ion-icon name="timer-outline" style="margin-right: 5px;"></ion-icon>Tiempo</ion-button>
@@ -123,8 +123,8 @@
             </div>
           </div>
         </div>
-  
-        <div class="acciones-container" style="margin-top: 10px;">
+
+        <div class="acciones-container" [class.orden-invertido]="invertido" style="margin-top: 10px;">
           <div class="accion-equipo accion-equipo-a">
             <div class="accion-boton-container">
               <ion-button (click)="amonestacion('A')" fill="clear">Amonestación</ion-button>

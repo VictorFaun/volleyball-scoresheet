@@ -29,19 +29,11 @@
 
   <div style="margin: 20px 20px 20px;">
 
-    <div class="select-text">
-      <label>Equipo al Saque <span style="color: var(--color-danger-shade);">*</span></label>
-      <ion-button style="margin-top: 5px;" class="input-select" fill="clear" (click)="seleccionar_equipo()">
-        <div style="width: 100%;display: flex;justify-content: space-between;"
-          [style.color]="set.equipo_saque?'var(--ion-color-dark)':''">
-          <p>{{set.equipo_saque?set.equipo_saque=="A"?"Equipo A":"Equipo B":"Seleccionar Equipo"}}</p> <ion-icon
-            name="chevron-expand-outline"></ion-icon>
-        </div>
-      </ion-button>
-    </div>
-
     <div class="posiciones-inicial">
-      <label><b>Equipo A</b> </label>
+      <label>
+        <b>Equipo A ({{nombreEquipoLado('A')}})</b>
+        <ion-icon *ngIf="set.equipo_saque === 'A'" src="assets/icon/volleyball.svg" class="icono-saque"></ion-icon>
+      </label>
       <div style="margin-top: 5px;">
         <div style="display: flex; flex-direction: row;">
           <div
@@ -130,7 +122,10 @@
     </div>
 
     <div class="posiciones-inicial">
-      <label><b>Equipo B</b> </label>
+      <label>
+        <b>Equipo B ({{nombreEquipoLado('B')}})</b>
+        <ion-icon *ngIf="set.equipo_saque === 'B'" src="assets/icon/volleyball.svg" class="icono-saque"></ion-icon>
+      </label>
       <div style="margin-top: 5px;">
         <div style="display: flex; flex-direction: row;">
           <div

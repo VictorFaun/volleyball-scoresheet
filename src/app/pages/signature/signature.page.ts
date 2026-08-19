@@ -1,9 +1,8 @@
-import { Component, DoCheck, ViewChild, ElementRef, OnInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController, Platform } from '@ionic/angular';
 import { ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
 import { GameService } from 'src/app/services/game/game.service';
-import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 
@@ -13,24 +12,23 @@ import { Capacitor } from '@capacitor/core';
   styleUrls: ['./signature.page.scss'],
   standalone: false,
 })
-export class SignaturePage implements OnInit, DoCheck {
+export class SignaturePage implements OnInit {
 
   num:any;
   text:any
   firmaImage:any;
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private route: ActivatedRoute,
-    private _game_: GameService, 
-    private _localStorage_: LocalstorageService,
+    private _game_: GameService,
     private alertController: AlertController
   ) { }
 
-  
-  ngDoCheck() {
-    this._localStorage_.saveData(this._game_.partidos);
+  ionViewWillLeave() {
+    this._game_.guardar();
   }
+
   ngOnInit() {
     
     this.route.queryParams.subscribe(async params => {
@@ -271,7 +269,8 @@ export class SignaturePage implements OnInit, DoCheck {
   }
 
   volver() {
-    this.router.navigate(["home"]);
+    this._game_.guardar();
+    this.router.navigate(["home"], { replaceUrl: true });
   }
 
   resultado_firma:any;
@@ -333,20 +332,6 @@ export class SignaturePage implements OnInit, DoCheck {
     }
   }
 
-  // Function to delete a signature file
-  async deleteSignatureFile(filename: string) {
-    if (!filename) return;
-    
-    try {
-      await Filesystem.deleteFile({
-        path: filename,
-        directory: Directory.Data
-      });
-    } catch (e) {
-      console.error('Error deleting signature file:', e);
-    }
-  }
-
   async siguiente(){
     if(this.resultado_firma == null){
       await this.saveCanvas();
@@ -392,71 +377,71 @@ export class SignaturePage implements OnInit, DoCheck {
           // Delete old signature file if it exists
     if (this.num == 1) {
       if(this._game_.partido.firma_inicio_capitan_a){
-        await this.deleteSignatureFile(this._game_.partido.firma_inicio_capitan_a);
+        await this._game_.deleteSignatureFile(this._game_.partido.firma_inicio_capitan_a);
       }
       this._game_.partido.firma_inicio_capitan_a = this.resultado_firma;
       this._game_.new_firma(2);
     }
     if(this.num == 2) {
       if (this._game_.partido.firma_entrenador_a) {
-        await this.deleteSignatureFile(this._game_.partido.firma_entrenador_a);
+        await this._game_.deleteSignatureFile(this._game_.partido.firma_entrenador_a);
       }
       this._game_.partido.firma_entrenador_a = this.resultado_firma;
       this._game_.new_firma(3);
     }
     if(this.num == 3) {
       if (this._game_.partido.firma_inicio_capitan_b) {
-        await this.deleteSignatureFile(this._game_.partido.firma_inicio_capitan_b);
+        await this._game_.deleteSignatureFile(this._game_.partido.firma_inicio_capitan_b);
       }
       this._game_.partido.firma_inicio_capitan_b = this.resultado_firma;
       this._game_.new_firma(4);
     }
     if(this.num == 4) {
       if (this._game_.partido.firma_entrenador_b) {
-        await this.deleteSignatureFile(this._game_.partido.firma_entrenador_b);
+        await this._game_.deleteSignatureFile(this._game_.partido.firma_entrenador_b);
       }
       this._game_.partido.firma_entrenador_b = this.resultado_firma;
-      this._game_.new_set(1);
+      this._game_.new_sorteo(1);
     }
 
     if(this.num == 5) {
       if (this._game_.partido.firma_fin_capitan_a) {
-        await this.deleteSignatureFile(this._game_.partido.firma_fin_capitan_a);
+        await this._game_.deleteSignatureFile(this._game_.partido.firma_fin_capitan_a);
       }
       this._game_.partido.firma_fin_capitan_a = this.resultado_firma;
       this._game_.new_firma(6);
     }
     if(this.num == 6) {
       if (this._game_.partido.firma_fin_capitan_b) {
-        await this.deleteSignatureFile(this._game_.partido.firma_fin_capitan_b);
+        await this._game_.deleteSignatureFile(this._game_.partido.firma_fin_capitan_b);
       }
       this._game_.partido.firma_fin_capitan_b = this.resultado_firma;
       this._game_.new_firma(7);
     }
     if(this.num == 7) {
       if (this._game_.partido.firma_planillero) {
-        await this.deleteSignatureFile(this._game_.partido.firma_planillero);
+        await this._game_.deleteSignatureFile(this._game_.partido.firma_planillero);
       }
       this._game_.partido.firma_planillero = this.resultado_firma;
       this._game_.new_firma(8);
     }
     if(this.num == 8) {
       if (this._game_.partido.firma_asistente_planillero) {
-        await this.deleteSignatureFile(this._game_.partido.firma_asistente_planillero);
+        await this._game_.deleteSignatureFile(this._game_.partido.firma_asistente_planillero);
       }
       this._game_.partido.firma_asistente_planillero = this.resultado_firma;
       this._game_.new_firma(9);
     }
     if(this.num == 9) {
       if (this._game_.partido.firma_segundo_arbitro) {
-        await this.deleteSignatureFile(this._game_.partido.firma_segundo_arbitro);
+        await this._game_.deleteSignatureFile(this._game_.partido.firma_segundo_arbitro);
       }
       this._game_.partido.firma_segundo_arbitro = this.resultado_firma;
       this._game_.new_firma(10);
     }
     if(this.num == 10) {
       if (this._game_.partido.firma_primer_arbitro) {
-        await this.deleteSignatureFile(this._game_.partido.firma_primer_arbitro);
+        await this._game_.deleteSignatureFile(this._game_.partido.firma_primer_arbitro);
       }
       this._game_.partido.firma_primer_arbitro = this.resultado_firma;
       this._game_.terminoPartido();

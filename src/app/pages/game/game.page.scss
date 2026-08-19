@@ -73,6 +73,9 @@
   text-align: center;
   font-size: x-large;
   font-weight: 500;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* Área de la cancha con jugadores */
@@ -93,6 +96,23 @@
 
 .cancha-equipo.equipo-a {
   border-right: 1px dashed rgba(var(--ion-color-dark-rgb), 0.2);
+}
+
+/* Cuando el Equipo B está a la izquierda (ver GamePage.invertido), se
+   invierte visualmente el orden de las columnas/filas de a pares (marcador,
+   cancha, puntaje, botones de acción) sin tocar ninguna lógica de
+   rotación/posición, que sigue siendo por equipo A/B, no por lado físico. */
+.orden-invertido {
+  flex-direction: row-reverse;
+}
+
+/* El borde divisor de la cancha es una propiedad del propio recuadro del
+   Equipo A, no de su posición visual: al invertir el orden hay que
+   trasladarlo de su lado derecho a su lado izquierdo para que la línea
+   divisoria siga quedando al centro. */
+.cancha-container.orden-invertido .cancha-equipo.equipo-a {
+  border-right: none;
+  border-left: 1px dashed rgba(var(--ion-color-dark-rgb), 0.2);
 }
 
 .jugador-posicion {
@@ -193,6 +213,97 @@
   top: calc(calc(calc(100% / 6) * 3) - 20px);
 }
 
+/* Cuando un equipo cambia de lado de cancha, en la realidad da toda la
+   vuelta a la red: eso es una rotación de 180°, no solo un espejo de un eje.
+   Se invierten AMBOS ejes dentro de su propio recuadro: cerca/lejos de la
+   red (izquierda↔derecha) Y arriba↔abajo (la fila 1 pasa a donde estaba la
+   5, y viceversa; la fila 3, al ser el centro, no cambia). Se redibuja cada
+   posición con los valores ya intercambiados, en vez de usar
+   transform:rotate (que dejaría los números de los jugadores al revés). */
+.orden-invertido .saque-a .pos-a-1 {
+  left: auto;
+  right: calc(calc(calc(100% / 8) * -1.75) - 20px);
+  top: calc(calc(calc(100% / 6) * 1) - 20px);
+}
+
+.orden-invertido .pos-a-1 {
+  left: auto;
+  right: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 1) - 20px);
+}
+
+.orden-invertido .pos-a-2 {
+  left: auto;
+  right: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 1) - 20px);
+}
+
+.orden-invertido .pos-a-3 {
+  left: auto;
+  right: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 3) - 20px);
+}
+
+.orden-invertido .pos-a-4 {
+  left: auto;
+  right: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 5) - 20px);
+}
+
+.orden-invertido .pos-a-5 {
+  left: auto;
+  right: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 5) - 20px);
+}
+
+.orden-invertido .pos-a-6 {
+  left: auto;
+  right: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 3) - 20px);
+}
+
+.orden-invertido .saque-b .pos-b-1 {
+  right: auto;
+  left: calc(calc(calc(100% / 8) * -1.75) - 20px);
+  top: calc(calc(calc(100% / 6) * 5) - 20px);
+}
+
+.orden-invertido .pos-b-1 {
+  right: auto;
+  left: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 5) - 20px);
+}
+
+.orden-invertido .pos-b-2 {
+  right: auto;
+  left: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 5) - 20px);
+}
+
+.orden-invertido .pos-b-3 {
+  right: auto;
+  left: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 3) - 20px);
+}
+
+.orden-invertido .pos-b-4 {
+  right: auto;
+  left: calc(calc(calc(100% / 8) * 5.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 1) - 20px);
+}
+
+.orden-invertido .pos-b-5 {
+  right: auto;
+  left: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 1) - 20px);
+}
+
+.orden-invertido .pos-b-6 {
+  right: auto;
+  left: calc(calc(calc(100% / 8) * 2.5) - 20px);
+  top: calc(calc(calc(100% / 6) * 3) - 20px);
+}
+
 /* Contadores de puntos */
 .puntos-container {
   display: flex;
@@ -212,21 +323,18 @@
 }
 
 /* Botones de acción */
+/* "gap" en vez de márgenes asimétricos en cada columna: así el espacio
+   entre botones se mantiene igual sin importar cuál columna quede primero
+   al invertir el orden (border/margin quedarían pegados al lado
+   equivocado, como pasa con el borde divisor de la cancha). */
 .acciones-container {
   display: flex;
+  gap: 10px;
 }
 
 .accion-equipo {
-  width: 50%;
+  flex: 1;
   text-align: center;
-}
-
-.accion-equipo-a {
-  margin-right: 5px;
-}
-
-.accion-equipo-b {
-  margin-left: 5px;
 }
 
 .accion-boton-container {

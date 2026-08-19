@@ -1,0 +1,45 @@
+.select-text{
+    padding-bottom: 20px;
+    ion-select{
+        min-height: 44px;
+    }
+}
+
+.select-text ion-select {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  margin-top: 5px;
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid rgba(var(--ion-color-dark-rgb), .2);
+  border-radius: 10px;
+}
+
+// ion-select no siempre estira su contenido interno hasta el borde (el
+// texto y la flecha quedan pegados). Tomamos control manual: la flecha se
+// ancla al borde derecho de forma absoluta, y el texto reserva espacio
+// para ella y se corta con "..." si no entra.
+.select-text ion-select::part(icon) {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.select-text ion-select::part(container) {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 28px;
+}
+
+.select-text ion-select::part(text),
+.select-text ion-select::part(placeholder) {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

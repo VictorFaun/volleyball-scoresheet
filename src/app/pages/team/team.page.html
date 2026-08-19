@@ -4,7 +4,7 @@
       <ion-buttons [collapse]="true" slot="start">
         <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
       </ion-buttons>
-    <ion-title>Equipo {{lado}}</ion-title> 
+    <ion-title>{{titulo}}</ion-title> 
     <ion-buttons [collapse]="true" slot="end">
       <ion-button color="primary" (click)="siguiente()">
         Siguiente
@@ -19,7 +19,7 @@
       <ion-buttons slot="start">
         <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
       </ion-buttons>
-      <ion-title size="large">Equipo {{lado}}</ion-title>
+      <ion-title size="large">{{titulo}}</ion-title>
       <ion-buttons [collapse]="true" slot="end">
         <ion-button color="primary" (click)="siguiente()">
           Siguiente
