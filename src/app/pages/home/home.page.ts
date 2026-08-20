@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { GameService } from 'src/app/services/game/game.service';
 import { Clipboard } from '@capacitor/clipboard';
+import { Capacitor } from '@capacitor/core';
+import { Directory, Filesystem } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 @Component({
@@ -14,7 +18,7 @@ export class HomePage implements OnInit {
 
   torneos: any = []
 
-  constructor(private _game_: GameService,private alertController: AlertController) { }
+  constructor(private _game_: GameService,private alertController: AlertController, private router: Router) { }
   ngOnInit(): void {
   }
 
@@ -411,7 +415,15 @@ export class HomePage implements OnInit {
         </div>
       `,
       },
-      buttons: ['Cerrar']
+      buttons: [
+        'Cerrar',
+        {
+          text: 'Más detalles',
+          handler: () => {
+            this.router.navigate(['detalle-partido']);
+          }
+        }
+      ]
     });
 
     await alert.present();
@@ -678,8 +690,16 @@ export class HomePage implements OnInit {
   }
 }
 
-  // Función auxiliar para forzar la descarga del Blob de manera limpia
-  descargarPdf(bytes: Uint8Array, nombreArchivo: string) {
+  // En navegador (web) fuerza la descarga del Blob. En un dispositivo móvil
+  // (Capacitor nativo) el link de descarga no funciona dentro del WebView,
+  // así que en su lugar el archivo se escribe en caché y se abre la hoja de
+  // compartir nativa para que el usuario lo guarde o lo envíe.
+  async descargarPdf(bytes: Uint8Array, nombreArchivo: string) {
+    if (Capacitor.isNativePlatform()) {
+      await this.compartirPdfNativo(bytes, nombreArchivo);
+      return;
+    }
+
     const blob = new Blob([bytes], { type: 'application/pdf' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -687,6 +707,31 @@ export class HomePage implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  private async compartirPdfNativo(bytes: Uint8Array, nombreArchivo: string) {
+    try {
+      const base64Data = this.arrayBufferToBase64(bytes.buffer as ArrayBuffer);
+      const { uri } = await Filesystem.writeFile({
+        path: nombreArchivo,
+        data: base64Data,
+        directory: Directory.Cache,
+      });
+
+      await Share.share({
+        title: nombreArchivo,
+        dialogTitle: 'Compartir planilla',
+        files: [uri]
+      });
+    } catch (error) {
+      console.error('Error al compartir la planilla:', error);
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'No se pudo compartir la planilla.',
+        buttons: ['Aceptar']
+      });
+      await alert.present();
+    }
   }
 
   // async completarPlanilla(partido:any) {

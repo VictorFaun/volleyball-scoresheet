@@ -1,0 +1,287 @@
+<ion-header [translucent]="false">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+    </ion-buttons>
+    <ion-title>Detalle del Partido</ion-title>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="partido && sets.length">
+    <ion-segment class="segment-custom" [(ngModel)]="segmento" scrollable="true">
+      <ion-segment-button value="total">
+        <ion-label>Total</ion-label>
+      </ion-segment-button>
+      <ion-segment-button *ngFor="let set of sets" [value]="set.numero">
+        <ion-label>Set {{ set.numero }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" *ngIf="partido">
+  <div class="detalle-container">
+
+    <div class="detalle-encabezado">
+      <p class="detalle-subtitulo">{{ partido.competicion ? partido.competicion + ' · ' : '' }}Partido N° {{ partido.numero_partido || '' }}</p>
+      <div class="detalle-equipos">
+        <span class="nombre-equipo col-a">{{ nombreA }}</span>
+        <span class="marcador-sets">{{ totales.setsGanadosA }} - {{ totales.setsGanadosB }}</span>
+        <span class="nombre-equipo col-b">{{ nombreB }}</span>
+      </div>
+      <p class="detalle-ganador" *ngIf="textoGanador">
+        <ion-icon name="trophy"></ion-icon> Ganador: {{ textoGanador }}
+      </p>
+    </div>
+
+    <p class="sin-sets" *ngIf="!sets.length">No hay sets jugados para este partido.</p>
+
+    <!-- ==================== TOTAL ==================== -->
+    <ng-container *ngIf="segmento === 'total' && sets.length">
+
+      <ion-card class="card-resumen">
+        <ion-card-content>
+          <div class="sets-resumen">
+            <div class="set-chip" *ngFor="let set of sets" [class.chip-a]="set.victoria === 'A'" [class.chip-b]="set.victoria === 'B'" (click)="segmento = set.numero">
+              <span class="set-chip-numero">Set {{ set.numero }}</span>
+              <span class="set-chip-marcador">{{ set.puntosA }} - {{ set.puntosB }}</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="card-racha" *ngIf="totales.mejorRachas.length">
+        <ion-card-content>
+          <div class="racha-item" *ngFor="let r of totales.mejorRachas">
+            <ion-icon name="flame" [class.icono-a]="r.equipo === 'A'" [class.icono-b]="r.equipo === 'B'"></ion-icon>
+            <div>
+              <p class="racha-titulo">Mejor racha del partido</p>
+              <p class="racha-texto">
+                {{ r.equipo === 'A' ? nombreA : nombreB }} anotó {{ r.cantidad }} puntos seguidos en el Set {{ r.set }}
+                <ng-container *ngIf="r.jugadores.length">
+                  · Saque de
+                  <ng-container *ngFor="let j of r.jugadores; let last = last">
+                    <span class="saque-dorsal-inline" [attr.tabindex]="j.nombre ? 0 : null">{{ j.numero }}<span class="tooltip-burbuja" *ngIf="j.nombre">{{ j.nombre }}</span></span><ng-container *ngIf="!last">, </ng-container>
+                  </ng-container>
+                </ng-container>
+              </p>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header><ion-card-title>Duración por set</ion-card-title></ion-card-header>
+        <ion-card-content>
+          <div class="barra-fila" *ngFor="let d of totales.duracionesSets">
+            <span class="barra-label">Set {{ d.numero }}</span>
+            <div class="barra-track"><div class="barra-fill fill-neutro" [style.width.%]="d.porcentaje"></div></div>
+            <span class="barra-valor">{{ d.texto }}</span>
+          </div>
+          <p class="detalle-duracion-total">Duración total: {{ duracionTotal }}</p>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header><ion-card-title>Estadísticas generales</ion-card-title></ion-card-header>
+        <ion-card-content>
+          <table class="tabla-stats">
+            <tr><td></td><td class="col-a">{{ nombreA }}</td><td class="col-b">{{ nombreB }}</td></tr>
+            <tr><td>Tiempos</td><td>{{ totales.tiemposA }}</td><td>{{ totales.tiemposB }}</td></tr>
+            <tr><td>Amonestaciones</td><td>{{ totales.amonestacionesA }}</td><td>{{ totales.amonestacionesB }}</td></tr>
+          </table>
+
+          <div class="amonestaciones-tipo" *ngIf="totales.amonestacionesPorTipo.length">
+            <p class="subseccion-titulo">Por tipo de amonestación</p>
+            <div class="barra-fila barra-fila-doble" *ngFor="let t of totales.amonestacionesPorTipo">
+              <span class="barra-label">{{ t.nombre }}</span>
+              <div class="barra-doble">
+                <div class="barra-track"><div class="barra-fill fill-a" [style.width.%]="t.porcentajeA"></div></div>
+                <span class="barra-valor">{{ t.a }}</span>
+              </div>
+              <div class="barra-doble">
+                <div class="barra-track"><div class="barra-fill fill-b" [style.width.%]="t.porcentajeB"></div></div>
+                <span class="barra-valor">{{ t.b }}</span>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card *ngIf="totales.saquesA.length || totales.saquesB.length">
+        <ion-card-header>
+          <ion-card-subtitle>Estimado a partir de la rotación</ion-card-subtitle>
+          <ion-card-title>Saques por jugador</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="saques-columnas">
+            <div class="saques-columna">
+              <p class="saques-equipo-titulo col-a">{{ nombreA }}</p>
+              <div class="saque-fila" *ngFor="let j of totales.saquesA">
+                <span class="saque-dorsal" [attr.tabindex]="j.nombre ? 0 : null">
+                  {{ j.numero }}
+                  <span class="tooltip-burbuja" *ngIf="j.nombre">{{ j.nombre }}</span>
+                </span>
+                <div class="barra-track"><div class="barra-fill fill-a" [style.width.%]="j.porcentaje"></div></div>
+                <span class="barra-valor">{{ j.saques }}</span>
+              </div>
+            </div>
+            <div class="saques-columna">
+              <p class="saques-equipo-titulo col-b">{{ nombreB }}</p>
+              <div class="saque-fila" *ngFor="let j of totales.saquesB">
+                <span class="saque-dorsal" [attr.tabindex]="j.nombre ? 0 : null">
+                  {{ j.numero }}
+                  <span class="tooltip-burbuja" *ngIf="j.nombre">{{ j.nombre }}</span>
+                </span>
+                <div class="barra-track"><div class="barra-fill fill-b" [style.width.%]="j.porcentaje"></div></div>
+                <span class="barra-valor">{{ j.saques }}</span>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+    </ng-container>
+
+    <!-- ==================== POR SET ==================== -->
+    <ng-container *ngFor="let set of sets">
+      <ng-container *ngIf="segmento === set.numero">
+
+        <ion-card class="card-marcador-set" [class.gano-a]="set.victoria === 'A'" [class.gano-b]="set.victoria === 'B'">
+          <ion-card-content>
+            <div class="set-marcador-grande">
+              <span class="marcador-num" [class.destacado]="set.victoria === 'A'">{{ set.puntosA }}</span>
+              <span class="marcador-sep">-</span>
+              <span class="marcador-num" [class.destacado]="set.victoria === 'B'">{{ set.puntosB }}</span>
+            </div>
+            <p class="set-duracion">Duración: {{ set.duracion }}</p>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header><ion-card-title>Progresión del marcador</ion-card-title></ion-card-header>
+          <ion-card-content>
+            <svg viewBox="0 0 100 40" preserveAspectRatio="none" class="chart-svg">
+              <line x1="0" y1="37" x2="100" y2="37" class="chart-eje" />
+              <polyline [attr.points]="set.chartB" class="linea-b" />
+              <polyline [attr.points]="set.chartA" class="linea-a" />
+            </svg>
+            <div class="chart-leyenda">
+              <span class="leyenda-item"><span class="dot dot-a"></span>{{ nombreA }}</span>
+              <span class="leyenda-item"><span class="dot dot-b"></span>{{ nombreB }}</span>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <div class="rachas-row" *ngIf="set.rachaA || set.rachaB">
+          <div class="racha-card" *ngIf="set.rachaA">
+            <p class="racha-card-equipo col-a">{{ nombreA }}</p>
+            <p class="racha-card-cantidad">{{ set.rachaA.cantidad }}</p>
+            <p class="racha-card-label">mejor racha</p>
+            <p class="racha-card-marcador">{{ set.rachaA.marcadorInicio }} → {{ set.rachaA.marcadorFin }}</p>
+            <p class="racha-card-jugadores" *ngIf="set.rachaA.jugadores.length">
+              <ng-container *ngFor="let j of set.rachaA.jugadores; let last = last">
+                <span class="saque-dorsal-inline" [attr.tabindex]="j.nombre ? 0 : null">{{ j.numero }}<span class="tooltip-burbuja" *ngIf="j.nombre">{{ j.nombre }}</span></span><ng-container *ngIf="!last">, </ng-container>
+              </ng-container>
+            </p>
+          </div>
+          <div class="racha-card" *ngIf="set.rachaB">
+            <p class="racha-card-equipo col-b">{{ nombreB }}</p>
+            <p class="racha-card-cantidad">{{ set.rachaB.cantidad }}</p>
+            <p class="racha-card-label">mejor racha</p>
+            <p class="racha-card-marcador">{{ set.rachaB.marcadorInicio }} → {{ set.rachaB.marcadorFin }}</p>
+            <p class="racha-card-jugadores" *ngIf="set.rachaB.jugadores.length">
+              <ng-container *ngFor="let j of set.rachaB.jugadores; let last = last">
+                <span class="saque-dorsal-inline" [attr.tabindex]="j.nombre ? 0 : null">{{ j.numero }}<span class="tooltip-burbuja" *ngIf="j.nombre">{{ j.nombre }}</span></span><ng-container *ngIf="!last">, </ng-container>
+              </ng-container>
+            </p>
+          </div>
+        </div>
+
+        <ion-card>
+          <ion-card-header><ion-card-title>Resumen del set</ion-card-title></ion-card-header>
+          <ion-card-content>
+            <table class="tabla-stats">
+              <tr><td></td><td class="col-a">{{ nombreA }}</td><td class="col-b">{{ nombreB }}</td></tr>
+              <tr><td>Tiempos</td><td>{{ set.tiemposA }}</td><td>{{ set.tiemposB }}</td></tr>
+              <tr><td>Amonestaciones</td><td>{{ set.amonestacionesA }}</td><td>{{ set.amonestacionesB }}</td></tr>
+              <tr><td>Cambios</td><td>{{ set.cambiosA }}</td><td>{{ set.cambiosB }}</td></tr>
+            </table>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card *ngIf="set.saquesA.length || set.saquesB.length">
+          <ion-card-header>
+            <ion-card-subtitle>Estimado a partir de la rotación</ion-card-subtitle>
+            <ion-card-title>Saques por jugador</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="saques-columnas">
+              <div class="saques-columna">
+                <p class="saques-equipo-titulo col-a">{{ nombreA }}</p>
+                <div class="saque-fila" *ngFor="let j of set.saquesA">
+                  <span class="saque-dorsal" [attr.tabindex]="j.nombre ? 0 : null">
+                  {{ j.numero }}
+                  <span class="tooltip-burbuja" *ngIf="j.nombre">{{ j.nombre }}</span>
+                </span>
+                  <div class="barra-track"><div class="barra-fill fill-a" [style.width.%]="j.porcentaje"></div></div>
+                  <span class="barra-valor">{{ j.saques }}</span>
+                </div>
+              </div>
+              <div class="saques-columna">
+                <p class="saques-equipo-titulo col-b">{{ nombreB }}</p>
+                <div class="saque-fila" *ngFor="let j of set.saquesB">
+                  <span class="saque-dorsal" [attr.tabindex]="j.nombre ? 0 : null">
+                  {{ j.numero }}
+                  <span class="tooltip-burbuja" *ngIf="j.nombre">{{ j.nombre }}</span>
+                </span>
+                  <div class="barra-track"><div class="barra-fill fill-b" [style.width.%]="j.porcentaje"></div></div>
+                  <span class="barra-valor">{{ j.saques }}</span>
+                </div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card *ngIf="set.amonestaciones.length">
+          <ion-card-header><ion-card-title>Amonestaciones</ion-card-title></ion-card-header>
+          <ion-card-content>
+            <div class="lista-item" *ngFor="let a of set.amonestaciones">
+              <span class="lista-item-badge" [class.badge-a]="a.equipo === 'A'" [class.badge-b]="a.equipo === 'B'">{{ a.equipo }}</span>
+              <span class="lista-item-texto">
+                {{ a.nombre }}<ng-container *ngIf="a.jugador"> · J{{ a.jugador }}<ng-container *ngIf="a.jugadorNombre"> ({{ a.jugadorNombre }})</ng-container></ng-container>
+              </span>
+              <span class="lista-item-hora">{{ formatoHoraCorta(a.hora) }}</span>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card *ngIf="set.cambios.length">
+          <ion-card-header><ion-card-title>Cambios de jugador</ion-card-title></ion-card-header>
+          <ion-card-content>
+            <div class="lista-item" *ngFor="let c of set.cambios">
+              <span class="lista-item-badge" [class.badge-a]="c.equipo === 'A'" [class.badge-b]="c.equipo === 'B'">{{ c.equipo }}</span>
+              <span class="lista-item-texto">Sale {{ c.sale }}<ng-container *ngIf="c.saleNombre"> ({{ c.saleNombre }})</ng-container> · Entra {{ c.entra }}<ng-container *ngIf="c.entraNombre"> ({{ c.entraNombre }})</ng-container></span>
+              <span class="lista-item-hora">{{ formatoHoraCorta(c.hora) }}</span>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-accordion-group class="card-historial">
+          <ion-accordion value="historial">
+            <ion-item slot="header" lines="none">
+              <ion-icon slot="start" name="list-outline"></ion-icon>
+              <ion-label>Historial completo de acciones</ion-label>
+            </ion-item>
+            <div slot="content" class="historial-lista">
+              <div class="historial-item" *ngFor="let item of set.logsChrono">
+                <span class="lista-item-hora">{{ formatoHoraCorta(item.hora) }}</span>
+                <span class="lista-item-texto">{{ textLog(item.tipo) }}{{ item.jugador ? ' (J ' + item.jugador + ')' : '' }}{{ item.cambio ? ' → J ' + item.cambio : '' }}{{ item.equipo ? ' · Equipo ' + item.equipo : '' }}</span>
+              </div>
+            </div>
+          </ion-accordion>
+        </ion-accordion-group>
+
+      </ng-container>
+    </ng-container>
+
+  </div>
+</ion-content>

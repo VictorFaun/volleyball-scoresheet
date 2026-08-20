@@ -1,0 +1,594 @@
+.detalle-container {
+  padding: 12px 12px 32px;
+}
+
+ion-card {
+  margin: 0 2px 14px;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  &:last-child { margin-bottom: 0; }
+}
+
+ion-card-header {
+  padding: 14px 16px 6px;
+}
+
+ion-card-content {
+  padding: 6px 16px 14px;
+}
+
+ion-card-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+ion-card-subtitle {
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: normal;
+  margin-top: 2px;
+}
+
+.subseccion-titulo {
+  margin: 10px 0 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(var(--ion-color-dark-rgb), 0.5);
+}
+
+.detalle-encabezado {
+  text-align: center;
+  padding: 8px 8px 16px;
+}
+
+.detalle-subtitulo {
+  font-size: 13px;
+  color: rgba(var(--ion-color-dark-rgb), 0.6);
+  margin: 0 0 6px;
+}
+
+.detalle-equipos {
+  font-size: 17px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.nombre-equipo {
+  max-width: 38vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marcador-sets {
+  font-size: 22px;
+  font-weight: 800;
+  color: rgba(var(--ion-color-dark-rgb), 0.85);
+}
+
+.detalle-ganador {
+  margin: 8px 0 0;
+  font-weight: 600;
+  color: var(--ion-color-warning-shade);
+
+  ion-icon {
+    vertical-align: -2px;
+    color: var(--ion-color-warning);
+  }
+}
+
+.sin-sets {
+  text-align: center;
+  color: rgba(var(--ion-color-dark-rgb), 0.5);
+}
+
+.col-a {
+  color: var(--ion-color-primary);
+}
+
+.col-b {
+  color: var(--ion-color-tertiary);
+}
+
+/* ---- Chips de sets (tab Total) ---- */
+.card-resumen {
+  ion-card-content {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
+
+.sets-resumen {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.set-chip {
+  flex: 0 0 auto;
+  min-width: 76px;
+  border-radius: 10px;
+  background: rgba(var(--ion-color-dark-rgb), 0.05);
+  padding: 8px 10px;
+  text-align: center;
+
+  &.chip-a {
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+  }
+  &.chip-b {
+    background: rgba(var(--ion-color-tertiary-rgb), 0.12);
+  }
+}
+
+.set-chip-numero {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(var(--ion-color-dark-rgb), 0.5);
+}
+
+.set-chip-marcador {
+  display: block;
+  font-weight: 700;
+  font-size: 15px;
+  margin-top: 2px;
+}
+
+/* ---- Racha destacada ---- */
+.racha-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  & + .racha-item {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);
+  }
+
+  ion-icon {
+    font-size: 30px;
+    color: var(--ion-color-medium);
+    flex-shrink: 0;
+    margin-top: 1px;
+
+    &.icono-a { color: var(--ion-color-primary); }
+    &.icono-b { color: var(--ion-color-tertiary); }
+  }
+}
+
+.racha-titulo {
+  margin: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(var(--ion-color-dark-rgb), 0.5);
+}
+
+.racha-texto {
+  margin: 2px 0 0;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* ---- Barras horizontales genéricas ---- */
+.barra-fila {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.barra-label {
+  flex: 0 0 64px;
+  font-size: 12px;
+  color: rgba(var(--ion-color-dark-rgb), 0.6);
+}
+
+.barra-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(var(--ion-color-dark-rgb), 0.08);
+  overflow: hidden;
+}
+
+.barra-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+
+  &.fill-neutro { background: var(--ion-color-medium); }
+  &.fill-a { background: var(--ion-color-primary); }
+  &.fill-b { background: var(--ion-color-tertiary); }
+}
+
+.barra-valor {
+  flex: 0 0 32px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.detalle-duracion-total {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: rgba(var(--ion-color-dark-rgb), 0.6);
+  text-align: right;
+}
+
+.barra-fila-doble {
+  flex-wrap: wrap;
+
+  .barra-label {
+    flex: 1 0 100%;
+    margin-bottom: 4px;
+  }
+
+  .barra-doble {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .barra-track { height: 6px; }
+    .barra-valor { flex: 0 0 20px; }
+  }
+}
+
+/* ---- Tabla de estadísticas ---- */
+.tabla-stats {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 4px;
+
+  td {
+    padding: 6px 4px;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  td:first-child {
+    text-align: left;
+    color: rgba(var(--ion-color-dark-rgb), 0.55);
+    font-size: 12px;
+  }
+
+  tr:first-child td {
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 30vw;
+  }
+
+  tr:not(:first-child) td {
+    border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.06);
+  }
+}
+
+/* ---- Saques por jugador ---- */
+.saques-columnas {
+  display: flex;
+  gap: 16px;
+}
+
+.saques-columna {
+  flex: 1;
+  min-width: 0;
+}
+
+.saques-equipo-titulo {
+  font-weight: 700;
+  font-size: 13px;
+  margin: 0 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saque-fila {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+
+  &:last-child { margin-bottom: 0; }
+
+  .barra-track { height: 6px; }
+}
+
+/* Espacio fijo para hasta 3 dígitos (dorsal), alineado a la derecha; el
+   nombre del jugador (si existe) aparece en una burbuja al hacer hover. */
+.saque-dorsal {
+  position: relative;
+  flex: 0 0 26px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: rgba(var(--ion-color-dark-rgb), 0.65);
+
+  &[tabindex] {
+    cursor: default;
+    outline: none;
+  }
+}
+
+.tooltip-burbuja {
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--ion-color-dark);
+  color: var(--ion-color-dark-contrast);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 5;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: var(--ion-color-dark);
+  }
+}
+
+.saque-dorsal:hover .tooltip-burbuja,
+.saque-dorsal:focus .tooltip-burbuja {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Variante del dorsal para usar dentro de un párrafo (rachas): mismo
+   tooltip, sin el ancho fijo ni la alineación a la derecha de las barras. */
+.saque-dorsal-inline {
+  position: relative;
+  display: inline-block;
+  font-weight: 700;
+  text-decoration: underline dotted rgba(var(--ion-color-dark-rgb), 0.35);
+  text-underline-offset: 2px;
+  cursor: default;
+
+  &[tabindex] { outline: none; }
+}
+
+.saque-dorsal-inline:hover .tooltip-burbuja,
+.saque-dorsal-inline:focus .tooltip-burbuja {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---- Marcador grande por set ---- */
+.card-marcador-set {
+  border-left: 4px solid transparent;
+
+  &.gano-a { border-left-color: var(--ion-color-primary); }
+  &.gano-b { border-left-color: var(--ion-color-tertiary); }
+}
+
+.set-marcador-grande {
+  text-align: center;
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.marcador-num {
+  color: rgba(var(--ion-color-dark-rgb), 0.35);
+
+  &.destacado {
+    color: var(--ion-color-dark);
+  }
+}
+
+.marcador-sep {
+  color: rgba(var(--ion-color-dark-rgb), 0.25);
+  margin: 0 8px;
+}
+
+.set-duracion {
+  text-align: center;
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: rgba(var(--ion-color-dark-rgb), 0.55);
+}
+
+/* ---- Gráfico de progresión (SVG) ---- */
+.chart-svg {
+  width: 100%;
+  height: 130px;
+  display: block;
+}
+
+.chart-eje {
+  stroke: rgba(var(--ion-color-dark-rgb), 0.1);
+  stroke-width: 0.5;
+}
+
+.linea-a {
+  fill: none;
+  stroke: var(--ion-color-primary);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+}
+
+.linea-b {
+  fill: none;
+  stroke: var(--ion-color-tertiary);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-leyenda {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 6px;
+}
+
+.leyenda-item {
+  font-size: 12px;
+  color: rgba(var(--ion-color-dark-rgb), 0.6);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+
+  &.dot-a { background: var(--ion-color-primary); }
+  &.dot-b { background: var(--ion-color-tertiary); }
+}
+
+/* ---- Rachas por set ---- */
+.rachas-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.racha-card {
+  flex: 1;
+  background: var(--ion-card-background, #fff);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 12px;
+  text-align: center;
+}
+
+.racha-card-equipo {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.racha-card-cantidad {
+  margin: 4px 0 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.racha-card-label {
+  margin: 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(var(--ion-color-dark-rgb), 0.5);
+}
+
+.racha-card-marcador {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: rgba(var(--ion-color-dark-rgb), 0.6);
+}
+
+.racha-card-jugadores {
+  margin: 6px 0 0;
+  padding-top: 6px;
+  border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);
+  font-size: 11px;
+  color: rgba(var(--ion-color-dark-rgb), 0.6);
+}
+
+/* ---- Listas de eventos (amonestaciones / cambios) ---- */
+.lista-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(var(--ion-color-dark-rgb), 0.06);
+
+  &:last-child { border-bottom: none; }
+}
+
+.lista-item-badge {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--ion-color-medium);
+
+  &.badge-a { background: var(--ion-color-primary); }
+  &.badge-b { background: var(--ion-color-tertiary); }
+}
+
+.lista-item-texto {
+  flex: 1;
+  font-size: 13px;
+}
+
+.lista-item-hora {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: rgba(var(--ion-color-dark-rgb), 0.45);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Historial completo (acordeón) ---- */
+.card-historial {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: var(--ion-card-background, #fff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.historial-lista {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 0 16px 8px;
+}
+
+.historial-item {
+  display: flex;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(var(--ion-color-dark-rgb), 0.06);
+  font-size: 12px;
+
+  &:last-child { border-bottom: none; }
+
+  .lista-item-hora { flex: 0 0 60px; }
+  .lista-item-texto { flex: 1; }
+}

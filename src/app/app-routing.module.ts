@@ -39,6 +39,10 @@ const routes: Routes = [
     path: 'signature',
     loadChildren: () => import('./pages/signature/signature.module').then( m => m.SignaturePageModule)
   },
+  {
+    path: 'detalle-partido',
+    loadChildren: () => import('./pages/detalle-partido/detalle-partido.module').then( m => m.DetallePartidoPageModule)
+  },
 ];
 
 @NgModule({
