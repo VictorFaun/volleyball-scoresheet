@@ -15,6 +15,11 @@ export class SorteoPage implements OnInit {
   equipo1: any;
   equipo2: any;
 
+  // true si el set ya tiene alineación cargada, ya se inició o ya tiene
+  // logs/resultado — a partir de eso el sorteo (R-5) de ese set ya no se
+  // puede volver a editar, aunque se reingrese con "editar" desde el inicio.
+  bloqueado = false;
+
   // Solo el sorteo antes del set 1 define cuál equipo juega como A y cuál
   // como B. En el sorteo del set decisivo (set 3 a 3 sets, o set 5 a 5
   // sets) el lado de cada equipo ya está definido y solo se anota el saque.
@@ -52,6 +57,7 @@ export class SorteoPage implements OnInit {
       this.equipo1 = this.partido.equipo_1;
       this.equipo2 = this.partido.equipo_2;
       this.mostrarLados = this.set === 1;
+      this.bloqueado = this._game_.setTieneProgreso(this.set);
 
       if (this.equipo1?.lado) {
         this.equipoALado = this.equipo1.lado === 'A' ? 1 : 2;
@@ -134,6 +140,13 @@ export class SorteoPage implements OnInit {
   }
 
   confirmar() {
+    // El set ya tiene alineación/logs/resultado: el sorteo queda fijo, solo
+    // se avanza al siguiente paso sin volver a escribir sobre sus datos.
+    if (this.bloqueado) {
+      this._game_.new_set(this.set);
+      return;
+    }
+
     if (this.mostrarLados) {
       this.equipoAsignadoA.lado = 'A';
       this.equipoAsignadoB.lado = 'B';

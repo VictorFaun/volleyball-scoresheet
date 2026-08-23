@@ -31,11 +31,11 @@ export class TeamPage implements OnInit {
       this.numero = Number(params['numero']);
       if (this.numero == 1) {
         this.equipo = this._game_.partido.equipo_1;
-        this.titulo = 'Primer Equipo';
+        this.titulo = 'Equipo N°1';
       }
       if (this.numero == 2) {
         this.equipo = this._game_.partido.equipo_2;
-        this.titulo = 'Segundo Equipo';
+        this.titulo = 'Equipo N°2';
       }
     });
   }
@@ -151,6 +151,11 @@ export class TeamPage implements OnInit {
           text: 'Eliminar',
           role: 'destructive',
           handler: async () => {
+            if (this._game_.jugadorParticipoEnSets(this.equipo.lado, dorsalOriginal)) {
+              this.mostrarError('No puedes eliminar a este jugador porque ya participó en un set (en la alineación o en un cambio). Si necesitas corregir sus datos, edita su nombre o dorsal en vez de eliminarlo.');
+              return false;
+            }
+
             const confirmAlert = await this.alertController.create({
               header: 'Confirmar',
               message: '¿Estás seguro de eliminar este jugador?',
@@ -192,6 +197,13 @@ export class TeamPage implements OnInit {
                 this.mostrarError('Este número de camiseta ya está en uso');
                 return false;
               }
+            }
+
+            // Si el dorsal cambió y el jugador ya estuvo en algún set,
+            // actualizamos las alineaciones y logs guardados para que sigan
+            // apuntando al jugador correcto.
+            if (nuevoDorsal !== dorsalOriginal) {
+              this._game_.actualizarDorsalEnSets(this.equipo.lado, dorsalOriginal, nuevoDorsal);
             }
 
             // Si todo está bien, actualizar el jugador (el nombre es opcional)
@@ -240,7 +252,9 @@ export class TeamPage implements OnInit {
       }
     }
     if (equipo) {
-      this.equipo.jugadores = equipo.jugadores;
+      // Copia profunda: si se asignara el mismo array, editar jugadores en
+      // este partido mutaría también el roster del partido de origen.
+      this.equipo.jugadores = (equipo.jugadores || []).map((j: any) => ({ ...j }));
       this.equipo.entrenador = equipo.entrenador;
       this.equipo.primer_asistente = equipo.primer_asistente;
       this.equipo.segundo_asistente = equipo.segundo_asistente;

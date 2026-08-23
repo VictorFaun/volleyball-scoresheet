@@ -87,6 +87,13 @@ export class CreatePage implements OnInit, ComponentCanDeactivate {
     this._game_.new_informacion();
   }
 
+  // Una vez que algún set ya tiene alineación cargada o ya se inició, la
+  // cantidad de sets del partido queda fija (cambiarla invalidaría el
+  // formato de puntos y el cálculo del ganador ya usado).
+  partidoEnCurso(): boolean {
+    return this._game_.partidoEnCurso();
+  }
+
   activarTodasLasFirmas() {
     this.firmasConfig.forEach(f => this.partido.firmas_habilitadas[f.num] = true);
   }

@@ -531,7 +531,8 @@ export class GameService {
 
   deshacer(set: any) {
     const currentSet = this.partido[`set_${set}`];
-    if (!currentSet || !currentSet.logs.length) {
+    // Un set ya finalizado no se puede reabrir a golpe de "deshacer".
+    if (!currentSet || !currentSet.logs.length || currentSet.victoria) {
       this.guardar();
       return;
     }
@@ -558,7 +559,8 @@ export class GameService {
 
   punto(set: any, equipo: any) {
     const currentSet = this.partido[`set_${set}`];
-    if (!currentSet) return;
+    // Un set ya finalizado no puede seguir sumando puntos.
+    if (!currentSet || currentSet.victoria) return;
 
     const log: any = this.clean_log();
     log.tipo = 1;
@@ -1125,6 +1127,115 @@ export class GameService {
       // 'A' | 'B' | null — a qué lado de la planilla corresponde este
       // equipo. Se define en el R-5 del set 1, no al momento de registrarlo.
       lado: null
+    }
+  }
+
+  // true si el set N ya tiene algo registrado (alineación cargada, ya se
+  // inició o ya tiene logs/resultado). A partir de eso, el sorteo (R-5) y la
+  // alineación inicial de ese set ya no deben poder volver a editarse,
+  // aunque se reingrese al flujo con "editar" desde el inicio.
+  setTieneProgreso(set: number): boolean {
+    const s = this.partido[`set_${set}`];
+    if (!s) return false;
+    if (s.hora_inicio || s.victoria || (s.logs && s.logs.length > 0)) return true;
+
+    const alineacionCargada = (arr: any[]) =>
+      Array.isArray(arr) && arr.some((n: any) => n !== false && n !== null && n !== undefined);
+
+    return alineacionCargada(s.alineacion_a) || alineacionCargada(s.alineacion_b);
+  }
+
+  // true si algún set del partido ya se inició o tiene alineación cargada.
+  // Se usa para bloquear cambios a la cantidad de sets del partido una vez
+  // que el formato (3 o 5 sets) ya empezó a jugarse.
+  partidoEnCurso(): boolean {
+    for (let i = 1; i <= 5; i++) {
+      if (this.setTieneProgreso(i)) return true;
+    }
+    return false;
+  }
+
+  // Continúa el flujo después de un set que YA estaba finalizado (se llegó
+  // a esta vista reabriendo el partido con "editar"). A diferencia de
+  // closeSet(), no vuelve a tocar logs/victoria/hora_fin ni muestra alertas:
+  // solo decide a qué paso seguir, replicando la misma ramificación que
+  // closeSet() usa una vez que un set ya fue confirmado.
+  continuarDespuesDeSetFinalizado(set: any) {
+    if (set == 1) {
+      this.new_set(2);
+    }
+    if (set == 2) {
+      if (this.obtenerGanadorPartido()) {
+        this.new_firma(5);
+      } else if (this.partido.set_3) {
+        this.new_set(3);
+      } else {
+        this.avanzarDespuesDeSet2();
+      }
+    }
+    if (set == 3) {
+      if (this.partido.set_4) {
+        this.new_set(4);
+      } else {
+        this.new_firma(5);
+      }
+    }
+    if (set == 4) {
+      if (this.obtenerGanadorPartido()) {
+        this.new_firma(5);
+      } else if (this.partido.set_5) {
+        this.new_set(5);
+      } else {
+        this.avanzarDespuesDeSet4();
+      }
+    }
+    if (set == 5) {
+      this.new_firma(5);
+    }
+  }
+
+  // true si el dorsal ya figura en la alineación o en algún log (cambio,
+  // amonestación, etc.) de algún set ya creado para ese lado. Se usa para
+  // impedir borrar jugadores que ya estuvieron activos en el partido.
+  jugadorParticipoEnSets(lado: 'A' | 'B' | null, numero: number): boolean {
+    if (!lado || numero === null || numero === undefined) return false;
+    const claveAlineacion = lado === 'A' ? 'alineacion_a' : 'alineacion_b';
+
+    for (let i = 1; i <= 5; i++) {
+      const set = this.partido[`set_${i}`];
+      if (!set) continue;
+
+      if (set[claveAlineacion]?.includes(numero)) return true;
+
+      const enLogs = (set.logs || []).some((log: any) =>
+        log.equipo === lado && (log.jugador === numero || log.cambio === numero)
+      );
+      if (enLogs) return true;
+    }
+
+    return false;
+  }
+
+  // Reemplaza un dorsal por otro en las alineaciones y logs ya guardados de
+  // los sets del partido, para el lado indicado. Se usa al editar el número
+  // de camiseta de un jugador que ya participó en el juego.
+  actualizarDorsalEnSets(lado: 'A' | 'B' | null, dorsalAnterior: number, dorsalNuevo: number) {
+    if (!lado || dorsalAnterior === null || dorsalAnterior === undefined) return;
+    const claveAlineacion = lado === 'A' ? 'alineacion_a' : 'alineacion_b';
+
+    for (let i = 1; i <= 5; i++) {
+      const set = this.partido[`set_${i}`];
+      if (!set) continue;
+
+      if (set[claveAlineacion]) {
+        set[claveAlineacion] = set[claveAlineacion].map((n: any) => n === dorsalAnterior ? dorsalNuevo : n);
+      }
+
+      (set.logs || []).forEach((log: any) => {
+        if (log.equipo !== lado) return;
+        if (log.jugador === dorsalAnterior) log.jugador = dorsalNuevo;
+        if (log.cambio === dorsalAnterior) log.cambio = dorsalNuevo;
+      });
     }
   }
 

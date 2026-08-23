@@ -15,6 +15,11 @@ export class CreateSetPage implements OnInit {
 
   set: any;
 
+  // true si el set ya se inició (o ya tiene alineación/logs/resultado) — a
+  // partir de eso la alineación inicial queda fija, aunque se reingrese a
+  // esta vista con "editar" desde el inicio.
+  bloqueado = false;
+
   constructor(private router: Router, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController) { }
 
   ionViewWillLeave() {
@@ -45,10 +50,18 @@ export class CreateSetPage implements OnInit {
       if (this.num == 5) {
         this.set = this._game_.partido.set_5
       }
+      this.bloqueado = this._game_.setTieneProgreso(this.num);
     });
   }
 
   async siguiente() {
+  // El set ya se inició (o ya está finalizado): la alineación ya se usó
+  // para jugar, así que solo se avanza sin volver a validar/tocar nada.
+  if (this.bloqueado) {
+    this._game_.confirm_set(this.num);
+    return;
+  }
+
   const aCompleto = this.set.alineacion_a.every((j:any) => j && typeof j === 'number');
   const bCompleto = this.set.alineacion_b.every((j:any) => j && typeof j === 'number');
 
@@ -76,6 +89,10 @@ export class CreateSetPage implements OnInit {
   }
 
   async alineacion(equipo: 'A' | 'B', pos: number) {
+    // Set ya iniciado: la alineación inicial ya se usó para jugar y no se
+    // puede reordenar.
+    if (this.bloqueado) return;
+
     const jugadores = this._game_.obtenerEquipoPorLado(equipo).jugadores;
 
     const alineacion = equipo === 'A'

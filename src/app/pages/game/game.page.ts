@@ -27,6 +27,13 @@ export class GamePage implements OnInit {
   get invertido(): boolean {
     return this.ladoIzquierda === 'B';
   }
+
+  // true si este set ya fue cerrado (tiene victoria registrada). Se llega a
+  // verlo así al reingresar con "editar" desde el inicio del partido: se
+  // puede recorrer y seguir avanzando, pero ya no se puede volver a jugar.
+  get setFinalizado(): boolean {
+    return !!this._game_.partido[`set_${this.set}`]?.victoria;
+  }
   volver() {
     this._game_.guardar();
     this.navCtrl.navigateBack('/home', { replaceUrl: true });
@@ -89,6 +96,7 @@ export class GamePage implements OnInit {
   }
 
   async punto(equipo: any) {
+    if (this.setFinalizado) return;
     this._game_.punto(this.set, equipo);
     this.updateLogs()
     await this.verificarCambioDeLado();
@@ -179,6 +187,7 @@ export class GamePage implements OnInit {
   }
 
   async deshacer() {
+    if (this.setFinalizado) return;
     if (!this.logs || this.logs.length === 0) {
       return;
     }
@@ -225,6 +234,12 @@ export class GamePage implements OnInit {
   }
 
   async siguiente() {
+    if (this.setFinalizado) {
+      // Ya estaba cerrado (se reabrió con "editar"): solo se avanza, sin
+      // volver a tocar logs/victoria/hora_fin ni recalcular nada.
+      this._game_.continuarDespuesDeSetFinalizado(this.set);
+      return;
+    }
     this._game_.closeSet(this.set)
   }
 
@@ -269,6 +284,8 @@ export class GamePage implements OnInit {
   }
 
   async cambiarJugador(equipo: 'A' | 'B', jugadorSeleccionado: number) {
+    if (this.setFinalizado) return;
+
     const jugadoresEquipo = this._game_.obtenerEquipoPorLado(equipo).jugadores;
 
     const alineacionInicial = equipo === 'A'
@@ -431,6 +448,7 @@ export class GamePage implements OnInit {
   }
 
   async tiempo(equipo: 'A' | 'B') {
+    if (this.setFinalizado) return;
 
     //valida que no pase de 2 tiempos
     let tiempo = this.logs.filter((log: any) => log.tipo === 4 && log.equipo === equipo).length;
@@ -454,6 +472,8 @@ export class GamePage implements OnInit {
   }
 
   async amonestacion(equipo: 'A' | 'B') {
+    if (this.setFinalizado) return;
+
     const alert = await this.alertController.create({
       header: 'Amonestación',
       message: `Seleccione el tipo de amonestación para el equipo ${equipo}`,

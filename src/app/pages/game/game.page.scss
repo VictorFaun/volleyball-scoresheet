@@ -50,6 +50,25 @@
   text-align: center;
 }
 
+.aviso-set-finalizado {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  color: var(--ion-color-primary);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 8px 20px 0;
+  font-size: 13px;
+  line-height: 1.3;
+
+  ion-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}
+
 /* Contenido principal de la cancha y acciones */
 .contenido-principal {
   flex: 1;

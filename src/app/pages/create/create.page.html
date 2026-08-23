@@ -44,7 +44,7 @@
     <div class="input-text">
       <label>Nro de Sets</label>
       <div class="input-segment">
-        <ion-segment class="segment-custom" [(ngModel)]="partido.numero_sets">
+        <ion-segment class="segment-custom" [(ngModel)]="partido.numero_sets" [disabled]="partidoEnCurso()">
           <ion-segment-button [value]="3">
             <ion-label>3</ion-label>
           </ion-segment-button>
@@ -53,6 +53,7 @@
           </ion-segment-button>
         </ion-segment>
       </div>
+      <p class="aviso-campo-bloqueado" *ngIf="partidoEnCurso()">Ya se inició este partido, la cantidad de sets no se puede modificar.</p>
 
     </div>
 

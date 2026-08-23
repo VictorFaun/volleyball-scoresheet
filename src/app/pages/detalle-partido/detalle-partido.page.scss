@@ -108,6 +108,8 @@ ion-card-subtitle {
 
 .sets-resumen {
   display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 2px;

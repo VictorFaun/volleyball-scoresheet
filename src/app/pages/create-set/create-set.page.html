@@ -29,6 +29,11 @@
 
   <div style="margin: 20px 20px 20px;">
 
+    <div class="aviso-set-bloqueado" *ngIf="bloqueado">
+      <ion-icon name="lock-closed"></ion-icon>
+      <span>Este set ya se inició, así que la alineación inicial queda fija y no se puede modificar.</span>
+    </div>
+
     <div class="posiciones-inicial">
       <label>
         <b>Equipo A ({{nombreEquipoLado('A')}})</b>
