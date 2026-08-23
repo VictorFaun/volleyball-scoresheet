@@ -243,9 +243,16 @@ export class GameService {
   competencias: any = []
   competencia: any
 
-  constructor(private router: Router, private alertController: AlertController, private localStorageService: LocalstorageService) {
-    this.partidos = this.localStorageService.getData();
-    this.competencias = this.localStorageService.getCompetencias();
+  constructor(private router: Router, private alertController: AlertController, private localStorageService: LocalstorageService) {}
+
+  // Carga inicial de partidos/competencias desde el almacenamiento
+  // (Filesystem, ahora asíncrono). Se espera una sola vez al arrancar la
+  // app, antes de que se renderice cualquier página (ver APP_INITIALIZER en
+  // app.module.ts), para que el resto del código pueda seguir leyendo
+  // this.partidos/this.competencias como arrays ya listos, igual que antes.
+  async cargarDatosIniciales() {
+    this.partidos = await this.localStorageService.getData();
+    this.competencias = await this.localStorageService.getCompetencias();
   }
 
   // Guarda el partido activo en su propia clave de almacenamiento (no todo
@@ -254,10 +261,10 @@ export class GameService {
   // cada ciclo de detección de cambios de Angular. Si el partido todavía es
   // un borrador sin confirmar (this.index sin definir), no hace nada: no
   // debe persistirse hasta que el usuario confirme con "Siguiente".
-  guardar() {
+  async guardar() {
     if (this.index === null || this.index === undefined) return;
     try {
-      this.localStorageService.guardarPartido(this.partido);
+      await this.localStorageService.guardarPartido(this.partido);
     } catch (error) {
       console.error('Error al guardar el partido:', error);
       this.notificarErrorGuardado();
@@ -266,13 +273,13 @@ export class GameService {
 
   // Elimina un partido tanto de la lista en memoria como de su clave en el
   // almacenamiento local.
-  eliminarPartido(partido: any) {
+  async eliminarPartido(partido: any) {
     const idx = this.partidos.indexOf(partido);
     if (idx !== -1) {
       this.partidos.splice(idx, 1);
     }
     if (partido?.id) {
-      this.localStorageService.eliminarPartido(partido.id);
+      await this.localStorageService.eliminarPartido(partido.id);
     }
   }
 
@@ -321,7 +328,7 @@ export class GameService {
 
     if (usoPromedio <= 0) return;
 
-    const disponible = this.localStorageService.espacioDisponibleEstimado();
+    const disponible = await this.localStorageService.espacioDisponibleEstimado();
     const partidosRestantesEstimados = Math.floor(disponible / usoPromedio);
 
     const UMBRAL_PARTIDOS_RESTANTES = 5;
@@ -1349,9 +1356,9 @@ export class GameService {
     return competencia;
   }
 
-  guardarCompetencia(competencia: any) {
+  async guardarCompetencia(competencia: any) {
     try {
-      this.localStorageService.guardarCompetencia(competencia);
+      await this.localStorageService.guardarCompetencia(competencia);
     } catch (error) {
       console.error('Error al guardar la competencia:', error);
       this.notificarErrorGuardado();
@@ -1361,15 +1368,14 @@ export class GameService {
   // Cambia el nombre de la competencia y lo replica en el campo "competicion"
   // de sus partidos ya creados (no archivados), para que no queden con un
   // nombre desactualizado.
-  renombrarCompetencia(competencia: any, nuevoNombre: string) {
+  async renombrarCompetencia(competencia: any, nuevoNombre: string) {
     competencia.nombre = nuevoNombre;
-    this.partidos
-      .filter((p: any) => p.competencia_id === competencia.id && !p.archivado)
-      .forEach((p: any) => {
-        p.competicion = nuevoNombre;
-        this.localStorageService.guardarPartido(p);
-      });
-    this.guardarCompetencia(competencia);
+    const partidosDeLaCompetencia = this.partidos.filter((p: any) => p.competencia_id === competencia.id && !p.archivado);
+    for (const p of partidosDeLaCompetencia) {
+      p.competicion = nuevoNombre;
+      await this.localStorageService.guardarPartido(p);
+    }
+    await this.guardarCompetencia(competencia);
   }
 
   // Partidos asociados a una competencia (todas las fechas, incluida "sin fecha"),
@@ -1439,7 +1445,7 @@ export class GameService {
   // ya persistidos y autocompletados con la configuración por defecto (a
   // diferencia de new_game_en_competencia, aquí no hay wizard: se crean listos
   // para completarse/jugarse más tarde desde la lista).
-  crearFecha(competencia: any, nombre: string, cantidad: number) {
+  async crearFecha(competencia: any, nombre: string, cantidad: number) {
     const fecha = { id: this.generarIdFecha(), nombre };
     if (!competencia.fechas) competencia.fechas = [];
     competencia.fechas.push(fecha);
@@ -1452,10 +1458,10 @@ export class GameService {
       partido.fecha_id = fecha.id;
       partido.numero_partido = i + 1;
       this.partidos.push(partido);
-      this.localStorageService.guardarPartido(partido);
+      await this.localStorageService.guardarPartido(partido);
     }
 
-    this.guardarCompetencia(competencia);
+    await this.guardarCompetencia(competencia);
     return fecha;
   }
 
@@ -1469,7 +1475,7 @@ export class GameService {
   // Marca partidos como archivados (ocultos de las listas normales, recuperables
   // desde "Archivados"). Limpia referencias a competencia/fecha que ya no
   // existan, para no dejar ids colgando tras borrar la competencia/fecha dueña.
-  archivarPartidos(lista: any[]) {
+  async archivarPartidos(lista: any[]) {
     for (const partido of lista) {
       partido.archivado = true;
       const competenciaExiste = this.competencias.some((c: any) => c.id === partido.competencia_id);
@@ -1481,46 +1487,46 @@ export class GameService {
         const fechaExiste = competencia?.fechas?.some((f: any) => f.id === partido.fecha_id);
         if (!fechaExiste) partido.fecha_id = null;
       }
-      this.localStorageService.guardarPartido(partido);
+      await this.localStorageService.guardarPartido(partido);
     }
   }
 
   async eliminarPartidosDefinitivo(lista: any[]) {
     for (const partido of lista) {
       await this.eliminarFirmasPartido(partido);
-      this.eliminarPartido(partido);
+      await this.eliminarPartido(partido);
     }
   }
 
   async eliminarCompetencia(competencia: any, archivar: boolean) {
     const partidosDeLaCompetencia = this.partidos.filter((p: any) => p.competencia_id === competencia.id);
     if (archivar) {
-      this.archivarPartidos(partidosDeLaCompetencia);
+      await this.archivarPartidos(partidosDeLaCompetencia);
     } else {
       await this.eliminarPartidosDefinitivo(partidosDeLaCompetencia);
     }
 
     const idx = this.competencias.indexOf(competencia);
     if (idx !== -1) this.competencias.splice(idx, 1);
-    this.localStorageService.eliminarCompetencia(competencia.id);
+    await this.localStorageService.eliminarCompetencia(competencia.id);
   }
 
   async eliminarFecha(competencia: any, fecha: any, archivar: boolean) {
     const partidosDeLaFecha = this.partidos.filter((p: any) => p.competencia_id === competencia.id && p.fecha_id === fecha.id);
     if (archivar) {
-      this.archivarPartidos(partidosDeLaFecha);
+      await this.archivarPartidos(partidosDeLaFecha);
     } else {
       await this.eliminarPartidosDefinitivo(partidosDeLaFecha);
     }
 
     const idx = competencia.fechas.indexOf(fecha);
     if (idx !== -1) competencia.fechas.splice(idx, 1);
-    this.guardarCompetencia(competencia);
+    await this.guardarCompetencia(competencia);
   }
 
-  restaurarPartido(partido: any) {
+  async restaurarPartido(partido: any) {
     partido.archivado = false;
-    this.localStorageService.guardarPartido(partido);
+    await this.localStorageService.guardarPartido(partido);
   }
 
   // Alert con un input de texto: solo confirma si el usuario escribe

@@ -61,9 +61,11 @@ export class HomePage implements OnInit {
     this.cargaPartidos()
   }
 
-  actualizarAlmacenamiento() {
-    const usados = this.localStorageService.usoTotalLocalStorage();
-    const total = this.localStorageService.limiteEstimadoBytes();
+  async actualizarAlmacenamiento() {
+    const [usados, total] = await Promise.all([
+      this.localStorageService.usoTotalAlmacenamiento(),
+      this.localStorageService.limiteEstimadoBytes()
+    ]);
     this.almacenamientoFraccion = total > 0 ? Math.min(1, usados / total) : 0;
     this.almacenamientoUsadoTexto = this.formatearBytes(usados);
     this.almacenamientoTotalTexto = this.formatearBytes(total);
@@ -109,6 +111,8 @@ export class HomePage implements OnInit {
 
     this.archivadosCount = this._game_.partidosArchivados().length;
 
+    // No se espera: es async (lee tamaños reales vía Filesystem), y la
+    // barra de almacenamiento se actualiza sola en cuanto resuelve.
     this.actualizarAlmacenamiento();
   }
 

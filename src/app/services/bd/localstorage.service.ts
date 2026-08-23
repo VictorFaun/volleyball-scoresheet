@@ -1,123 +1,150 @@
 import { Injectable } from '@angular/core';
+import { FilesystemStorageService } from '../filesystem-storage/filesystem-storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LocalstorageService {
-  // Cada partido se guarda bajo su propia clave (en vez de todos juntos en
-  // un solo bloque). Así, anotar un punto en un partido no implica
-  // reescribir el historial completo de todos los demás partidos guardados.
-  private readonly INDICE_KEY = 'volleyball_partidos_index';
-  private readonly PARTIDO_PREFIX = 'volleyball_partido_';
-  // Formato anterior: un solo bloque con el array completo de partidos.
-  private readonly LEGACY_KEY = 'volleyball_app_data';
 
-  // Mismo patrón (índice + clave por id) que los partidos, para las competencias.
-  private readonly INDICE_COMPETENCIAS_KEY = 'volleyball_competencias_index';
-  private readonly COMPETENCIA_PREFIX = 'volleyball_competencia_';
+  private readonly COLECCION_PARTIDOS = 'partidos';
+  private readonly COLECCION_COMPETENCIAS = 'competencias';
 
-  // Piso conservador típico del límite de localStorage en navegadores y
-  // WebViews (suele rondar 5-10MB). Se usa el valor más chico para avisar
-  // con margen.
-  private readonly LIMITE_ESTIMADO_BYTES = 5 * 1024 * 1024;
+  // Claves del formato anterior (todo en localStorage). Se migran una sola
+  // vez, la primera vez que se pide algo a este servicio, y luego se
+  // eliminan. Es seguro llamar a la migración siempre: si no hay datos
+  // antiguos, no hace nada.
+  private readonly LEGACY_INDICE_PARTIDOS = 'volleyball_partidos_index';
+  private readonly LEGACY_PARTIDO_PREFIX = 'volleyball_partido_';
+  private readonly LEGACY_INDICE_COMPETENCIAS = 'volleyball_competencias_index';
+  private readonly LEGACY_COMPETENCIA_PREFIX = 'volleyball_competencia_';
+  // Formato aún más viejo: un solo bloque con todos los partidos.
+  private readonly LEGACY_BLOQUE_UNICO = 'volleyball_app_data';
+  // Marca que ya se hizo la migración a Filesystem, para no repetirla en
+  // cada arranque (una vez migrado y borrado, localStorage ya no tiene
+  // rastro de los datos originales para volver a detectarlos).
+  private readonly LEGACY_MIGRADO_FLAG = 'volleyball_migrado_a_filesystem';
 
-  private claveDePartido(id: string): string {
-    return this.PARTIDO_PREFIX + id;
+  private migracion: Promise<void> | null = null;
+
+  constructor(private storage: FilesystemStorageService) {}
+
+  private migrarSiCorresponde(): Promise<void> {
+    if (!this.migracion) {
+      this.migracion = this.migrarInterno();
+    }
+    return this.migracion;
   }
 
-  private leerIndice(): string[] {
+  private async migrarInterno(): Promise<void> {
+    if (localStorage.getItem(this.LEGACY_MIGRADO_FLAG) === 'true') return;
+
     try {
-      const json = localStorage.getItem(this.INDICE_KEY);
+      // Formato viejísimo: un solo bloque con todos los partidos.
+      const bloqueUnico = localStorage.getItem(this.LEGACY_BLOQUE_UNICO);
+      if (bloqueUnico) {
+        try {
+          const partidosAntiguos = JSON.parse(bloqueUnico);
+          if (Array.isArray(partidosAntiguos)) {
+            for (const partido of partidosAntiguos) {
+              await this.storage.guardar(this.COLECCION_PARTIDOS, partido);
+            }
+          }
+        } catch (error) {
+          console.error('Error migrando el bloque único de partidos:', error);
+        }
+        localStorage.removeItem(this.LEGACY_BLOQUE_UNICO);
+      }
+
+      // Partidos guardados en localStorage (índice + clave por id).
+      const idsPartidos = this.leerIndiceLegacy(this.LEGACY_INDICE_PARTIDOS);
+      for (const id of idsPartidos) {
+        const json = localStorage.getItem(this.LEGACY_PARTIDO_PREFIX + id);
+        if (json) {
+          try {
+            await this.storage.guardar(this.COLECCION_PARTIDOS, JSON.parse(json));
+          } catch (error) {
+            console.error(`Error migrando partido ${id}:`, error);
+          }
+        }
+        localStorage.removeItem(this.LEGACY_PARTIDO_PREFIX + id);
+      }
+      if (idsPartidos.length) localStorage.removeItem(this.LEGACY_INDICE_PARTIDOS);
+
+      // Competencias guardadas en localStorage.
+      const idsCompetencias = this.leerIndiceLegacy(this.LEGACY_INDICE_COMPETENCIAS);
+      for (const id of idsCompetencias) {
+        const json = localStorage.getItem(this.LEGACY_COMPETENCIA_PREFIX + id);
+        if (json) {
+          try {
+            await this.storage.guardar(this.COLECCION_COMPETENCIAS, JSON.parse(json));
+          } catch (error) {
+            console.error(`Error migrando competencia ${id}:`, error);
+          }
+        }
+        localStorage.removeItem(this.LEGACY_COMPETENCIA_PREFIX + id);
+      }
+      if (idsCompetencias.length) localStorage.removeItem(this.LEGACY_INDICE_COMPETENCIAS);
+    } finally {
+      // Se marca migrado incluso si algo individual falló arriba, para no
+      // reintentar en cada arranque; los errores puntuales ya quedaron en consola.
+      localStorage.setItem(this.LEGACY_MIGRADO_FLAG, 'true');
+    }
+  }
+
+  private leerIndiceLegacy(clave: string): string[] {
+    try {
+      const json = localStorage.getItem(clave);
       return json ? JSON.parse(json) : [];
     } catch (error) {
-      console.error('Error reading partidos index:', error);
+      console.error(`Error leyendo índice legacy "${clave}":`, error);
       return [];
-    }
-  }
-
-  private guardarIndice(ids: string[]): void {
-    localStorage.setItem(this.INDICE_KEY, JSON.stringify(ids));
-  }
-
-  private generarId(): string {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-  }
-
-  // Migra automáticamente los datos del formato anterior (un solo bloque
-  // con todos los partidos) la primera vez que se detecta, y luego lo
-  // elimina. Es seguro llamarla siempre: si no hay datos antiguos, no hace
-  // nada.
-  private migrarSiCorresponde(): void {
-    const legacyJson = localStorage.getItem(this.LEGACY_KEY);
-    if (!legacyJson) return;
-
-    try {
-      const partidosAntiguos = JSON.parse(legacyJson);
-      if (Array.isArray(partidosAntiguos)) {
-        for (const partido of partidosAntiguos) {
-          this.guardarPartido(partido);
-        }
-      }
-    } catch (error) {
-      console.error('Error migrando datos antiguos de localStorage:', error);
-    } finally {
-      localStorage.removeItem(this.LEGACY_KEY);
     }
   }
 
   /**
    * Lee todos los partidos guardados.
    */
-  getData(): any[] {
-    this.migrarSiCorresponde();
-
-    const ids = this.leerIndice();
-    const partidos: any[] = [];
-    for (const id of ids) {
-      try {
-        const json = localStorage.getItem(this.claveDePartido(id));
-        if (json) partidos.push(JSON.parse(json));
-      } catch (error) {
-        console.error(`Error reading partido ${id} from localStorage:`, error);
-      }
-    }
-    return partidos;
+  async getData(): Promise<any[]> {
+    await this.migrarSiCorresponde();
+    return this.storage.obtenerTodos(this.COLECCION_PARTIDOS);
   }
 
   /**
-   * Guarda (crea o actualiza) un único partido bajo su propia clave, sin
-   * tocar los demás partidos ya guardados. Le asigna un id si todavía no
-   * tiene uno.
+   * Guarda (crea o actualiza) un único partido, sin tocar los demás.
    */
-  guardarPartido(partido: any): void {
-    if (!partido.id) {
-      partido.id = this.generarId();
-    }
-
-    try {
-      localStorage.setItem(this.claveDePartido(partido.id), JSON.stringify(partido));
-    } catch (error) {
-      console.error('Error saving partido to localStorage:', error);
-      throw new Error('Failed to save partido to localStorage');
-    }
-
-    const ids = this.leerIndice();
-    if (!ids.includes(partido.id)) {
-      ids.push(partido.id);
-      this.guardarIndice(ids);
-    }
+  async guardarPartido(partido: any): Promise<void> {
+    await this.migrarSiCorresponde();
+    await this.storage.guardar(this.COLECCION_PARTIDOS, partido);
   }
 
   /**
    * Elimina un partido guardado por su id.
    */
-  eliminarPartido(id: string): void {
-    localStorage.removeItem(this.claveDePartido(id));
-    const ids = this.leerIndice().filter(existente => existente !== id);
-    this.guardarIndice(ids);
+  async eliminarPartido(id: string): Promise<void> {
+    await this.storage.eliminar(this.COLECCION_PARTIDOS, id);
+  }
+
+  /**
+   * Lee todas las competencias guardadas.
+   */
+  async getCompetencias(): Promise<any[]> {
+    await this.migrarSiCorresponde();
+    return this.storage.obtenerTodos(this.COLECCION_COMPETENCIAS);
+  }
+
+  /**
+   * Guarda (crea o actualiza) una única competencia.
+   */
+  async guardarCompetencia(competencia: any): Promise<void> {
+    await this.migrarSiCorresponde();
+    await this.storage.guardar(this.COLECCION_COMPETENCIAS, competencia);
+  }
+
+  /**
+   * Elimina una competencia guardada por su id.
+   */
+  async eliminarCompetencia(id: string): Promise<void> {
+    await this.storage.eliminar(this.COLECCION_COMPETENCIAS, id);
   }
 
   /**
@@ -128,102 +155,36 @@ export class LocalstorageService {
   }
 
   /**
-   * Bytes actualmente ocupados por todo lo guardado en localStorage para
-   * este origen (no solo los partidos), para compararlo contra el límite
-   * estimado.
+   * Bytes reales ocupados por todo lo que esta app guarda vía Filesystem
+   * (partidos, competencias y firmas), para la barra de almacenamiento de
+   * Ajustes y el aviso de poco espacio.
    */
-  usoTotalLocalStorage(): number {
-    let total = 0;
-    for (let i = 0; i < localStorage.length; i++) {
-      const clave = localStorage.key(i);
-      if (!clave) continue;
-      total += new Blob([clave + (localStorage.getItem(clave) || '')]).size;
-    }
-    return total;
+  async usoTotalAlmacenamiento(): Promise<number> {
+    return this.storage.espacioUsado();
   }
 
   /**
-   * Espacio libre estimado, según el límite conservador asumido para
-   * localStorage. No es un valor exacto (los navegadores no exponen la
-   * cuota real de localStorage de forma confiable), pero sirve como aviso
-   * temprano.
+   * Cuota total estimada del origen. Se apoya en navigator.storage.estimate()
+   * cuando está disponible (ver FilesystemStorageService.espacioTotalEstimado);
+   * si no, usa un piso conservador. Ya no es la cuota chica de localStorage:
+   * los datos ahora viven en Filesystem (nativo) / IndexedDB (web), con
+   * mucho más margen.
    */
-  espacioDisponibleEstimado(): number {
-    return Math.max(0, this.LIMITE_ESTIMADO_BYTES - this.usoTotalLocalStorage());
+  async limiteEstimadoBytes(): Promise<number> {
+    const FALLBACK_BYTES = 50 * 1024 * 1024;
+    const estimado = await this.storage.espacioTotalEstimado();
+    return estimado ? estimado.cuotaOrigen : FALLBACK_BYTES;
   }
 
   /**
-   * Límite estimado (en bytes) usado como referencia para la barra de
-   * almacenamiento de Home y las advertencias de espacio. Ver nota en
-   * LIMITE_ESTIMADO_BYTES.
+   * Espacio libre estimado (cuota estimada menos uso real). No es un valor
+   * exacto (ver limiteEstimadoBytes), pero sirve como aviso temprano.
    */
-  limiteEstimadoBytes(): number {
-    return this.LIMITE_ESTIMADO_BYTES;
-  }
-
-  private claveDeCompetencia(id: string): string {
-    return this.COMPETENCIA_PREFIX + id;
-  }
-
-  private leerIndiceCompetencias(): string[] {
-    try {
-      const json = localStorage.getItem(this.INDICE_COMPETENCIAS_KEY);
-      return json ? JSON.parse(json) : [];
-    } catch (error) {
-      console.error('Error reading competencias index:', error);
-      return [];
-    }
-  }
-
-  private guardarIndiceCompetencias(ids: string[]): void {
-    localStorage.setItem(this.INDICE_COMPETENCIAS_KEY, JSON.stringify(ids));
-  }
-
-  /**
-   * Lee todas las competencias guardadas.
-   */
-  getCompetencias(): any[] {
-    const ids = this.leerIndiceCompetencias();
-    const competencias: any[] = [];
-    for (const id of ids) {
-      try {
-        const json = localStorage.getItem(this.claveDeCompetencia(id));
-        if (json) competencias.push(JSON.parse(json));
-      } catch (error) {
-        console.error(`Error reading competencia ${id} from localStorage:`, error);
-      }
-    }
-    return competencias;
-  }
-
-  /**
-   * Guarda (crea o actualiza) una única competencia bajo su propia clave.
-   */
-  guardarCompetencia(competencia: any): void {
-    if (!competencia.id) {
-      competencia.id = this.generarId();
-    }
-
-    try {
-      localStorage.setItem(this.claveDeCompetencia(competencia.id), JSON.stringify(competencia));
-    } catch (error) {
-      console.error('Error saving competencia to localStorage:', error);
-      throw new Error('Failed to save competencia to localStorage');
-    }
-
-    const ids = this.leerIndiceCompetencias();
-    if (!ids.includes(competencia.id)) {
-      ids.push(competencia.id);
-      this.guardarIndiceCompetencias(ids);
-    }
-  }
-
-  /**
-   * Elimina una competencia guardada por su id.
-   */
-  eliminarCompetencia(id: string): void {
-    localStorage.removeItem(this.claveDeCompetencia(id));
-    const ids = this.leerIndiceCompetencias().filter(existente => existente !== id);
-    this.guardarIndiceCompetencias(ids);
+  async espacioDisponibleEstimado(): Promise<number> {
+    const [usado, total] = await Promise.all([
+      this.usoTotalAlmacenamiento(),
+      this.limiteEstimadoBytes()
+    ]);
+    return Math.max(0, total - usado);
   }
 }
