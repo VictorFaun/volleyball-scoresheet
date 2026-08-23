@@ -43,6 +43,22 @@ const routes: Routes = [
     path: 'detalle-partido',
     loadChildren: () => import('./pages/detalle-partido/detalle-partido.module').then( m => m.DetallePartidoPageModule)
   },
+  {
+    path: 'competencia',
+    loadChildren: () => import('./pages/competencia/competencia.module').then( m => m.CompetenciaPageModule)
+  },
+  {
+    path: 'competencia-config',
+    loadChildren: () => import('./pages/competencia-config/competencia-config.module').then( m => m.CompetenciaConfigPageModule)
+  },
+  {
+    path: 'fecha',
+    loadChildren: () => import('./pages/fecha/fecha.module').then( m => m.FechaPageModule)
+  },
+  {
+    path: 'archivados',
+    loadChildren: () => import('./pages/archivados/archivados.module').then( m => m.ArchivadosPageModule)
+  },
 ];
 
 @NgModule({

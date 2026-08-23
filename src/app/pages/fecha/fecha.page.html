@@ -1,0 +1,53 @@
+<ion-header [translucent]="false">
+  <ion-toolbar>
+    <ion-buttons [collapse]="true" slot="start">
+      <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+    </ion-buttons>
+    <ion-title>{{fecha?.nombre}}</ion-title>
+    <ion-buttons [collapse]="true" slot="end">
+      <ion-button (click)="renombrar()"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-button>
+      <ion-button (click)="eliminarFecha()"><ion-icon slot="icon-only" name="trash"></ion-icon></ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" *ngIf="fecha">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+      </ion-buttons>
+      <ion-title size="large">{{fecha?.nombre}}</ion-title>
+      <ion-buttons [collapse]="true" slot="end">
+        <ion-button (click)="renombrar()"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-button>
+        <ion-button (click)="eliminarFecha()"><ion-icon slot="icon-only" name="trash"></ion-icon></ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <div style="margin: 20px 20px 0px;">
+    <p style="margin: 0 0 16px; color: rgba(var(--color-4-rgb), 0.5);">{{competencia?.nombre}}</p>
+    <ion-button (click)="nuevoPartido()" class="btn-1" style="width: 100%; --border-radius:10px;">
+      Nuevo partido
+    </ion-button>
+  </div>
+
+  <div style="margin: 20px 20px 20px;">
+
+    <app-partido-card
+      *ngFor="let partido of partidos"
+      [partido]="partido"
+      (continuar)="continuar_partido(partido.index)"
+      (editar)="edit_game(partido.index)"
+      (exportar)="exportarPartido(partido.index)"
+      (copiar)="copiarPartido(partido.index)"
+      (eliminar)="eliminarPartido(partido.index)"
+    ></app-partido-card>
+
+    <p *ngIf="!partidos.length" style="text-align: center; color: rgba(var(--color-4-rgb), 0.5); margin-top: 24px;">
+      Aún no hay partidos en esta fecha.
+    </p>
+
+  </div>
+
+</ion-content>

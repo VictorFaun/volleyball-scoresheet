@@ -250,7 +250,7 @@ export class DetallePartidoPage implements OnInit {
   }
 
   volver() {
-    this.navCtrl.navigateBack('/home', { replaceUrl: true });
+    this._game_.volverAOrigen();
   }
 
   formatoHoraCorta(fecha: any): string {

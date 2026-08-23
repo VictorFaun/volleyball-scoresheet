@@ -31,8 +31,9 @@
   <div style="margin: 20px 20px 20px;">
 
     <div class="input-text" style="position: relative;">
-      <label>Competición <ion-button *ngIf="autocompletar" fill="clear" size="small" style="position: absolute; right: 0px; top: -7px;" (click)="autocompletarDatos()">Autocompletar datos</ion-button></label>
-      <ion-input fill="outline" placeholder="Nombre Competición" [(ngModel)]="partido.competicion" (ionInput)="buscar_torneo()"></ion-input>
+      <label>Competición</label>
+      <ion-input fill="outline" placeholder="Nombre Competición" [(ngModel)]="partido.competicion" [disabled]="!!partido.competencia_id"></ion-input>
+      <p class="aviso-campo-bloqueado" *ngIf="partido.competencia_id">Este partido pertenece a una competencia; para cambiar el nombre, renómbrala desde su pantalla.</p>
     </div>
 
     <div class="input-text">

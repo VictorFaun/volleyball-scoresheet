@@ -15,9 +15,11 @@ export class CreateSetPage implements OnInit {
 
   set: any;
 
-  // true si el set ya se inició (o ya tiene alineación/logs/resultado) — a
-  // partir de eso la alineación inicial queda fija, aunque se reingrese a
-  // esta vista con "editar" desde el inicio.
+  // true si el set ya se empezó a jugar (tiene hora de inicio, logs o
+  // resultado) — a partir de eso la alineación inicial queda fija, aunque
+  // se reingrese a esta vista con "editar" desde el inicio. Completar la
+  // alineación por sí solo no bloquea la vista: se puede seguir editando
+  // hasta que se apriete "Iniciar".
   bloqueado = false;
 
   constructor(private router: Router, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController) { }
@@ -28,7 +30,7 @@ export class CreateSetPage implements OnInit {
 
   volver() {
     this._game_.guardar();
-    this.router.navigate(["home"], { replaceUrl: true });
+    this._game_.volverAOrigen();
   }
 
   ngOnInit() {
@@ -50,7 +52,7 @@ export class CreateSetPage implements OnInit {
       if (this.num == 5) {
         this.set = this._game_.partido.set_5
       }
-      this.bloqueado = this._game_.setTieneProgreso(this.num);
+      this.bloqueado = this._game_.setYaIniciado(this.num);
     });
   }
 

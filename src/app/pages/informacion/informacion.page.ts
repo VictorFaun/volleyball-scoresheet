@@ -24,7 +24,7 @@ export class InformacionPage implements OnInit {
 
   volver() {
     this._game_.guardar();
-    this.navCtrl.navigateBack('/home', { replaceUrl: true });
+    this._game_.volverAOrigen();
   }
 
   siguiente() {

@@ -21,7 +21,7 @@
   <div class="detalle-container">
 
     <div class="detalle-encabezado">
-      <p class="detalle-subtitulo">{{ partido.competicion ? partido.competicion + ' · ' : '' }}Partido N° {{ partido.numero_partido || '' }}</p>
+      <p class="detalle-subtitulo">{{ partido.competicion ? partido.competicion + ' · ' : '' }}Partido N° {{ partido.numero_partido || 0 }}</p>
       <div class="detalle-equipos">
         <span class="nombre-equipo col-a">{{ nombreA }}</span>
         <span class="marcador-sets">{{ totales.setsGanadosA }} - {{ totales.setsGanadosB }}</span>

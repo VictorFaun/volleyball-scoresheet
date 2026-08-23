@@ -3,6 +3,10 @@ import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { LocalstorageService } from '../bd/localstorage.service';
 import { Directory, Filesystem } from '@capacitor/filesystem';
+import { Clipboard } from '@capacitor/clipboard';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
+import { PDFDocument, rgb } from 'pdf-lib';
 
 @Injectable({
   providedIn: 'root'
@@ -234,8 +238,14 @@ export class GameService {
   ]
   index: any
 
+  // Competencias (torneos): agrupan partidos por id, opcionalmente en fechas.
+  // Igual que "partido"/"index", "competencia" es la que se está editando/viendo.
+  competencias: any = []
+  competencia: any
+
   constructor(private router: Router, private alertController: AlertController, private localStorageService: LocalstorageService) {
     this.partidos = this.localStorageService.getData();
+    this.competencias = this.localStorageService.getCompetencias();
   }
 
   // Guarda el partido activo en su propia clave de almacenamiento (no todo
@@ -907,7 +917,36 @@ export class GameService {
     }
   }
 
+  // A dónde debe volver el botón "volver" de cualquier vista del asistente
+  // de partido (create, informacion, team, sorteo, create-set, game,
+  // signature, detalle-partido). Se define una sola vez al entrar al
+  // asistente (crear, editar o continuar un partido desde Home, una
+  // Competencia o una Fecha) y se mantiene mientras se navega de un paso al
+  // siguiente dentro de la misma sesión.
+  origenPartido: { ruta: string; queryParams?: any } = { ruta: '/home' };
+
+  setOrigenHome() {
+    this.origenPartido = { ruta: '/home' };
+  }
+
+  setOrigenCompetencia(competenciaId: string) {
+    this.origenPartido = { ruta: '/competencia', queryParams: { id: competenciaId } };
+  }
+
+  setOrigenFecha(competenciaId: string, fechaId: string) {
+    this.origenPartido = { ruta: '/fecha', queryParams: { competenciaId, fechaId } };
+  }
+
+  // Usado por el botón "volver" de todas las vistas del asistente, en vez de
+  // navegar siempre a Home.
+  volverAOrigen() {
+    const extras: any = { replaceUrl: true };
+    if (this.origenPartido.queryParams) extras.queryParams = this.origenPartido.queryParams;
+    this.router.navigate([this.origenPartido.ruta], extras);
+  }
+
   async new_game() {
+    this.setOrigenHome();
     await this.advertirSiPocoEspacio();
     // Solo se crea un borrador en memoria. No se agrega a "partidos" (ni se
     // persiste) hasta que el usuario confirme con "Siguiente" en la primera
@@ -1106,7 +1145,12 @@ export class GameService {
       cambio_lado_ultimo_set: true,
       // Qué firmas del flujo se piden. Activadas por defecto; al
       // desactivar una, new_firma() la salta directo al siguiente paso.
-      firmas_habilitadas: this.clean_firmas_habilitadas()
+      firmas_habilitadas: this.clean_firmas_habilitadas(),
+      // Relación opcional a una competencia/fecha (por id). El partido en sí
+      // no cambia de estructura más allá de estos 3 campos.
+      competencia_id: null,
+      fecha_id: null,
+      archivado: false
     }
   }
 
@@ -1131,9 +1175,10 @@ export class GameService {
   }
 
   // true si el set N ya tiene algo registrado (alineación cargada, ya se
-  // inició o ya tiene logs/resultado). A partir de eso, el sorteo (R-5) y la
-  // alineación inicial de ese set ya no deben poder volver a editarse,
-  // aunque se reingrese al flujo con "editar" desde el inicio.
+  // inició o ya tiene logs/resultado). Se usa para bloquear cambios que ya
+  // no deberían tocarse una vez que se empezó a armar el set (ver
+  // partidoEnCurso). Para saber si el set ya se JUGÓ (y por eso su R-5 ya no
+  // se puede editar), usar setYaIniciado().
   setTieneProgreso(set: number): boolean {
     const s = this.partido[`set_${set}`];
     if (!s) return false;
@@ -1143,6 +1188,17 @@ export class GameService {
       Array.isArray(arr) && arr.some((n: any) => n !== false && n !== null && n !== undefined);
 
     return alineacionCargada(s.alineacion_a) || alineacionCargada(s.alineacion_b);
+  }
+
+  // true si el set N ya se empezó a JUGAR (tiene hora de inicio, resultado o
+  // algún punto/evento registrado). A diferencia de setTieneProgreso(), no
+  // considera la alineación cargada como progreso: mientras el set no se
+  // haya iniciado (botón "Iniciar"), la alineación en create-set se puede
+  // seguir editando aunque ya esté completa.
+  setYaIniciado(set: number): boolean {
+    const s = this.partido[`set_${set}`];
+    if (!s) return false;
+    return !!(s.hora_inicio || s.victoria || (s.logs && s.logs.length > 0));
   }
 
   // true si algún set del partido ya se inició o tiene alineación cargada.
@@ -1254,5 +1310,680 @@ export class GameService {
       logs: [],
       victoria: null
     }
+  }
+
+  // ===========================================================================
+  // Competencias (torneos)
+  // ===========================================================================
+
+  clean_configuracion_default() {
+    return {
+      ciudad: null,
+      pais: null,
+      gimnasio: null,
+      division: null,
+      categoria: null,
+      primer_arbitro: null,
+      segundo_arbitro: null,
+      planillero: null,
+      asistente_planillero: null,
+      primer_banderin: null,
+      segundo_banderin: null,
+      tercer_banderin: null,
+      cuarto_banderin: null,
+      numero_sets: 3,
+      cambio_lado_ultimo_set: true,
+      firmas_habilitadas: this.clean_firmas_habilitadas()
+    };
+  }
+
+  nuevaCompetencia(nombre: string) {
+    const competencia = {
+      id: null,
+      nombre,
+      configuracionDefault: this.clean_configuracion_default(),
+      fechas: []
+    };
+    this.competencias.push(competencia);
+    this.guardarCompetencia(competencia);
+    return competencia;
+  }
+
+  guardarCompetencia(competencia: any) {
+    try {
+      this.localStorageService.guardarCompetencia(competencia);
+    } catch (error) {
+      console.error('Error al guardar la competencia:', error);
+      this.notificarErrorGuardado();
+    }
+  }
+
+  // Cambia el nombre de la competencia y lo replica en el campo "competicion"
+  // de sus partidos ya creados (no archivados), para que no queden con un
+  // nombre desactualizado.
+  renombrarCompetencia(competencia: any, nuevoNombre: string) {
+    competencia.nombre = nuevoNombre;
+    this.partidos
+      .filter((p: any) => p.competencia_id === competencia.id && !p.archivado)
+      .forEach((p: any) => {
+        p.competicion = nuevoNombre;
+        this.localStorageService.guardarPartido(p);
+      });
+    this.guardarCompetencia(competencia);
+  }
+
+  // Partidos asociados a una competencia (todas las fechas, incluida "sin fecha"),
+  // sin contar los archivados.
+  partidosDeCompetencia(competenciaId: string): any[] {
+    return this.partidos.filter((p: any) => p.competencia_id === competenciaId && !p.archivado);
+  }
+
+  partidosDeFecha(competenciaId: string, fechaId: string | null): any[] {
+    return this.partidosDeCompetencia(competenciaId).filter((p: any) => (p.fecha_id || null) === fechaId);
+  }
+
+  // Partidos que no pertenecen a ninguna competencia (y no están archivados).
+  partidosSueltos(): any[] {
+    return this.partidos.filter((p: any) => !p.competencia_id && !p.archivado);
+  }
+
+  partidosArchivados(): any[] {
+    return this.partidos.filter((p: any) => p.archivado);
+  }
+
+  // Siguiente número de partido sugerido dentro de una fecha (o del bucket
+  // "sin fecha" de una competencia si fechaId es null). Siempre editable
+  // después por el usuario.
+  siguienteNumeroPartido(competenciaId: string, fechaId: string | null): number {
+    const bucket = this.partidosDeFecha(competenciaId, fechaId);
+    const max = bucket.reduce((m: number, p: any) => Math.max(m, p.numero_partido || 0), 0);
+    return max + 1;
+  }
+
+  aplicarConfiguracionDefault(partido: any, competencia: any) {
+    const config = competencia.configuracionDefault || this.clean_configuracion_default();
+    partido.ciudad = config.ciudad;
+    partido.pais = config.pais;
+    partido.gimnasio = config.gimnasio;
+    partido.division = config.division;
+    partido.categoria = config.categoria;
+    partido.primer_arbitro = config.primer_arbitro;
+    partido.segundo_arbitro = config.segundo_arbitro;
+    partido.planillero = config.planillero;
+    partido.asistente_planillero = config.asistente_planillero;
+    partido.primer_banderin = config.primer_banderin;
+    partido.segundo_banderin = config.segundo_banderin;
+    partido.tercer_banderin = config.tercer_banderin;
+    partido.cuarto_banderin = config.cuarto_banderin;
+    partido.numero_sets = config.numero_sets;
+    partido.cambio_lado_ultimo_set = config.cambio_lado_ultimo_set;
+    partido.firmas_habilitadas = { ...config.firmas_habilitadas };
+  }
+
+  // Igual que new_game(), pero el borrador queda precargado con la configuración
+  // por defecto de la competencia y ya vinculado a ella (y a la fecha, si aplica).
+  // Sigue sin persistirse hasta que el usuario confirme con "Siguiente".
+  async new_game_en_competencia(competencia: any, fechaId: string | null) {
+    await this.advertirSiPocoEspacio();
+    this.partido = this.clean_partido();
+    this.aplicarConfiguracionDefault(this.partido, competencia);
+    this.partido.competicion = competencia.nombre;
+    this.partido.competencia_id = competencia.id;
+    this.partido.fecha_id = fechaId;
+    this.partido.numero_partido = this.siguienteNumeroPartido(competencia.id, fechaId);
+    this.index = null;
+    this.redireccionar('create');
+  }
+
+  // Crea una fecha dentro de la competencia y, de inmediato, "cantidad" partidos
+  // ya persistidos y autocompletados con la configuración por defecto (a
+  // diferencia de new_game_en_competencia, aquí no hay wizard: se crean listos
+  // para completarse/jugarse más tarde desde la lista).
+  crearFecha(competencia: any, nombre: string, cantidad: number) {
+    const fecha = { id: this.generarIdFecha(), nombre };
+    if (!competencia.fechas) competencia.fechas = [];
+    competencia.fechas.push(fecha);
+
+    for (let i = 0; i < cantidad; i++) {
+      const partido: any = this.clean_partido();
+      this.aplicarConfiguracionDefault(partido, competencia);
+      partido.competicion = competencia.nombre;
+      partido.competencia_id = competencia.id;
+      partido.fecha_id = fecha.id;
+      partido.numero_partido = i + 1;
+      this.partidos.push(partido);
+      this.localStorageService.guardarPartido(partido);
+    }
+
+    this.guardarCompetencia(competencia);
+    return fecha;
+  }
+
+  private generarIdFecha(): string {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  // Marca partidos como archivados (ocultos de las listas normales, recuperables
+  // desde "Archivados"). Limpia referencias a competencia/fecha que ya no
+  // existan, para no dejar ids colgando tras borrar la competencia/fecha dueña.
+  archivarPartidos(lista: any[]) {
+    for (const partido of lista) {
+      partido.archivado = true;
+      const competenciaExiste = this.competencias.some((c: any) => c.id === partido.competencia_id);
+      if (!competenciaExiste) {
+        partido.competencia_id = null;
+        partido.fecha_id = null;
+      } else if (partido.fecha_id) {
+        const competencia = this.competencias.find((c: any) => c.id === partido.competencia_id);
+        const fechaExiste = competencia?.fechas?.some((f: any) => f.id === partido.fecha_id);
+        if (!fechaExiste) partido.fecha_id = null;
+      }
+      this.localStorageService.guardarPartido(partido);
+    }
+  }
+
+  async eliminarPartidosDefinitivo(lista: any[]) {
+    for (const partido of lista) {
+      await this.eliminarFirmasPartido(partido);
+      this.eliminarPartido(partido);
+    }
+  }
+
+  async eliminarCompetencia(competencia: any, archivar: boolean) {
+    const partidosDeLaCompetencia = this.partidos.filter((p: any) => p.competencia_id === competencia.id);
+    if (archivar) {
+      this.archivarPartidos(partidosDeLaCompetencia);
+    } else {
+      await this.eliminarPartidosDefinitivo(partidosDeLaCompetencia);
+    }
+
+    const idx = this.competencias.indexOf(competencia);
+    if (idx !== -1) this.competencias.splice(idx, 1);
+    this.localStorageService.eliminarCompetencia(competencia.id);
+  }
+
+  async eliminarFecha(competencia: any, fecha: any, archivar: boolean) {
+    const partidosDeLaFecha = this.partidos.filter((p: any) => p.competencia_id === competencia.id && p.fecha_id === fecha.id);
+    if (archivar) {
+      this.archivarPartidos(partidosDeLaFecha);
+    } else {
+      await this.eliminarPartidosDefinitivo(partidosDeLaFecha);
+    }
+
+    const idx = competencia.fechas.indexOf(fecha);
+    if (idx !== -1) competencia.fechas.splice(idx, 1);
+    this.guardarCompetencia(competencia);
+  }
+
+  restaurarPartido(partido: any) {
+    partido.archivado = false;
+    this.localStorageService.guardarPartido(partido);
+  }
+
+  // Alert con un input de texto: solo confirma si el usuario escribe
+  // exactamente "palabra" (sin distinguir mayúsculas ni espacios extra).
+  // Se usa antes de cualquier eliminación (partido suelto, competencia, fecha).
+  async confirmarConPalabra(opciones: { header: string; message: string; textoBoton?: string; palabra?: string; onConfirm: () => void | Promise<void> }) {
+    const palabra = opciones.palabra || 'confirmo';
+    const alert = await this.alertController.create({
+      header: opciones.header,
+      message: opciones.message,
+      inputs: [
+        {
+          name: 'confirmacion',
+          type: 'text',
+          placeholder: `Escribe "${palabra}"`
+        }
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: opciones.textoBoton || 'Eliminar',
+          role: 'destructive',
+          handler: async (data) => {
+            const texto = (data?.confirmacion || '').trim().toLowerCase();
+            if (texto !== palabra) return false;
+            await opciones.onConfirm();
+            return true;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  // ===========================================================================
+  // Continuar partido / resumen / exportación — usado tanto por Home como por
+  // la vista de Competencia, para no duplicar esta lógica en cada página.
+  // ===========================================================================
+
+  continuarPartido(i: any) {
+    let estado = this.partidos[i].estado
+    this.index = i;
+    this.partido = this.partidos[i]
+    if(estado == 1){
+      this.edit_game(i)
+    }
+    if(estado == 2){
+      this.new_informacion()
+    }
+    if(estado == 3){
+      this.new_equipo(1)
+    }
+    if(estado == 4){
+      this.new_equipo(2)
+    }
+    if(estado == 5){
+      this.new_firma(1)
+    }
+    if(estado == 6){
+      this.new_firma(2)
+    }
+    if(estado == 7){
+      this.new_firma(3)
+    }
+    if(estado == 8){
+      this.new_firma(4)
+    }
+    if(estado == 9){
+      this.new_sorteo(1)
+    }
+    if(estado == 10){
+      this.new_set(1)
+    }
+    if(estado == 11){
+      this.start_set(1)
+    }
+    if(estado == 12){
+      this.closeSet(1)
+    }
+    if(estado == 13){
+      this.new_set(2)
+    }
+    if(estado == 14){
+      this.start_set(2)
+    }
+    if(estado == 15){
+      this.closeSet(2)
+    }
+    if(estado == 16){
+      this.new_sorteo(3)
+    }
+    if(estado == 17){
+      this.new_set(3)
+    }
+    if(estado == 18){
+      this.start_set(3)
+    }
+    if(estado == 19){
+      this.closeSet(3)
+    }
+    if(estado == 20){
+      this.new_set(4)
+    }
+    if(estado == 21){
+      this.start_set(4)
+    }
+    if(estado == 22){
+      this.closeSet(4)
+    }
+    if(estado == 23){
+      this.new_sorteo(5)
+    }
+    if(estado == 24){
+      this.new_set(5)
+    }
+    if(estado == 25){
+      this.start_set(5)
+    }
+    if(estado == 26){
+      this.closeSet(5)
+    }
+    if(estado == 27){
+      this.new_firma(5)
+    }
+    if(estado == 28){
+      this.new_firma(6)
+    }
+    if(estado == 29){
+      this.new_firma(7)
+    }
+    if(estado == 30){
+      this.new_firma(8)
+    }
+    if(estado == 31){
+      this.new_firma(9)
+    }
+    if(estado == 32){
+      this.new_firma(10)
+    }
+    if(estado == 33){
+      this.mostrarResumenPartido(i)
+    }
+  }
+
+  // "Amonestación" agrupa demora, tarjeta amarilla/roja, solicitud
+  // improcedente y expulsión (ver GamePage.amonestacion()).
+  private readonly TIPOS_AMONESTACION = [5, 6, 7, 8, 9];
+
+  private formatearDuracion(ms: number): string {
+    if (!isFinite(ms) || ms < 0) return '-';
+    const totalSegundos = Math.floor(ms / 1000);
+    const horas = Math.floor(totalSegundos / 3600);
+    const minutos = Math.floor((totalSegundos % 3600) / 60);
+    const segundos = totalSegundos % 60;
+    const mm = minutos.toString().padStart(horas > 0 ? 2 : 1, '0');
+    const ss = segundos.toString().padStart(2, '0');
+    return horas > 0 ? `${horas}:${mm}:${ss}` : `${mm}:${ss}`;
+  }
+
+  // Duración de un set ya jugado, o null si falta alguna de las dos horas.
+  private duracionSetMs(set: any): number | null {
+    if (!set?.hora_inicio || !set?.hora_fin) return null;
+    const ms = new Date(set.hora_fin).getTime() - new Date(set.hora_inicio).getTime();
+    return isNaN(ms) ? null : ms;
+  }
+
+  // Muestra un resumen del partido finalizado (equipos, marcador, tiempos y
+  // amonestaciones de cada set, duración y ganador), con el mismo estilo de
+  // alert usado en el resto de la app (ver la confirmación de firma en
+  // SignaturePage).
+  async mostrarResumenPartido(index: any) {
+    const partido = this.partidos[index];
+    const nombreA = this.obtenerEquipoPorLado('A')?.nombre || 'Equipo A';
+    const nombreB = this.obtenerEquipoPorLado('B')?.nombre || 'Equipo B';
+
+    let setsGanadosA = 0;
+    let setsGanadosB = 0;
+    let tiemposA = 0;
+    let tiemposB = 0;
+    let amonestacionesA = 0;
+    let amonestacionesB = 0;
+    let duracionTotalMs = 0;
+    let filasSets = '';
+
+    for (let numSet = 1; numSet <= 5; numSet++) {
+      const set = partido[`set_${numSet}`];
+      if (!set || !set.victoria) continue;
+
+      const puntosA = this.contarPuntos(set, 'A');
+      const puntosB = this.contarPuntos(set, 'B');
+      if (set.victoria === 'A') setsGanadosA++;
+      if (set.victoria === 'B') setsGanadosB++;
+
+      const logs = set.logs || [];
+      tiemposA += logs.filter((l: any) => l.tipo === 4 && l.equipo === 'A').length;
+      tiemposB += logs.filter((l: any) => l.tipo === 4 && l.equipo === 'B').length;
+      amonestacionesA += logs.filter((l: any) => this.TIPOS_AMONESTACION.includes(l.tipo) && l.equipo === 'A').length;
+      amonestacionesB += logs.filter((l: any) => this.TIPOS_AMONESTACION.includes(l.tipo) && l.equipo === 'B').length;
+
+      const duracionMs = this.duracionSetMs(set);
+      if (duracionMs !== null) duracionTotalMs += duracionMs;
+
+      const tiemposSetA = logs.filter((l: any) => l.tipo === 4 && l.equipo === 'A').length;
+      const tiemposSetB = logs.filter((l: any) => l.tipo === 4 && l.equipo === 'B').length;
+      const amonestacionesSetA = logs.filter((l: any) => this.TIPOS_AMONESTACION.includes(l.tipo) && l.equipo === 'A').length;
+      const amonestacionesSetB = logs.filter((l: any) => this.TIPOS_AMONESTACION.includes(l.tipo) && l.equipo === 'B').length;
+
+      const estiloGanador = 'color: var(--ion-color-primary); font-weight: 700;';
+      const estiloSubLabel = 'padding: 2px 4px 2px 16px; text-align: left; font-size: 10px; white-space: nowrap; color: rgba(var(--ion-color-dark-rgb), 0.4);';
+      const estiloSubValor = 'padding: 2px 8px; text-align: center; font-size: 12px; color: rgba(var(--ion-color-dark-rgb), 0.7);';
+      filasSets += `
+        <tr>
+          <td style="padding: 6px 8px 2px; ${numSet > 1 ? 'border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);' : ''} font-size: 11px; color: rgba(var(--ion-color-dark-rgb), 0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <span>Set ${numSet}</span>
+              <span>${duracionMs !== null ? this.formatearDuracion(duracionMs) : ''}</span>
+            </div>
+          </td>
+          <td style="padding: 6px 8px 2px; ${numSet > 1 ? 'border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);' : ''} text-align: center; ${set.victoria === 'A' ? estiloGanador : ''}">${puntosA}</td>
+          <td style="padding: 6px 8px 2px; ${numSet > 1 ? 'border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);' : ''} text-align: center; ${set.victoria === 'B' ? estiloGanador : ''}">${puntosB}</td>
+        </tr>
+        <tr>
+          <td style="${estiloSubLabel}">Tiempos</td>
+          <td style="${estiloSubValor}">${tiemposSetA}</td>
+          <td style="${estiloSubValor}">${tiemposSetB}</td>
+        </tr>
+        <tr>
+          <td style="${estiloSubLabel}">Amonestaciones</td>
+          <td style="${estiloSubValor}">${amonestacionesSetA}</td>
+          <td style="${estiloSubValor}">${amonestacionesSetB}</td>
+        </tr>`;
+    }
+
+    const ganador = this.obtenerGanadorPartido();
+    const textoGanador = ganador ? this.textoEquipoGanador(ganador) : null;
+    const filaBorde = 'border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.15);';
+
+    const alert = await this.alertController.create({
+      cssClass: 'no-padding-header no-padding-message',
+      htmlAttributes: {
+        innerHTML: `
+        <h2 class="alert-title sc-ion-alert-ios" style="text-align: center; padding-top: 12px;">Resumen del Partido</h2>
+        <div style="text-align: center; padding: 4px 16px 12px;">
+          <div class="alert-message sc-ion-alert-ios" style="margin-bottom: 4px;">
+            ${partido.competicion ? partido.competicion + ' &middot; ' : ''}Partido N° ${partido.numero_partido || 0}
+          </div>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 8px; table-layout: fixed;">
+            <tr>
+              <td style="padding: 4px 4px 4px 8px; width: 34%;"></td>
+              <td style="padding: 4px 8px; width: 33%; text-align: center; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${nombreA}</td>
+              <td style="padding: 4px 8px; width: 33%; text-align: center; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${nombreB}</td>
+            </tr>
+            ${filasSets}
+            <tr>
+              <td colspan="3" style="padding: 10px 8px 2px; ${filaBorde} text-align: left; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(var(--ion-color-dark-rgb), 0.4);">Total</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 4px 4px 8px; text-align: left; font-size: 11px; white-space: nowrap; color: rgba(var(--ion-color-dark-rgb), 0.5);">Sets</td>
+              <td style="padding: 4px 8px; text-align: center; font-weight: 700;">${setsGanadosA}</td>
+              <td style="padding: 4px 8px; text-align: center; font-weight: 700;">${setsGanadosB}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 4px 4px 8px; text-align: left; font-size: 11px; white-space: nowrap; color: rgba(var(--ion-color-dark-rgb), 0.5);">Tiempos</td>
+              <td style="padding: 4px 8px; text-align: center;">${tiemposA}</td>
+              <td style="padding: 4px 8px; text-align: center;">${tiemposB}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 4px 4px 8px; text-align: left; font-size: 11px; white-space: nowrap; color: rgba(var(--ion-color-dark-rgb), 0.5);">Amonestaciones</td>
+              <td style="padding: 4px 8px; text-align: center;">${amonestacionesA}</td>
+              <td style="padding: 4px 8px; text-align: center;">${amonestacionesB}</td>
+            </tr>
+          </table>
+          <div style="margin-top: 10px; font-size: 13px; color: rgba(var(--ion-color-dark-rgb), 0.6);">Duración total: ${this.formatearDuracion(duracionTotalMs)}</div>
+          ${textoGanador ? `<div style="margin-top: 8px; font-weight: 600;">Ganador: ${textoGanador}</div>` : ''}
+        </div>
+      `,
+      },
+      buttons: [
+        'Cerrar',
+        {
+          text: 'Más detalles',
+          handler: () => {
+            this.router.navigate(['detalle-partido']);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async exportarPartido(index: number) {
+    this.completarPlanilla(this.partidos[index])
+  }
+
+  async copiarPartido(index: number) {
+    try {
+      const partido = this.partidos[index];
+      const partidoJson = JSON.stringify(partido, null, 2);
+
+      await Clipboard.write({
+        string: partidoJson
+      });
+
+      const alert = await this.alertController.create({
+        header: 'Éxito',
+        message: 'El partido se ha copiado al portapapeles',
+        buttons: ['Aceptar']
+      });
+
+      await alert.present();
+    } catch (error) {
+      console.error('Error al copiar al portapapeles:', error);
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'No se pudo copiar el partido al portapapeles',
+        buttons: ['Aceptar']
+      });
+
+      await alert.present();
+    }
+  }
+
+  async completarPlanilla(partido: any) {
+    console.log(partido);
+
+    // 1. Validar si el partido es de 3 sets como pide la regla
+    if (partido.numero_sets !== 3) {
+      try {
+
+        const urlPlantilla = 'assets/planilla_5.pdf';
+        const pdfBytesPlantilla = await fetch(urlPlantilla).then(res => res.arrayBuffer());
+
+        if (!pdfBytesPlantilla) throw new Error('No se pudo cargar la plantilla PDF.');
+
+        const pdfDoc = await PDFDocument.load(pdfBytesPlantilla);
+        const paginas = pdfDoc.getPages();
+        const primeraPagina = paginas[0];
+
+        //completar partido 5 sets
+
+        const pdfBytesModificado = await pdfDoc.save();
+        this.descargarPdf(pdfBytesModificado, `planilla_partido_${partido.numero_partido || 'final'}.pdf`);
+      } catch (error) {
+        console.error('Error procesando la planilla PDF:', error);
+      }
+
+      return;
+    }
+
+    try {
+      const urlPlantilla = 'assets/planilla_3.pdf';
+      const pdfBytesPlantilla = await fetch(urlPlantilla).then(res => res.arrayBuffer());
+
+      if (!pdfBytesPlantilla) throw new Error('No se pudo cargar la plantilla PDF.');
+
+      const pdfDoc = await PDFDocument.load(pdfBytesPlantilla);
+      const paginas = pdfDoc.getPages();
+      const primeraPagina = paginas[0];
+
+      // =========================================================================
+      // 1. CABECERA PRINCIPAL (Dinámica desde el objeto partido)
+      // =========================================================================
+
+
+      // Nombre de la Competencia, Ciudad y Código de País
+      primeraPagina.drawText(partido.competicion || '', { x: 140, y: 490, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      primeraPagina.drawText(partido.ciudad || '', { x: 60, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      primeraPagina.drawText(partido.pais === 'chile' ? 'CHL' : (partido.pais || ''), { x: 300, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+
+      // Número de Partido
+      if (partido.numero_partido > 10) {
+
+        primeraPagina.drawText(String(partido.numero_partido || ''), { x: 312, y: 518 - 57, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      } else {
+        primeraPagina.drawText(String('0'), { x: 312, y: 518 - 57, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+        primeraPagina.drawText(String(partido.numero_partido || ''), { x: 325, y: 518 - 57, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      }
+
+      // Fecha (D / M / Y)
+      if (partido.fecha) {
+        const [d, m, a] = partido.fecha.split('/');
+        primeraPagina.drawText(d || '', { x: 364, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+        primeraPagina.drawText(m || '', { x: 386, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+        primeraPagina.drawText(a || '', { x: 411, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      }
+
+      // Hora de programación de la planilla (H / mn)
+      if (partido.hora) {
+        const [h, mn] = partido.hora.split(':');
+        primeraPagina.drawText(h || '', { x: 470, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+        primeraPagina.drawText(mn || '', { x: 495, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      }
+
+      // Nombres de los Equipos (Cabecera central A vs B)
+      const equipoPlanillaA = [partido.equipo_1, partido.equipo_2].find((e: any) => e?.lado === 'A');
+      const equipoPlanillaB = [partido.equipo_1, partido.equipo_2].find((e: any) => e?.lado === 'B');
+      primeraPagina.drawText('A', { x: 358, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      primeraPagina.drawText(equipoPlanillaA?.nombre || '', { x: 373, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      primeraPagina.drawText('B', { x: 500, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      primeraPagina.drawText(equipoPlanillaB?.nombre || '', { x: 455, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+
+      // 5. Compilar y descargar el documento resultante
+      const pdfBytesModificado = await pdfDoc.save();
+      this.descargarPdf(pdfBytesModificado, `planilla_partido_${partido.numero_partido || 'final'}.pdf`);
+
+    } catch (error) {
+      console.error('Error procesando la planilla PDF:', error);
+    }
+  }
+
+  // En navegador (web) fuerza la descarga del Blob. En un dispositivo móvil
+  // (Capacitor nativo) el link de descarga no funciona dentro del WebView,
+  // así que en su lugar el archivo se escribe en caché y se abre la hoja de
+  // compartir nativa para que el usuario lo guarde o lo envíe.
+  async descargarPdf(bytes: Uint8Array, nombreArchivo: string) {
+    if (Capacitor.isNativePlatform()) {
+      await this.compartirPdfNativo(bytes, nombreArchivo);
+      return;
+    }
+
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = nombreArchivo;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  private async compartirPdfNativo(bytes: Uint8Array, nombreArchivo: string) {
+    try {
+      const base64Data = this.arrayBufferToBase64(bytes.buffer as ArrayBuffer);
+      const { uri } = await Filesystem.writeFile({
+        path: nombreArchivo,
+        data: base64Data,
+        directory: Directory.Cache,
+      });
+
+      await Share.share({
+        title: nombreArchivo,
+        dialogTitle: 'Compartir planilla',
+        files: [uri]
+      });
+    } catch (error) {
+      console.error('Error al compartir la planilla:', error);
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'No se pudo compartir la planilla.',
+        buttons: ['Aceptar']
+      });
+      await alert.present();
+    }
+  }
+
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, i + chunkSize);
+      binary += String.fromCharCode.apply(null, Array.from(chunk));
+    }
+    return btoa(binary);
   }
 }

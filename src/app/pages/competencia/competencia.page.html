@@ -1,0 +1,89 @@
+<ion-header [translucent]="false">
+  <ion-toolbar>
+    <ion-buttons [collapse]="true" slot="start">
+      <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+    </ion-buttons>
+    <ion-title>{{competencia?.nombre}}</ion-title>
+    <ion-buttons [collapse]="true" slot="end">
+      <ion-button (click)="renombrar()"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-button>
+      <ion-button (click)="eliminarCompetencia()"><ion-icon slot="icon-only" name="trash"></ion-icon></ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" *ngIf="competencia">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+      </ion-buttons>
+      <ion-title size="large">{{competencia?.nombre}}</ion-title>
+      <ion-buttons [collapse]="true" slot="end">
+        <ion-button (click)="renombrar()"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-button>
+        <ion-button (click)="eliminarCompetencia()"><ion-icon slot="icon-only" name="trash"></ion-icon></ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <div style="margin: 20px 20px 0px; display: flex; flex-direction: column; gap: 8px;">
+    <ion-button (click)="irAConfiguracion()" fill="outline" style="width: 100%; --border-radius:10px;">
+      Configuración por defecto
+    </ion-button>
+    <div style="display: flex; gap: 8px;">
+      <ion-button (click)="nuevoPartido()" class="btn-1" style="flex: 1; --border-radius:10px;">
+        Nuevo partido
+      </ion-button>
+      <ion-button (click)="crearFecha()" fill="outline" style="flex: 1; --border-radius:10px;">
+        Crear fecha
+      </ion-button>
+    </div>
+  </div>
+
+  <div style="margin: 20px 20px 20px;">
+
+    <div *ngIf="grupos.length">
+      <div style="margin-bottom: 10px; font-size: x-large; font-weight: bold;">Fechas</div>
+      <ion-item-sliding style="margin-bottom: 10px;" *ngFor="let grupo of grupos">
+        <ion-item style="--border-radius:10px !important; --inner-border-width:0px 0px 0px 0px">
+          <ion-button
+            (click)="irAFecha(grupo.fecha)"
+            fill="clean"
+            shape="round"
+            style="--border-radius: 10px; border-radius: 10px; border: 1px solid var(--ion-item-border-color, var(--ion-border-color, var(--ion-color-step-250, var(--ion-background-color-step-250, #c8c7cc)))); width: 100%;margin:0px;"
+          >
+            <div style="width: 100%; padding: 16px 20px;">
+              <p style="margin: 0; font-weight: 500; font-size: x-large; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{grupo.fecha.nombre}}</p>
+              <p style="margin: 4px 0 0; text-align: left; color: rgba(var(--color-4-rgb), 0.5);">
+                {{grupo.partidos.length}} partido{{grupo.partidos.length === 1 ? '' : 's'}}
+              </p>
+            </div>
+          </ion-button>
+        </ion-item>
+        <ion-item-options side="end">
+          <ion-item-option (click)="eliminarFecha(grupo.fecha)" color="danger" style="border-radius: 10px;">
+            <ion-icon slot="icon-only" name="trash"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </div>
+
+    <div *ngIf="partidosSinFecha.length" [style.margin-top.px]="grupos.length ? 24 : 0">
+      <div style="margin-bottom: 10px; font-size: x-large; font-weight: bold;">Partidos</div>
+      <app-partido-card
+        *ngFor="let partido of partidosSinFecha"
+        [partido]="partido"
+        (continuar)="continuar_partido(partido.index)"
+        (editar)="edit_game(partido.index)"
+        (exportar)="exportarPartido(partido.index)"
+        (copiar)="copiarPartido(partido.index)"
+        (eliminar)="eliminarPartido(partido.index)"
+      ></app-partido-card>
+    </div>
+
+    <div *ngIf="!grupos.length && !partidosSinFecha.length" style="text-align: center; color: rgba(var(--color-4-rgb), 0.5); margin-top: 24px;">
+      Aún no hay partidos en esta competencia.
+    </div>
+
+  </div>
+
+</ion-content>

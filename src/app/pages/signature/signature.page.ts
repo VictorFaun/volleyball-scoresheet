@@ -270,7 +270,7 @@ export class SignaturePage implements OnInit {
 
   volver() {
     this._game_.guardar();
-    this.router.navigate(["home"], { replaceUrl: true });
+    this._game_.volverAOrigen();
   }
 
   resultado_firma:any;

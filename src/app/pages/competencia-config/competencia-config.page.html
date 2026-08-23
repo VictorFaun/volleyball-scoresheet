@@ -1,0 +1,127 @@
+<ion-header [translucent]="false">
+  <ion-toolbar>
+    <ion-buttons [collapse]="true" slot="start">
+      <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+    </ion-buttons>
+    <ion-title>Configuración</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" *ngIf="config">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+      </ion-buttons>
+      <ion-title size="large">Configuración</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div style="margin: 20px 20px 20px;">
+
+    <div class="aviso-configuracion">
+      <ion-icon name="information-circle"></ion-icon>
+      <span>Estos datos se autocompletan en cada partido nuevo de "{{competencia?.nombre}}". Siempre se pueden editar después, partido por partido.</span>
+    </div>
+
+    <div class="input-text">
+      <label>Nro de Sets</label>
+      <div class="input-segment">
+        <ion-segment class="segment-custom" [(ngModel)]="config.numero_sets">
+          <ion-segment-button [value]="3">
+            <ion-label>3</ion-label>
+          </ion-segment-button>
+          <ion-segment-button [value]="5">
+            <ion-label>5</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+    </div>
+
+    <div class="input-text" style="display: flex; align-items: center; justify-content: space-between;">
+      <label style="margin: 0;">Cambio de lado último set</label>
+      <ion-toggle [(ngModel)]="config.cambio_lado_ultimo_set"></ion-toggle>
+    </div>
+
+    <div class="input-text" style="margin-top: 10px; padding-bottom: 0px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <label style="margin: 0;">Firmas</label>
+        <div>
+          <ion-button fill="clear" size="small" (click)="activarTodasLasFirmas()">Activar todo</ion-button>
+          <ion-button fill="clear" size="small" (click)="desactivarTodasLasFirmas()">Desactivar todo</ion-button>
+        </div>
+      </div>
+      <div *ngFor="let firma of firmasConfig" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.1);">
+        <label style="margin: 0;">{{firma.label}}</label>
+        <ion-toggle [(ngModel)]="config.firmas_habilitadas[firma.num]"></ion-toggle>
+      </div>
+    </div>
+
+    <div class="input-text" style="margin-top: 20px;">
+      <label>Ciudad</label>
+      <ion-input fill="outline" placeholder="Nombre Ciudad" [(ngModel)]="config.ciudad"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Pais</label>
+      <ion-input fill="outline" placeholder="Nombre Pais" [(ngModel)]="config.pais"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Gimnasio</label>
+      <ion-input fill="outline" placeholder="Nombre Gimnasio" [(ngModel)]="config.gimnasio"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Division</label>
+      <ion-input fill="outline" placeholder="Nombre Division" [(ngModel)]="config.division"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Categoria</label>
+      <ion-input fill="outline" placeholder="Nombre Categoria" [(ngModel)]="config.categoria"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Primer Arbitro</label>
+      <ion-input fill="outline" placeholder="Nombre Primer Arbitro" [(ngModel)]="config.primer_arbitro"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Segundo Arbitro</label>
+      <ion-input fill="outline" placeholder="Nombre Segundo Arbitro" [(ngModel)]="config.segundo_arbitro"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Planillero</label>
+      <ion-input fill="outline" placeholder="Nombre Planillero" [(ngModel)]="config.planillero"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Asistente Planillero</label>
+      <ion-input fill="outline" placeholder="Nombre Asistente Planillero" [(ngModel)]="config.asistente_planillero"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Primer Banderin</label>
+      <ion-input fill="outline" placeholder="Nombre Primer Banderin" [(ngModel)]="config.primer_banderin"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Segundo Banderin</label>
+      <ion-input fill="outline" placeholder="Nombre Segundo Banderin" [(ngModel)]="config.segundo_banderin"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Tercer Banderin</label>
+      <ion-input fill="outline" placeholder="Nombre Tercer Banderin" [(ngModel)]="config.tercer_banderin"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Cuarto Banderin</label>
+      <ion-input fill="outline" placeholder="Nombre Cuarto Banderin" [(ngModel)]="config.cuarto_banderin"></ion-input>
+    </div>
+
+  </div>
+
+</ion-content>

@@ -19,7 +19,7 @@ export class TeamPage implements OnInit {
   constructor(private navCtrl: NavController, private route: ActivatedRoute, private _game_: GameService, private alertController: AlertController) { }
   volver() {
     this._game_.guardar();
-    this.navCtrl.navigateBack('/home', { replaceUrl: true });
+    this._game_.volverAOrigen();
   }
 
   ionViewWillLeave() {

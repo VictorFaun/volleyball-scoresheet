@@ -12,6 +12,10 @@ export class LocalstorageService {
   // Formato anterior: un solo bloque con el array completo de partidos.
   private readonly LEGACY_KEY = 'volleyball_app_data';
 
+  // Mismo patrón (índice + clave por id) que los partidos, para las competencias.
+  private readonly INDICE_COMPETENCIAS_KEY = 'volleyball_competencias_index';
+  private readonly COMPETENCIA_PREFIX = 'volleyball_competencia_';
+
   // Piso conservador típico del límite de localStorage en navegadores y
   // WebViews (suele rondar 5-10MB). Se usa el valor más chico para avisar
   // con margen.
@@ -128,7 +132,7 @@ export class LocalstorageService {
    * este origen (no solo los partidos), para compararlo contra el límite
    * estimado.
    */
-  private usoTotalLocalStorage(): number {
+  usoTotalLocalStorage(): number {
     let total = 0;
     for (let i = 0; i < localStorage.length; i++) {
       const clave = localStorage.key(i);
@@ -146,5 +150,80 @@ export class LocalstorageService {
    */
   espacioDisponibleEstimado(): number {
     return Math.max(0, this.LIMITE_ESTIMADO_BYTES - this.usoTotalLocalStorage());
+  }
+
+  /**
+   * Límite estimado (en bytes) usado como referencia para la barra de
+   * almacenamiento de Home y las advertencias de espacio. Ver nota en
+   * LIMITE_ESTIMADO_BYTES.
+   */
+  limiteEstimadoBytes(): number {
+    return this.LIMITE_ESTIMADO_BYTES;
+  }
+
+  private claveDeCompetencia(id: string): string {
+    return this.COMPETENCIA_PREFIX + id;
+  }
+
+  private leerIndiceCompetencias(): string[] {
+    try {
+      const json = localStorage.getItem(this.INDICE_COMPETENCIAS_KEY);
+      return json ? JSON.parse(json) : [];
+    } catch (error) {
+      console.error('Error reading competencias index:', error);
+      return [];
+    }
+  }
+
+  private guardarIndiceCompetencias(ids: string[]): void {
+    localStorage.setItem(this.INDICE_COMPETENCIAS_KEY, JSON.stringify(ids));
+  }
+
+  /**
+   * Lee todas las competencias guardadas.
+   */
+  getCompetencias(): any[] {
+    const ids = this.leerIndiceCompetencias();
+    const competencias: any[] = [];
+    for (const id of ids) {
+      try {
+        const json = localStorage.getItem(this.claveDeCompetencia(id));
+        if (json) competencias.push(JSON.parse(json));
+      } catch (error) {
+        console.error(`Error reading competencia ${id} from localStorage:`, error);
+      }
+    }
+    return competencias;
+  }
+
+  /**
+   * Guarda (crea o actualiza) una única competencia bajo su propia clave.
+   */
+  guardarCompetencia(competencia: any): void {
+    if (!competencia.id) {
+      competencia.id = this.generarId();
+    }
+
+    try {
+      localStorage.setItem(this.claveDeCompetencia(competencia.id), JSON.stringify(competencia));
+    } catch (error) {
+      console.error('Error saving competencia to localStorage:', error);
+      throw new Error('Failed to save competencia to localStorage');
+    }
+
+    const ids = this.leerIndiceCompetencias();
+    if (!ids.includes(competencia.id)) {
+      ids.push(competencia.id);
+      this.guardarIndiceCompetencias(ids);
+    }
+  }
+
+  /**
+   * Elimina una competencia guardada por su id.
+   */
+  eliminarCompetencia(id: string): void {
+    localStorage.removeItem(this.claveDeCompetencia(id));
+    const ids = this.leerIndiceCompetencias().filter(existente => existente !== id);
+    this.guardarIndiceCompetencias(ids);
   }
 }

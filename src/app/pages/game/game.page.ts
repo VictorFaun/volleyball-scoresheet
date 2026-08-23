@@ -36,7 +36,7 @@ export class GamePage implements OnInit {
   }
   volver() {
     this._game_.guardar();
-    this.navCtrl.navigateBack('/home', { replaceUrl: true });
+    this._game_.volverAOrigen();
   }
 
   ionViewWillLeave() {

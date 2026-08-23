@@ -15,9 +15,11 @@ export class SorteoPage implements OnInit {
   equipo1: any;
   equipo2: any;
 
-  // true si el set ya tiene alineación cargada, ya se inició o ya tiene
-  // logs/resultado — a partir de eso el sorteo (R-5) de ese set ya no se
-  // puede volver a editar, aunque se reingrese con "editar" desde el inicio.
+  // true si el set ya se empezó a jugar (tiene hora de inicio, logs o
+  // resultado) — a partir de eso el sorteo (R-5) de ese set ya no se puede
+  // volver a editar, aunque se reingrese con "editar" desde el inicio. Que
+  // la alineación ya esté cargada no cuenta: mientras el set no se haya
+  // iniciado, el sorteo se puede seguir editando.
   bloqueado = false;
 
   // Solo el sorteo antes del set 1 define cuál equipo juega como A y cuál
@@ -47,7 +49,7 @@ export class SorteoPage implements OnInit {
 
   volver() {
     this._game_.guardar();
-    this.router.navigate(['home'], { replaceUrl: true });
+    this._game_.volverAOrigen();
   }
 
   ngOnInit() {
@@ -57,7 +59,7 @@ export class SorteoPage implements OnInit {
       this.equipo1 = this.partido.equipo_1;
       this.equipo2 = this.partido.equipo_2;
       this.mostrarLados = this.set === 1;
-      this.bloqueado = this._game_.setTieneProgreso(this.set);
+      this.bloqueado = this._game_.setYaIniciado(this.set);
 
       if (this.equipo1?.lado) {
         this.equipoALado = this.equipo1.lado === 'A' ? 1 : 2;
