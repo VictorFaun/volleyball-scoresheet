@@ -80,8 +80,11 @@
   --ion-toolbar-border-color: #e0e0e0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root.ios {
+/* Antes seguía únicamente prefers-color-scheme (tema del sistema). Ahora
+   responde a la clase .ion-palette-dark, que ThemeService aplica sobre
+   <html> según la preferencia guardada (o el sistema, la primera vez). */
+:root.ion-palette-dark {
+  &.ios {
       --ion-background-color: #121212;
       --ion-background-color-rgb: 18, 18, 18;
       --ion-text-color: #ffffff;
@@ -147,7 +150,7 @@
   --ion-color-dark-tint: #f7f7f7;
   }
 
-  :root.ios ion-modal {
+  &.ios ion-modal {
     --ion-background-color:#121212;
     --ion-toolbar-background: #1f1f1f;
     --ion-toolbar-border-color: #1f1f1f;

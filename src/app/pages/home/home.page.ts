@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { GameService } from 'src/app/services/game/game.service';
 import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 import { mapearPartidoParaVista, PartidoVista } from 'src/app/services/game/partido-view.util';
+import { ThemeService } from 'src/app/services/theme/theme.service';
 
 interface CompetenciaResumen {
   competencia: any;
@@ -20,6 +21,14 @@ interface CompetenciaResumen {
 })
 export class HomePage implements OnInit {
 
+  tabActual: 'partidos' | 'competencias' | 'ajustes' = 'partidos';
+
+  get tituloVista(): string {
+    if (this.tabActual === 'competencias') return 'Competencias';
+    if (this.tabActual === 'ajustes') return 'Ajustes';
+    return 'Scoresheets';
+  }
+
   partidosSueltos: PartidoVista[] = [];
   competenciasResumen: CompetenciaResumen[] = [];
   archivadosCount = 0;
@@ -32,7 +41,8 @@ export class HomePage implements OnInit {
     private _game_: GameService,
     private alertController: AlertController,
     private router: Router,
-    private localStorageService: LocalstorageService
+    private localStorageService: LocalstorageService,
+    public themeService: ThemeService
   ) { }
   ngOnInit(): void {
   }

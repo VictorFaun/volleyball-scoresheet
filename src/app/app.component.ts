@@ -5,6 +5,7 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { App } from '@capacitor/app';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
+import { ThemeService } from './services/theme/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +16,7 @@ import { Location } from '@angular/common';
 
 export class AppComponent {
 
-  constructor(private platform : Platform, private router: Router, private location: Location) {
+  constructor(private platform : Platform, private router: Router, private location: Location, private themeService: ThemeService) {
     this.init()
   }
 
