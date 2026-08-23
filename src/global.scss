@@ -325,6 +325,173 @@
   }
 }
 
+/* =======================================
+ * 7. Rediseño: filas tipo card, botones agrupados y headers compactos
+ * ======================================= */
+
+// Botón circular para acciones de header (editar / eliminar), en vez del
+// ion-button "pelado" default. Se usa junto a fill="clear". Color neutro
+// (no primario) para que no compita con el título.
+.icon-button-circle {
+  --border-radius: 50%;
+  --padding-start: 0;
+  --padding-end: 0;
+  // Mismo fondo que las cards (.card-row/.action-button), para que se vea
+  // como parte del mismo sistema en vez de un tono aparte.
+  --background: rgba(var(--color-4-rgb), 0.06);
+  --color: var(--ion-text-color);
+  width: 34px;
+  height: 34px;
+  margin: 0 2px;
+
+  // Solo el ícono se achica; el botón/círculo mantiene su tamaño (34px).
+  ion-icon {
+    font-size: 18px !important;
+  }
+}
+
+// Header tipo "large title" de iOS (grande, negrita, pegado al botón
+// volver) pero en un solo header estático -no el de dos headers que se
+// duplicaba y ocupaba espacio de más-. Para el botón "volver" que acompaña
+// a este título, usar también la clase .boton-volver-grande (ícono más
+// grande, a tono).
+// El fondo se iguala al de --ion-background-color y se saca el borde
+// inferior (--border-width:0) para que el header se sienta parte de la
+// misma superficie que el contenido, no una barra aparte.
+.toolbar-header-grande {
+  --min-height: 68px;
+  --background: var(--ion-background-color);
+  --border-width: 0;
+}
+
+.boton-volver-grande ion-icon {
+  font-size: 28px;
+}
+
+// Título de header alineado a la izquierda, pegado al botón "volver", en
+// vez del ion-title default (que se centra en todo el ancho del toolbar).
+.header-title-izq {
+  flex: 1;
+  min-width: 0;
+  font-size: 27px;
+  font-weight: 800;
+  text-align: left;
+  margin: 0 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+// Fila clickeable tipo card: ícono + texto (+ subtítulo opcional) + chevron.
+// Reemplaza el patrón anterior de ion-button fill="outline"/"clean" con
+// borde, por una card plana con fondo sutil (mismo look en claro/oscuro).
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  // Opaco (color-mix), no rgba: dentro de un ion-item-sliding (Fecha,
+  // Competencia), un fondo con alpha real deja ver los botones de swipe
+  // detrás mientras se desliza. color-mix da el mismo look pero sólido.
+  background: color-mix(in srgb, rgb(var(--color-4-rgb)) 6%, var(--ion-background-color) 94%);
+  cursor: pointer;
+  width: 100%;
+
+  > ion-icon:first-child {
+    font-size: 20px;
+    color: var(--ion-color-medium);
+    flex-shrink: 0;
+  }
+
+  .card-row-texto {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .card-row-titulo {
+    margin: 0;
+    font-weight: 600;
+    font-size: 18px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .card-row-subtitulo {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: rgba(var(--color-4-rgb), 0.5);
+  }
+
+  .card-row-chevron {
+    font-size: 18px;
+    color: rgba(var(--color-4-rgb), 0.35);
+    flex-shrink: 0;
+  }
+}
+
+// Burbuja de ícono (ej: ícono + color de una competencia, a la izquierda de
+// su card-row en Home). El fondo/color de la burbuja se fijan inline según
+// el color elegido (ver home.page.html), acá solo la forma/tamaño.
+.icono-burbuja {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 19px;
+  }
+}
+
+// Fila de 1-2 botones de acción "+", cada uno con su propia card redondeada
+// (NO una sola card dividida): así se puede resaltar la acción principal con
+// un fondo propio en vez de un simple color de texto.
+.action-buttons-row {
+  display: flex;
+  gap: 10px;
+}
+
+.action-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 8px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ion-text-color);
+  background: rgba(var(--color-4-rgb), 0.06);
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  // Acción principal: fondo teñido en color primario (no sólido), como
+  // única acción de la fila. Ver .action-button-solido para el caso de un
+  // solo botón (ahí sí va sólido, ver fecha.page.html).
+  &.action-button-primary {
+    color: var(--ion-color-primary);
+    background: rgba(var(--ion-color-primary-rgb), 0.16);
+  }
+
+  // Único CTA de la vista (ej. "Nuevo partido" en fecha.page/home.page):
+  // botón sólido de ancho completo, en vez de la versión "teñida" que se
+  // usa cuando hay una segunda acción al lado para comparar.
+  &.action-button-solido {
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+    padding: 16px 8px;
+  }
+}
+
 .no-padding-message {
   --backdrop-opacity: 0.8;
   

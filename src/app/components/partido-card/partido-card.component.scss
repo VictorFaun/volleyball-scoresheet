@@ -3,6 +3,28 @@ ion-item{
   --padding-start:0px;
 }
 
+// Pill de estado (ícono + texto corto) para cada paso del partido. El color
+// de fondo/texto se fija inline según partido.estadoColor (ver
+// partido-card.component.html); acá solo la forma/tamaño, igual para todos.
+// Solo el pill "Config." (estadoColor === 'medium') es clickeable como
+// atajo a editar (ver onEstadoPillClick en el componente); en el resto solo
+// es informativo, aunque comparte el mismo look.
+.estado-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  ion-icon {
+    font-size: 15px;
+  }
+}
+
 .marcador-set {
   margin: 0;
   width: 26px;

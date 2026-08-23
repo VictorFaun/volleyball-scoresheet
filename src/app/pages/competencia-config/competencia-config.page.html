@@ -1,27 +1,53 @@
-<ion-header [translucent]="false">
-  <ion-toolbar>
-    <ion-buttons [collapse]="true" slot="start">
-      <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+<ion-header [translucent]="false" class="ion-no-border">
+  <ion-toolbar class="toolbar-header-grande">
+    <ion-buttons slot="start">
+      <ion-button class="boton-volver-grande" (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
     </ion-buttons>
-    <ion-title>Configuración</ion-title>
+    <p class="header-title-izq">Configuración</p>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" *ngIf="config">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
-      </ion-buttons>
-      <ion-title size="large">Configuración</ion-title>
-    </ion-toolbar>
-  </ion-header>
 
   <div style="margin: 20px 20px 20px;">
 
     <div class="aviso-configuracion">
       <ion-icon name="information-circle"></ion-icon>
       <span>Estos datos se autocompletan en cada partido nuevo de "{{competencia?.nombre}}". Siempre se pueden editar después, partido por partido.</span>
+    </div>
+
+    <div class="input-text">
+      <label>Color</label>
+      <div class="selector-swatches">
+        <button
+          *ngFor="let c of coloresDisponibles"
+          type="button"
+          class="swatch-color"
+          [class.swatch-color-seleccionado]="(competencia.color || 'medium') === c"
+          [style.background]="'var(--ion-color-' + c + ')'"
+          (click)="competencia.color = c"
+        >
+          <ion-icon *ngIf="(competencia.color || 'medium') === c" name="checkmark" [style.color]="'var(--ion-color-' + c + '-contrast)'"></ion-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="input-text">
+      <label>Ícono</label>
+      <div class="selector-swatches">
+        <button
+          *ngFor="let i of iconosDisponibles"
+          type="button"
+          class="swatch-icono"
+          [class.swatch-icono-seleccionado]="(competencia.icono || 'trophy-outline') === i"
+          [style.background]="(competencia.icono || 'trophy-outline') === i ? ('color-mix(in srgb, var(--ion-color-' + (competencia.color || 'medium') + ') 25%, var(--ion-background-color) 75%)') : null"
+          [style.color]="(competencia.icono || 'trophy-outline') === i ? ('var(--ion-color-' + (competencia.color || 'medium') + ')') : null"
+          (click)="competencia.icono = i"
+        >
+          <ion-icon *ngIf="!esIconoVolleyball(i); else iconoVoley" [name]="i"></ion-icon>
+          <ng-template #iconoVoley><ion-icon src="assets/icon/volleyball.svg"></ion-icon></ng-template>
+        </button>
+      </div>
     </div>
 
     <div class="input-text">

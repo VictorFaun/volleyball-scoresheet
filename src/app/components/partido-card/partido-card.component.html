@@ -1,27 +1,31 @@
 <ion-item-sliding style="margin-bottom: 10px;">
-  <ion-item style="--border-radius:10px !important; --inner-border-width:0px 0px 0px 0px">
-    <ion-button
-      (click)="continuar.emit()"
-      fill="clean"
-      shape="round"
-      style="--border-radius: 10px; border-radius: 10px; border: 1px solid var(--ion-item-border-color, var(--ion-border-color, var(--ion-color-step-250, var(--ion-background-color-step-250, #c8c7cc)))); width: 100%;margin:0px;"
-    >
-      <div style="width: 100%; padding: 20px; padding-top: 2px;">
+  <ion-item style="--padding-start:0; --inner-padding-end:0; --background: var(--ion-background-color); --border-width:0; --inner-border-width:0px; --min-height: 0; --border-radius: 14px;">
+    <div class="card-row card-row-partido" (click)="continuar.emit()">
+      <div style="width: 100%;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <p style="margin: 6px 0 0; font-weight: 500; font-size: x-large; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{mostrarTorneo && partido.torneo ? partido.torneo : ('Partido N° ' + partido.numero_partido)}}</p>
+          <p style="margin: 0; font-weight: 600; font-size: x-large; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{mostrarTorneo && partido.torneo ? partido.torneo : ('Partido N° ' + partido.numero_partido)}}</p>
+
           <div style="flex-shrink: 0; margin-left: 8px; text-align: right;">
-            <p style="margin: 6px 0 0; font-weight: 500;" [style.color]="'var(--ion-color-' + partido.estadoColor + ')'">{{partido.estado}}</p>
-            <p *ngIf="mostrarTorneo && partido.torneo" style="margin: 2px 0 0; font-size: small; color: rgba(var(--color-4-rgb), 0.5);">N° {{partido.numero_partido}}</p>
+            <div
+              class="estado-pill"
+              [style.color]="'var(--ion-color-' + partido.estadoColor + ')'"
+              [style.background]="estadoPillBackground()"
+              (click)="onEstadoPillClick($event)"
+            >
+              <ion-icon [name]="partido.estadoIcono"></ion-icon>
+              <span>{{partido.estado}}</span>
+            </div>
+            <p *ngIf="mostrarTorneo && partido.torneo" style="margin: 4px 0 0; font-size: small; color: rgba(var(--color-4-rgb), 0.5);">N° {{partido.numero_partido}}</p>
           </div>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;padding-left: 10px;padding-right: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
           <p style="margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{partido.equipoA}}</p>
           <div style="display: flex; flex-shrink: 0;" *ngIf="partido.sets.length; else sinResultadoA">
             <p *ngFor="let set of partido.sets" class="marcador-set" [class.marcador-set-ganador]="set.victoria === 'A'">{{set.a}}</p>
           </div>
           <ng-template #sinResultadoA><p style="margin: 0;">-</p></ng-template>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;padding-left: 10px;padding-right: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
           <p style="margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{partido.equipoB}}</p>
           <div style="display: flex; flex-shrink: 0;" *ngIf="partido.sets.length; else sinResultadoB">
             <p *ngFor="let set of partido.sets" class="marcador-set" [class.marcador-set-ganador]="set.victoria === 'B'">{{set.b}}</p>
@@ -29,10 +33,10 @@
           <ng-template #sinResultadoB><p style="margin: 0;">-</p></ng-template>
         </div>
       </div>
-    </ion-button>
+    </div>
   </ion-item>
-  <ion-item-options side="end">
-    <ion-item-option (click)="editar.emit()" color="primary" style="border-radius: 10px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;">
+  <ion-item-options side="end" style="border-bottom-width: 0;">
+    <ion-item-option (click)="editar.emit()" color="primary" style="border-radius: 14px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;">
       <ion-icon slot="icon-only" name="pencil"></ion-icon>
     </ion-item-option>
     <ion-item-option (click)="exportar.emit()" color="secondary" style="border-radius: 0px;">
@@ -41,7 +45,7 @@
     <ion-item-option (click)="copiar.emit()" color="success" style="border-radius: 0px;">
       <ion-icon slot="icon-only" name="copy"></ion-icon>
     </ion-item-option>
-    <ion-item-option (click)="eliminar.emit()" color="danger" style="border-radius: 10px;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">
+    <ion-item-option (click)="eliminar.emit()" color="danger" style="border-radius: 14px;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">
       <ion-icon slot="icon-only" name="trash"></ion-icon>
     </ion-item-option>
   </ion-item-options>

@@ -1,6 +1,21 @@
 // For information on how to create your own theme, please see:
 // http://ionicframework.com/docs/theming/
 :root {
+  // Usado en toda la app para textos secundarios/atenuados vía
+  // rgba(var(--color-4-rgb), 0.5) (ver home.page.html, partido-card, etc.).
+  // No tenía valor en modo claro (solo se definía dentro del bloque oscuro
+  // más abajo), así que ese texto secundario se veía negro sólido en vez de
+  // atenuado. Se redefine en :root.ion-palette-dark para modo oscuro.
+  --color-4-rgb: 0, 0, 0;
+
+  // Tampoco tenían valor en modo claro (Ionic los da por sentado con
+  // fallbacks internos, pero var() sin fallback explícito -como usamos en
+  // color-mix() para las cards- queda inválido si no están definidos acá).
+  --ion-background-color: #ffffff;
+  --ion-background-color-rgb: 255, 255, 255;
+  --ion-text-color: #000000;
+  --ion-text-color-rgb: 0, 0, 0;
+
   /** primary (Basado en --color-1: #3B82F6) **/
   --ion-color-primary: #3B82F6;
   --ion-color-primary-rgb: 59, 130, 246;
@@ -84,6 +99,8 @@
    responde a la clase .ion-palette-dark, que ThemeService aplica sobre
    <html> según la preferencia guardada (o el sistema, la primera vez). */
 :root.ion-palette-dark {
+  --color-4-rgb: 255, 255, 255;
+
   &.ios {
       --ion-background-color: #121212;
       --ion-background-color-rgb: 18, 18, 18;

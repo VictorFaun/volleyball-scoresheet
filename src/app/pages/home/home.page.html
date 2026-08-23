@@ -1,8 +1,8 @@
-<ion-header [translucent]="false">
-  <ion-toolbar>
-    <ion-title>{{tituloVista}}</ion-title>
+<ion-header [translucent]="false" class="ion-no-border">
+  <ion-toolbar class="toolbar-header-grande">
+    <p class="header-title-izq" style="margin-left: 20px;">{{tituloVista}}</p>
     <ion-buttons slot="end" *ngIf="archivadosCount && tabActual === 'partidos'">
-      <ion-button (click)="irAArchivados()">
+      <ion-button class="icon-button-circle" fill="clear" shape="round" (click)="irAArchivados()">
         <ion-icon slot="icon-only" name="archive-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -10,17 +10,15 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">{{tituloVista}}</ion-title>
-    </ion-toolbar>
-  </ion-header>
 
   <div *ngIf="tabActual === 'partidos'">
-    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0px 20px 0px 20px;">
-      <ion-button (click)="new_game()" class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
-        Nuevo partido
-      </ion-button>
+    <div style="padding: 16px 20px 0px 20px;">
+      <div class="action-buttons-row">
+        <div class="action-button action-button-primary" (click)="new_game()">
+          <ion-icon name="add"></ion-icon>
+          <span>Nuevo partido</span>
+        </div>
+      </div>
     </div>
 
     <div style="flex: 1; overflow-y: auto; overflow-x: hidden; margin: 20px 20px 20px;">
@@ -45,34 +43,46 @@
   </div>
 
   <div *ngIf="tabActual === 'competencias'">
-    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0px 20px 0px 20px;">
-      <ion-button (click)="nuevaCompetencia()" class="btn-1" style="width: 100%; --padding-top:16px; --padding-bottom:16px; --border-radius:10px;">
-        Nueva competencia
-      </ion-button>
+    <div style="padding: 16px 20px 0px 20px;">
+      <div class="action-buttons-row">
+        <div class="action-button action-button-primary" (click)="nuevaCompetencia()">
+          <ion-icon name="add"></ion-icon>
+          <span>Nueva competencia</span>
+        </div>
+      </div>
     </div>
 
     <div style="flex: 1; overflow-y: auto; overflow-x: hidden; margin: 20px 20px 20px;">
 
       <div *ngIf="competenciasResumen.length">
         <ion-item-sliding style="margin-bottom: 10px;" *ngFor="let resumen of competenciasResumen">
-          <ion-item style="--border-radius:10px !important; --inner-border-width:0px 0px 0px 0px">
-            <ion-button
-              (click)="irACompetencia(resumen.competencia)"
-              fill="clean"
-              shape="round"
-              style="--border-radius: 10px; border-radius: 10px; border: 1px solid var(--ion-item-border-color, var(--ion-border-color, var(--ion-color-step-250, var(--ion-background-color-step-250, #c8c7cc)))); width: 100%;margin:0px;"
-            >
-              <div style="width: 100%; padding: 16px 20px;">
-                <p style="margin: 0; font-weight: 500; font-size: x-large; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{resumen.competencia.nombre}}</p>
-                <p style="margin: 4px 0 0; text-align: left; color: rgba(var(--color-4-rgb), 0.5);">
+          <ion-item style="--padding-start:0; --inner-padding-end:0; --background: var(--ion-background-color); --border-width:0; --inner-border-width:0px; --min-height: 0; --border-radius: 14px;">
+            <div class="card-row" (click)="irACompetencia(resumen.competencia)">
+              <div
+                class="icono-burbuja"
+                [style.background]="'color-mix(in srgb, var(--ion-color-' + (resumen.competencia.color || 'medium') + ') 22%, var(--ion-background-color) 78%)'"
+              >
+                <ion-icon
+                  *ngIf="(resumen.competencia.icono || 'trophy-outline') !== 'volleyball'; else iconoVoleyBurbuja"
+                  [name]="resumen.competencia.icono || 'trophy-outline'"
+                  [style.color]="'var(--ion-color-' + (resumen.competencia.color || 'medium') + ')'"
+                ></ion-icon>
+                <ng-template #iconoVoleyBurbuja>
+                  <ion-icon src="assets/icon/volleyball.svg" [style.color]="'var(--ion-color-' + (resumen.competencia.color || 'medium') + ')'"></ion-icon>
+                </ng-template>
+              </div>
+              <div class="card-row-texto">
+                <p class="card-row-titulo">{{resumen.competencia.nombre}}</p>
+                <p class="card-row-subtitulo">
                   {{resumen.cantidadPartidos}} partido{{resumen.cantidadPartidos === 1 ? '' : 's'}}
                   <ng-container *ngIf="resumen.cantidadFechas"> &middot; {{resumen.cantidadFechas}} fecha{{resumen.cantidadFechas === 1 ? '' : 's'}}</ng-container>
                 </p>
               </div>
-            </ion-button>
+              <ion-icon name="chevron-forward-outline" class="card-row-chevron"></ion-icon>
+            </div>
           </ion-item>
-          <ion-item-options side="end">
-            <ion-item-option (click)="eliminarCompetencia(resumen)" color="danger" style="border-radius: 10px;">
+          <ion-item-options side="end" style="border-bottom-width: 0;">
+            <ion-item-option (click)="eliminarCompetencia(resumen)" color="danger" style="border-radius: 14px;">
               <ion-icon slot="icon-only" name="trash"></ion-icon>
             </ion-item-option>
           </ion-item-options>
@@ -85,20 +95,25 @@
     </div>
   </div>
 
-  <div *ngIf="tabActual === 'ajustes'" style="margin: 20px 20px 20px;">
-    <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px;">
-      <label style="margin: 0; display: flex; align-items: center; gap: 8px;">
-        <ion-icon [name]="themeService.darkMode ? 'moon' : 'sunny'"></ion-icon>
-        Modo oscuro
-      </label>
+  <div *ngIf="tabActual === 'ajustes'" style="margin: 16px 20px 20px; display: flex; flex-direction: column; gap: 10px;">
+    <div class="card-row" style="cursor: default;">
+      <ion-icon [name]="themeService.darkMode ? 'moon' : 'sunny'"></ion-icon>
+      <div class="card-row-texto">
+        <p class="card-row-titulo">Modo oscuro</p>
+      </div>
       <ion-toggle [checked]="themeService.darkMode" (ionChange)="themeService.setDarkMode($event.detail.checked)"></ion-toggle>
     </div>
 
-    <div style="font-size: 12px; color: rgba(var(--color-4-rgb), 0.5); margin-bottom: 4px; display: flex; justify-content: space-between;">
-      <span>Almacenamiento</span>
-      <span>{{almacenamientoUsadoTexto}} de {{almacenamientoTotalTexto}}</span>
+    <div class="card-row" style="cursor: default; align-items: flex-start;">
+      <ion-icon name="server-outline" style="margin-top: 2px;"></ion-icon>
+      <div class="card-row-texto">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <p class="card-row-titulo">Almacenamiento</p>
+          <span style="font-size: 12px; color: rgba(var(--color-4-rgb), 0.5);">{{almacenamientoUsadoTexto}} de {{almacenamientoTotalTexto}}</span>
+        </div>
+        <ion-progress-bar [value]="almacenamientoFraccion" [color]="almacenamientoFraccion > 0.85 ? 'danger' : 'primary'" style="margin-top: 10px; border-radius: 4px;"></ion-progress-bar>
+      </div>
     </div>
-    <ion-progress-bar [value]="almacenamientoFraccion" [color]="almacenamientoFraccion > 0.85 ? 'danger' : 'primary'"></ion-progress-bar>
   </div>
 
 </ion-content>

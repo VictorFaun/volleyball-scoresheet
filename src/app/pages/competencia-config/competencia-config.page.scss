@@ -23,3 +23,48 @@
         margin-top: 1px;
     }
 }
+
+.selector-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.swatch-color {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+
+    ion-icon {
+        font-size: 16px;
+    }
+}
+
+.swatch-color-seleccionado {
+    box-shadow: 0 0 0 2px var(--ion-background-color), 0 0 0 4px var(--ion-text-color);
+}
+
+.swatch-icono {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: none;
+    background: rgba(var(--color-4-rgb), 0.06);
+    color: var(--ion-text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+
+    ion-icon {
+        font-size: 19px;
+    }
+}

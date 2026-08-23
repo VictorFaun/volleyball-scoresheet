@@ -1,10 +1,10 @@
-<ion-header [translucent]="false">
-  <ion-toolbar>
-    <ion-buttons [collapse]="true" slot="start">
-      <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+<ion-header [translucent]="false" class="ion-no-border">
+  <ion-toolbar class="toolbar-header-grande">
+    <ion-buttons slot="start">
+      <ion-button class="boton-volver-grande" (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
     </ion-buttons>
-    <ion-title>Partido</ion-title>
-    <ion-buttons [collapse]="true" slot="end">
+    <p class="header-title-izq">Partido</p>
+    <ion-buttons slot="end">
       <ion-button color="primary" (click)="siguiente()">
         {{ setFinalizado ? 'Siguiente' : 'Terminar' }}
       </ion-button>
@@ -13,19 +13,6 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" [scrollY]="false">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
-      </ion-buttons>
-      <ion-title size="large">Partido</ion-title>
-      <ion-buttons [collapse]="true" slot="end">
-        <ion-button color="primary" (click)="siguiente()">
-          Terminar
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-header>
 
   <div class="vista-partido">
   

@@ -21,4 +21,24 @@ export class PartidoCardComponent {
   @Output() copiar = new EventEmitter<void>();
   @Output() eliminar = new EventEmitter<void>();
 
+  // Solo el pill de "Config." (estado sin empezar) actúa como atajo directo
+  // a editar los datos básicos del partido. En cualquier otro estado, el
+  // pill es solo informativo: el click cae al comportamiento normal de la
+  // tarjeta (continuar.emit(), que retoma el paso exacto donde quedó).
+  onEstadoPillClick(event: Event) {
+    if (this.partido.estadoColor !== 'medium') return;
+    event.stopPropagation();
+    this.editar.emit();
+  }
+
+  // Fondo del pill de estado: mezcla el color del estado con el fondo de la
+  // página (color-mix, no rgba, para que no se transparente durante el
+  // swipe de la tarjeta). "medium" (Config.) es gris igual que el fondo
+  // tenue de la card, así que sin un porcentaje más alto quedan casi
+  // indistinguibles; el resto de los colores ya contrastan por el tono.
+  estadoPillBackground(): string {
+    const porcentaje = this.partido.estadoColor === 'medium' ? 35 : 18;
+    return `color-mix(in srgb, var(--ion-color-${this.partido.estadoColor}) ${porcentaje}%, var(--ion-background-color) ${100 - porcentaje}%)`;
+  }
+
 }

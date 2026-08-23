@@ -26,7 +26,7 @@ export class HomePage implements OnInit {
   get tituloVista(): string {
     if (this.tabActual === 'competencias') return 'Competencias';
     if (this.tabActual === 'ajustes') return 'Ajustes';
-    return 'Scoresheets';
+    return 'Partidos';
   }
 
   partidosSueltos: PartidoVista[] = [];

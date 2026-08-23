@@ -1344,10 +1344,18 @@ export class GameService {
     };
   }
 
+  // El id se genera acá mismo (sincrónico) en vez de dejar que lo asigne el
+  // guardado en Filesystem (asíncrono): el llamador (home.page.ts) navega a
+  // /competencia usando este id inmediatamente después de crear la
+  // competencia, sin esperar a que la persistencia en disco termine.
   nuevaCompetencia(nombre: string) {
     const competencia = {
-      id: null,
+      id: this.generarId(),
       nombre,
+      // Ícono/color con que se muestra la competencia en la lista de Home
+      // (ver home.page.html). Editables después desde Competencia > Configuración.
+      icono: 'trophy-outline',
+      color: 'medium',
       configuracionDefault: this.clean_configuracion_default(),
       fechas: []
     };
@@ -1446,7 +1454,7 @@ export class GameService {
   // diferencia de new_game_en_competencia, aquí no hay wizard: se crean listos
   // para completarse/jugarse más tarde desde la lista).
   async crearFecha(competencia: any, nombre: string, cantidad: number) {
-    const fecha = { id: this.generarIdFecha(), nombre };
+    const fecha = { id: this.generarId(), nombre };
     if (!competencia.fechas) competencia.fechas = [];
     competencia.fechas.push(fecha);
 
@@ -1465,7 +1473,7 @@ export class GameService {
     return fecha;
   }
 
-  private generarIdFecha(): string {
+  private generarId(): string {
     if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
       return crypto.randomUUID();
     }

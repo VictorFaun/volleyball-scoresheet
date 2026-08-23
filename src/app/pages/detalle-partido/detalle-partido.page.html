@@ -1,9 +1,9 @@
-<ion-header [translucent]="false">
-  <ion-toolbar>
+<ion-header [translucent]="false" class="ion-no-border">
+  <ion-toolbar class="toolbar-header-grande">
     <ion-buttons slot="start">
-      <ion-button (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+      <ion-button class="boton-volver-grande" (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
     </ion-buttons>
-    <ion-title>Detalle del Partido</ion-title>
+    <p class="header-title-izq">Detalle del Partido</p>
   </ion-toolbar>
   <ion-toolbar *ngIf="partido && sets.length">
     <ion-segment class="segment-custom" [(ngModel)]="segmento" scrollable="true">

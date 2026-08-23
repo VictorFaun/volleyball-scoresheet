@@ -14,6 +14,25 @@ export class CompetenciaConfigPage implements OnInit {
   competencia: any;
   config: any;
 
+  // Colores disponibles para identificar la competencia en la lista de Home
+  // (nombres de ion-color, igual que se usan para los estados de partido).
+  coloresDisponibles = ['medium', 'primary', 'secondary', 'tertiary', 'success', 'warning', 'danger'];
+
+  // Íconos disponibles para lo mismo: genéricos (no de un deporte en
+  // particular, salvo "volleyball", el ícono propio de la app). El resto son
+  // de Ionicons (ya vienen con la app, no hace falta registrar nada nuevo).
+  // "volleyball" es un caso especial: no es un ionicon, se resuelve como
+  // src="assets/icon/volleyball.svg" en el template (ver esIconoVolleyball()).
+  iconosDisponibles = [
+    'volleyball', 'trophy-outline', 'medal-outline', 'ribbon-outline', 'podium-outline',
+    'star-outline', 'flag-outline', 'shield-outline', 'flame-outline',
+    'calendar-outline', 'people-outline', 'school-outline', 'earth-outline'
+  ];
+
+  esIconoVolleyball(icono: string): boolean {
+    return icono === 'volleyball';
+  }
+
   // Mismo listado que create.page.ts, para mantener el mismo orden/labels.
   firmasConfig = [
     { num: 1, label: 'Capitán A (inicio)' },
