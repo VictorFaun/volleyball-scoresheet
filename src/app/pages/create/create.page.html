@@ -30,6 +30,20 @@
     </div>
 
     <div class="input-text">
+      <label>Etiqueta</label>
+      <ion-input fill="outline" placeholder="Ej: Cuartos de final" [(ngModel)]="partido.etiqueta"></ion-input>
+    </div>
+
+    <div class="select-text" *ngIf="gruposDisponibles.length">
+      <label>Grupo</label>
+      <ion-select fill="outline" interface="popover" label-placement="stacked" [interfaceOptions]="opcionesPopoverSelect" placeholder="Selecciona el grupo"
+        [(ngModel)]="partido.grupo_id">
+        <ion-select-option [value]="null">Sin grupo</ion-select-option>
+        <ion-select-option *ngFor="let grupo of gruposDisponibles" [value]="grupo.id">{{grupo.nombre}}</ion-select-option>
+      </ion-select>
+    </div>
+
+    <div class="input-text">
       <label>Nro de Sets</label>
       <div class="input-segment">
         <ion-segment class="segment-custom" [(ngModel)]="partido.numero_sets" [disabled]="partidoEnCurso()">

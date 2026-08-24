@@ -86,6 +86,7 @@ export interface PartidoVista {
   index: number;
   numero_partido: number;
   fecha: string;
+  etiqueta: string;
 }
 
 // Arma el objeto liviano usado para mostrar un partido en las listas (Home,
@@ -107,7 +108,8 @@ export function mapearPartidoParaVista(
     estadoIcono: 'settings-outline',
     index,
     numero_partido: partido.numero_partido || 0,
-    fecha: partido.fecha || ''
+    fecha: partido.fecha || '',
+    etiqueta: partido.etiqueta || ''
   };
 
   // El equipo que juega como "A"/"B" se define recién en el R-5 del set 1

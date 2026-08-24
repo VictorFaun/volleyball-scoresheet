@@ -9,11 +9,12 @@
 
 <ion-content [fullscreen]="true" *ngIf="config">
 
-  <div style="margin: 20px 20px 20px;">
+  <!-- Diseño: nombre, color e ícono con que se identifica la competencia. -->
+  <div style="margin: 20px 20px 20px;" *ngIf="pestanaActual === 'diseno'">
 
-    <div class="aviso-configuracion">
-      <ion-icon name="information-circle"></ion-icon>
-      <span>Estos datos se autocompletan en cada partido nuevo de "{{competencia?.nombre}}". Siempre se pueden editar después, partido por partido.</span>
+    <div class="input-text">
+      <label>Nombre</label>
+      <ion-input fill="outline" placeholder="Nombre de la competencia" [(ngModel)]="competencia.nombre" (ionBlur)="guardarNombre()"></ion-input>
     </div>
 
     <div class="input-text">
@@ -48,6 +49,16 @@
           <ng-template #iconoVoley><ion-icon src="assets/icon/volleyball.svg"></ion-icon></ng-template>
         </button>
       </div>
+    </div>
+
+  </div>
+
+  <!-- Configuración por defecto: se autocompleta en cada partido nuevo de la competencia. -->
+  <div style="margin: 20px 20px 20px;" *ngIf="pestanaActual === 'configuracion'">
+
+    <div class="aviso-configuracion">
+      <ion-icon name="information-circle"></ion-icon>
+      <span>Estos datos se autocompletan en cada partido nuevo de "{{competencia?.nombre}}". Siempre se pueden editar después, partido por partido.</span>
     </div>
 
     <div class="input-text">
@@ -150,4 +161,110 @@
 
   </div>
 
+  <!-- Resultados: fase de grupos (crear/listar grupos). -->
+  <div style="margin: 20px 20px 20px;" *ngIf="pestanaActual === 'resultados'">
+
+    <div class="action-buttons-row">
+      <div class="action-button action-button-primary" (click)="crearGrupo()">
+        <ion-icon name="add"></ion-icon>
+        <span>Crear grupo</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px;" *ngIf="competencia?.grupos?.length">
+      <div style="margin-bottom: 10px; font-size: x-large; font-weight: bold;">Grupos</div>
+      <ion-item-sliding style="margin-bottom: 10px;" *ngFor="let grupo of competencia.grupos">
+        <ion-item style="--padding-start:0; --inner-padding-end:0; --background: var(--ion-background-color); --border-width:0; --inner-border-width:0px; --min-height: 0; --border-radius: 14px;">
+          <div class="card-row">
+            <div class="card-row-texto">
+              <p class="card-row-titulo">{{grupo.nombre}}</p>
+              <p class="card-row-subtitulo">{{cantidadPartidosDeGrupo(grupo)}} partido{{cantidadPartidosDeGrupo(grupo) === 1 ? '' : 's'}}</p>
+            </div>
+          </div>
+        </ion-item>
+        <ion-item-options side="end" style="border-bottom-width: 0;">
+          <ion-item-option (click)="eliminarGrupo(grupo)" color="danger" style="border-radius: 14px;">
+            <ion-icon slot="icon-only" name="trash"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </div>
+
+    <p *ngIf="!competencia?.grupos?.length" style="text-align: center; color: rgba(var(--color-4-rgb), 0.5); margin-top: 24px;">
+      Aún no hay grupos en esta competencia.
+    </p>
+
+    <div style="margin-top: 30px;" *ngIf="configResultados">
+      <div style="margin-bottom: 10px; font-size: x-large; font-weight: bold;">Sistema de puntos</div>
+
+      <div class="aviso-configuracion">
+        <ion-icon name="information-circle"></ion-icon>
+        <span>Puntos que recibe cada equipo según el resultado en sets. Se usan para calcular la tabla de posiciones.</span>
+      </div>
+
+      <p style="margin: 16px 0 8px; font-weight: 600;">Partidos a 3 sets</p>
+      <div *ngFor="let clave of clavesPuntos3" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <span style="width: 44px; flex-shrink: 0; font-weight: 600;">{{clave}}</span>
+        <div class="input-text" style="margin: 0; flex: 1;">
+          <label>Ganador</label>
+          <ion-input fill="outline" type="number" [(ngModel)]="configResultados.puntos3[clave].ganador"></ion-input>
+        </div>
+        <div class="input-text" style="margin: 0; flex: 1;">
+          <label>Perdedor</label>
+          <ion-input fill="outline" type="number" [(ngModel)]="configResultados.puntos3[clave].perdedor"></ion-input>
+        </div>
+      </div>
+
+      <p style="margin: 20px 0 8px; font-weight: 600;">Partidos a 5 sets</p>
+      <div *ngFor="let clave of clavesPuntos5" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <span style="width: 44px; flex-shrink: 0; font-weight: 600;">{{clave}}</span>
+        <div class="input-text" style="margin: 0; flex: 1;">
+          <label>Ganador</label>
+          <ion-input fill="outline" type="number" [(ngModel)]="configResultados.puntos5[clave].ganador"></ion-input>
+        </div>
+        <div class="input-text" style="margin: 0; flex: 1;">
+          <label>Perdedor</label>
+          <ion-input fill="outline" type="number" [(ngModel)]="configResultados.puntos5[clave].perdedor"></ion-input>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 30px;" *ngIf="configResultados">
+      <div style="margin-bottom: 10px; font-size: x-large; font-weight: bold;">Orden de desempate</div>
+
+      <div class="aviso-configuracion">
+        <ion-icon name="information-circle"></ion-icon>
+        <span>Si dos equipos empatan en puntos, se usa el siguiente criterio de esta lista, y así hasta desempatar.</span>
+      </div>
+
+      <div class="card-row" *ngFor="let criterio of configResultados.criteriosDesempate; let i = index" style="margin-top: 10px; cursor: default;">
+        <div class="card-row-texto">
+          <p class="card-row-titulo">{{i + 1}}. {{etiquetasCriterio[criterio] || criterio}}</p>
+        </div>
+        <ion-button fill="clear" size="small" style="margin: 0;" [disabled]="i === 0" (click)="moverCriterio(i, -1)">
+          <ion-icon slot="icon-only" name="chevron-up-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" style="margin: 0;" [disabled]="i === configResultados.criteriosDesempate.length - 1" (click)="moverCriterio(i, 1)">
+          <ion-icon slot="icon-only" name="chevron-down-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+  </div>
+
 </ion-content>
+
+<ion-tab-bar *ngIf="config">
+  <ion-tab-button (click)="pestanaActual = 'diseno'" [selected]="pestanaActual === 'diseno'">
+    <ion-icon name="color-palette-outline"></ion-icon>
+    <ion-label>Diseño</ion-label>
+  </ion-tab-button>
+  <ion-tab-button (click)="pestanaActual = 'configuracion'" [selected]="pestanaActual === 'configuracion'">
+    <ion-icon name="settings-outline"></ion-icon>
+    <ion-label>Partidos</ion-label>
+  </ion-tab-button>
+  <ion-tab-button (click)="pestanaActual = 'resultados'" [selected]="pestanaActual === 'resultados'">
+    <ion-icon name="bar-chart-outline"></ion-icon>
+    <ion-label>Resultados</ion-label>
+  </ion-tab-button>
+</ion-tab-bar>

@@ -7,6 +7,7 @@ import { Clipboard } from '@capacitor/clipboard';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { PDFDocument, rgb } from 'pdf-lib';
+import { mapearPartidoParaVista } from './partido-view.util';
 
 @Injectable({
   providedIn: 'root'
@@ -251,8 +252,17 @@ export class GameService {
   // app.module.ts), para que el resto del código pueda seguir leyendo
   // this.partidos/this.competencias como arrays ya listos, igual que antes.
   async cargarDatosIniciales() {
-    this.partidos = await this.localStorageService.getData();
-    this.competencias = await this.localStorageService.getCompetencias();
+    try {
+      this.partidos = await this.localStorageService.getData();
+      this.competencias = await this.localStorageService.getCompetencias();
+    } catch (error) {
+      // Si el almacenamiento falla acá, más vale arrancar con listas vacías
+      // que dejar sin resolver la promesa que bloquea el arranque de toda
+      // la app (ver APP_INITIALIZER en app.module.ts).
+      console.error('Error cargando datos iniciales (partidos/competencias):', error);
+      this.partidos = this.partidos || [];
+      this.competencias = this.competencias || [];
+    }
   }
 
   // Guarda el partido activo en su propia clave de almacenamiento (no todo
@@ -266,8 +276,13 @@ export class GameService {
     try {
       await this.localStorageService.guardarPartido(this.partido);
     } catch (error) {
+      // Ya no se avisa con una alerta interruptiva: eso era de la época de
+      // localStorage, donde el motivo casi siempre era la cuota chica del
+      // navegador (~5-10MB) llenándose. Ahora se guarda vía Filesystem (ver
+      // FilesystemStorageService), con harto más margen y sin esa cuota, así
+      // que un fallo acá es la excepción, no algo esperable por espacio
+      // lleno. Igual queda el guardado en consola para poder diagnosticarlo.
       console.error('Error al guardar el partido:', error);
-      this.notificarErrorGuardado();
     }
   }
 
@@ -281,36 +296,6 @@ export class GameService {
     if (partido?.id) {
       await this.localStorageService.eliminarPartido(partido.id);
     }
-  }
-
-  // guardar() se llama muy seguido (cada punto, cambio, tiempo, etc.), así
-  // que si el guardado falla de forma repetida evitamos apilar una alerta
-  // encima de otra: solo se muestra una a la vez.
-  private alertaGuardadoMostrada = false;
-  private async notificarErrorGuardado() {
-    if (this.alertaGuardadoMostrada) return;
-    this.alertaGuardadoMostrada = true;
-
-    const alert = await this.alertController.create({
-      header: 'Error al guardar',
-      message: 'No se pudo guardar el partido en este dispositivo. Si cierras la app ahora, esta acción podría perderse. Es posible que el almacenamiento esté lleno.',
-      buttons: [
-        {
-          text: 'Seguir jugando',
-          role: 'cancel'
-        },
-        {
-          text: 'Ir a borrar partidos',
-          handler: () => {
-            this.router.navigate(['/home'], { replaceUrl: true });
-          }
-        }
-      ]
-    });
-    alert.onDidDismiss().then(() => {
-      this.alertaGuardadoMostrada = false;
-    });
-    await alert.present();
   }
 
   // Antes de crear un partido nuevo, calcula cuánto ocupa en promedio cada
@@ -412,14 +397,7 @@ export class GameService {
 
                 let ganador = this.obtenerGanadorPartido()
                 if(ganador){
-                  const alert = await this.alertController.create({
-                    header: 'Resultado',
-                    message: `¡El equipo ${this.textoEquipoGanador(ganador)} ha ganado el partido!`,
-                    buttons: ['Aceptar']
-                });
-                await alert.present();
-                await alert.onDidDismiss();
-                this.new_firma(5);
+                  this.new_firma(5);
                 }else{
                   this.avanzarDespuesDeSet2()
                 }
@@ -431,14 +409,7 @@ export class GameService {
                 this.partido.estado = 19
                 let ganador = this.obtenerGanadorPartido()
                 if(ganador){
-                  const alert = await this.alertController.create({
-                    header: 'Resultado',
-                    message: `¡El equipo ${this.textoEquipoGanador(ganador)} ha ganado el partido!`,
-                    buttons: ['Aceptar']
-                });
-                await alert.present();
-                await alert.onDidDismiss();
-                this.new_firma(5);
+                  this.new_firma(5);
                 }else{
                   this.new_set(4)
                 }
@@ -450,14 +421,7 @@ export class GameService {
                 this.partido.estado = 22
                 let ganador = this.obtenerGanadorPartido()
                 if(ganador){
-                  const alert = await this.alertController.create({
-                    header: 'Resultado',
-                    message: `¡El equipo ${this.textoEquipoGanador(ganador)} ha ganado el partido!`,
-                    buttons: ['Aceptar']
-                });
-                await alert.present();
-                await alert.onDidDismiss();
-                this.new_firma(5);
+                  this.new_firma(5);
                 }else{
                   this.avanzarDespuesDeSet4()
                 }
@@ -467,19 +431,7 @@ export class GameService {
                 this.partido.set_5.victoria = equipoGanador;
                 if(this.partido.estado<26)
                 this.partido.estado = 26
-                let ganador = this.obtenerGanadorPartido()
-                if(ganador){
-                  const alert = await this.alertController.create({
-                    header: 'Resultado',
-                    message: `¡El equipo ${this.textoEquipoGanador(ganador)} ha ganado el partido!`,
-                    buttons: ['Aceptar']
-                });
-                await alert.present();
-                await alert.onDidDismiss();
                 this.new_firma(5);
-                }else{
-                  this.new_firma(5)
-                }
               }
             }
           }
@@ -875,7 +827,7 @@ export class GameService {
       await alert.present();
     }
 
-    this.redireccionar('home');
+    this.volverAOrigen();
   }
 
   // Muestra el sorteo previo a un set: siempre antes del set 1 (ahí también
@@ -1153,10 +1105,16 @@ export class GameService {
       // Qué firmas del flujo se piden. Activadas por defecto; al
       // desactivar una, new_firma() la salta directo al siguiente paso.
       firmas_habilitadas: this.clean_firmas_habilitadas(),
-      // Relación opcional a una competencia/fecha (por id). El partido en sí
-      // no cambia de estructura más allá de estos 3 campos.
+      // Relación opcional a una competencia/fecha/grupo (por id). El partido
+      // en sí no cambia de estructura más allá de estos campos.
       competencia_id: null,
       fecha_id: null,
+      grupo_id: null,
+      // Texto libre, independiente de todo lo anterior: partidos de fase
+      // eliminatoria (sin grupo_id) usan esto para identificar la instancia
+      // ("Cuartos de final", "Semifinal"...). Disponible en cualquier
+      // partido, incluidos los sueltos, solo para mostrar.
+      etiqueta: null,
       archivado: false
     }
   }
@@ -1369,7 +1327,6 @@ export class GameService {
       await this.localStorageService.guardarCompetencia(competencia);
     } catch (error) {
       console.error('Error al guardar la competencia:', error);
-      this.notificarErrorGuardado();
     }
   }
 
@@ -1394,6 +1351,137 @@ export class GameService {
 
   partidosDeFecha(competenciaId: string, fechaId: string | null): any[] {
     return this.partidosDeCompetencia(competenciaId).filter((p: any) => (p.fecha_id || null) === fechaId);
+  }
+
+  // Partidos de la competencia asignados a un grupo puntual (fase de grupos).
+  // Independiente de partidosDeFecha: un partido puede tener fecha_id y
+  // grupo_id a la vez, o solo uno de los dos.
+  partidosDeGrupo(competenciaId: string, grupoId: string): any[] {
+    return this.partidosDeCompetencia(competenciaId).filter((p: any) => p.grupo_id === grupoId);
+  }
+
+  // ===========================================================================
+  // Resultados (fase de grupos)
+  // ===========================================================================
+
+  // Configuración de resultados de una competencia: sistema de puntos por
+  // resultado (estilo FIVB por defecto: en partidos a 5 sets un 3-2 vale
+  // menos que un 3-0/3-1, y el perdedor de un 3-2 rescata un punto) y orden
+  // de los criterios de desempate. Todo editable desde Resultados en
+  // competencia-config; "nombre" (alfabético) no se lista ahí porque es el
+  // desempate final fijo, no un criterio deportivo.
+  clean_configuracion_resultados() {
+    return {
+      puntos3: {
+        '2-0': { ganador: 3, perdedor: 0 },
+        '2-1': { ganador: 2, perdedor: 1 },
+      },
+      puntos5: {
+        '3-0': { ganador: 3, perdedor: 0 },
+        '3-1': { ganador: 3, perdedor: 0 },
+        '3-2': { ganador: 2, perdedor: 1 },
+      },
+      criteriosDesempate: ['puntos', 'ratioSets', 'ratioPuntos']
+    };
+  }
+
+  private ratio(favor: number, contra: number): number {
+    return contra ? favor / contra : favor;
+  }
+
+  // Comparadores disponibles para el orden de desempate configurable (ver
+  // criteriosDesempate). Cada uno devuelve >0 si "x" debería ir después de
+  // "y" en la tabla (mismo signo que espera Array.sort).
+  private readonly comparadoresDesempate: Record<string, (x: any, y: any) => number> = {
+    puntos: (x, y) => y.puntos - x.puntos,
+    ratioSets: (x, y) => this.ratio(y.setsFavor, y.setsContra) - this.ratio(x.setsFavor, x.setsContra),
+    ratioPuntos: (x, y) => this.ratio(y.puntosFavor, y.puntosContra) - this.ratio(x.puntosFavor, x.puntosContra),
+  };
+
+  // Arma la tabla de posiciones a partir de una lista de partidos ya
+  // finalizados. Agrupa por nombre de equipo (no existe una entidad
+  // "Equipo" separada): cada fila nace la primera vez que aparece ese
+  // nombre. Partidos sin sets jugados o empatados en sets (no debería
+  // pasar en un partido finalizado) se ignoran.
+  private calcularTablaDesdePartidos(partidos: any[], config: any): any[] {
+    const tabla: Record<string, any> = {};
+    const fila = (nombre: string) => tabla[nombre] || (tabla[nombre] = {
+      nombre, pj: 0, pg: 0, pp: 0, puntos: 0,
+      setsFavor: 0, setsContra: 0, puntosFavor: 0, puntosContra: 0
+    });
+
+    for (const partido of partidos) {
+      const vista = mapearPartidoParaVista(partido, 0, (set, equipo) => this.contarPuntos(set, equipo));
+      if (!vista.sets.length) continue;
+
+      const setsA = vista.sets.filter(s => s.victoria === 'A').length;
+      const setsB = vista.sets.filter(s => s.victoria === 'B').length;
+      if (setsA === setsB) continue;
+
+      const puntosA = vista.sets.reduce((s, set) => s + set.a, 0);
+      const puntosB = vista.sets.reduce((s, set) => s + set.b, 0);
+
+      const filaA = fila(vista.equipoA);
+      const filaB = fila(vista.equipoB);
+      filaA.pj++; filaB.pj++;
+      filaA.setsFavor += setsA; filaA.setsContra += setsB;
+      filaB.setsFavor += setsB; filaB.setsContra += setsA;
+      filaA.puntosFavor += puntosA; filaA.puntosContra += puntosB;
+      filaB.puntosFavor += puntosB; filaB.puntosContra += puntosA;
+
+      const tablaPuntos = partido.numero_sets === 5 ? config.puntos5 : config.puntos3;
+      const clave = `${Math.max(setsA, setsB)}-${Math.min(setsA, setsB)}`;
+      const puntosResultado = tablaPuntos[clave] || { ganador: 0, perdedor: 0 };
+
+      if (setsA > setsB) {
+        filaA.pg++; filaB.pp++;
+        filaA.puntos += puntosResultado.ganador;
+        filaB.puntos += puntosResultado.perdedor;
+      } else {
+        filaB.pg++; filaA.pp++;
+        filaB.puntos += puntosResultado.ganador;
+        filaA.puntos += puntosResultado.perdedor;
+      }
+    }
+
+    const criterios = config.criteriosDesempate || ['puntos', 'ratioSets', 'ratioPuntos'];
+    return Object.values(tabla).sort((x: any, y: any) => {
+      for (const criterio of criterios) {
+        const comparador = this.comparadoresDesempate[criterio];
+        if (!comparador) continue;
+        const resultado = comparador(x, y);
+        if (resultado !== 0) return resultado;
+      }
+      // Desempate final fijo (no configurable): alfabético, para que el
+      // orden sea siempre determinístico.
+      return x.nombre.localeCompare(y.nombre);
+    });
+  }
+
+  calcularTablaGrupo(competencia: any, grupo: any): any[] {
+    const partidos = this.partidosDeGrupo(competencia.id, grupo.id).filter((p: any) => p.estado === 33);
+    const config = competencia.configuracionResultados || this.clean_configuracion_resultados();
+    return this.calcularTablaDesdePartidos(partidos, config);
+  }
+
+  // Tablas de posiciones de la competencia: una por grupo si tiene grupos
+  // creados (los partidos sin grupo -fase eliminatoria manual- quedan
+  // afuera a propósito), o una sola tabla general con todos los partidos
+  // finalizados si la competencia no usa grupos. Solo incluye tablas con
+  // al menos un partido jugado.
+  resultadosCompetencia(competencia: any): { nombre: string; filas: any[] }[] {
+    const grupos = competencia.grupos || [];
+    if (grupos.length) {
+      return grupos
+        .map((g: any) => ({ nombre: g.nombre, filas: this.calcularTablaGrupo(competencia, g) }))
+        .filter((t: any) => t.filas.length);
+    }
+    const config = competencia.configuracionResultados || this.clean_configuracion_resultados();
+    const filas = this.calcularTablaDesdePartidos(
+      this.partidosDeCompetencia(competencia.id).filter((p: any) => p.estado === 33),
+      config
+    );
+    return filas.length ? [{ nombre: competencia.nombre, filas }] : [];
   }
 
   // Partidos que no pertenecen a ninguna competencia (y no están archivados).
@@ -1471,6 +1559,26 @@ export class GameService {
 
     await this.guardarCompetencia(competencia);
     return fecha;
+  }
+
+  // Crea un grupo (fase de grupos) dentro de la competencia. A diferencia de
+  // crearFecha, no genera partidos: los partidos ya existentes (o nuevos) se
+  // asignan al grupo después, uno por uno, desde su propia configuración.
+  async crearGrupo(competencia: any, nombre: string) {
+    const grupo = { id: this.generarId(), nombre };
+    if (!competencia.grupos) competencia.grupos = [];
+    competencia.grupos.push(grupo);
+    await this.guardarCompetencia(competencia);
+    return grupo;
+  }
+
+  // Elimina un grupo. Se asume que el llamador ya verificó (con
+  // partidosDeGrupo) que no hay partidos asignados, o que el usuario aceptó
+  // seguir de todas formas: acá solo se quita el grupo de la competencia.
+  async eliminarGrupo(competencia: any, grupo: any) {
+    const idx = (competencia.grupos || []).indexOf(grupo);
+    if (idx !== -1) competencia.grupos.splice(idx, 1);
+    await this.guardarCompetencia(competencia);
   }
 
   private generarId(): string {

@@ -26,6 +26,14 @@
              que estar acá para que de verdad se aplique en tiempo de ejecución. -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- El WebView de Android arranca con fondo negro por defecto y
+             recién se ve el color real de la página una vez que pinta su
+             primer frame; hasta ese momento se ve la ventana "de atrás", que
+             sin esto es negra. Poniéndole acá el mismo blanco que el fondo
+             claro de la app (variables.scss), ese instante entre "se oculta
+             el splash" y "ya cargó Angular" muestra blanco en vez de negro.
+             (Modo oscuro: values-night/styles.xml define la versión #121212.) -->
+        <item name="android:windowBackground">#ffffff</item>
     </style>
 
     <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">

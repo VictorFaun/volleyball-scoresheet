@@ -29,6 +29,8 @@ export class CreatePage implements OnInit, ComponentCanDeactivate {
     { num: 10, label: 'Primer Árbitro' },
   ];
 
+  opcionesPopoverSelect: any = { size: 'cover', alignment: 'start' };
+
   constructor(private navCtrl: NavController, private _game_: GameService, private alertController: AlertController) { }
 
   volver() {
@@ -91,6 +93,15 @@ export class CreatePage implements OnInit, ComponentCanDeactivate {
   // formato de puntos y el cálculo del ganador ya usado).
   partidoEnCurso(): boolean {
     return this._game_.partidoEnCurso();
+  }
+
+  // Grupos de la competencia del partido (fase de grupos), si tiene alguno
+  // configurado. Vacío si el partido está suelto o su competencia no tiene
+  // grupos creados: en ese caso el select de grupo no se muestra.
+  get gruposDisponibles(): any[] {
+    if (!this.partido?.competencia_id) return [];
+    const competencia = this._game_.competencias.find((c: any) => c.id === this.partido.competencia_id);
+    return competencia?.grupos || [];
   }
 
   activarTodasLasFirmas() {

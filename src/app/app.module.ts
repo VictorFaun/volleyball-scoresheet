@@ -13,8 +13,18 @@ import { GameService } from './services/game/game.service';
 // GameService.partidos/competencias como arrays ya listos apenas arranca
 // (igual que antes), se espera esta carga una sola vez acá, antes de que
 // Angular termine de arrancar la app.
+//
+// Con un límite de tiempo: si el plugin de Filesystem tardara demasiado o
+// se quedara colgado en un dispositivo real (nunca resuelve ni rechaza),
+// Angular jamás terminaría de arrancar -pantalla en blanco/negra
+// indefinida-. cargarDatosIniciales() sigue corriendo en segundo plano y
+// completa partidos/competencias apenas termine, aunque llegue tarde; esto
+// solo evita que bloquee el arranque para siempre.
 function inicializarDatos(gameService: GameService) {
-  return () => gameService.cargarDatosIniciales();
+  return () => Promise.race([
+    gameService.cargarDatosIniciales(),
+    new Promise<void>(resolve => setTimeout(resolve, 4000))
+  ]);
 }
 
 @NgModule({
@@ -26,7 +36,12 @@ function inicializarDatos(gameService: GameService) {
     // de cada botón "volver" (que siempre redirige a Home). Ver
     // AppComponent.initBackButton() para el manejo del botón físico/gesto
     // de retroceso de Android, que sigue la misma regla.
-    swipeBackEnabled: false
+    swipeBackEnabled: false,
+    // Habilita HTML (saneado por Ionic: solo bloquea tags peligrosos y
+    // atributos no listados en su allowlist) en el "message" de ion-alert,
+    // para poder armar alertas con varias líneas (ver <br> en las tablas
+    // de resultados de competencia-config/competencia).
+    innerHTMLTemplatesEnabled: true
   }), AppRoutingModule],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

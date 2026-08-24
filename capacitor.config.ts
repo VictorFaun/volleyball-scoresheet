@@ -8,6 +8,21 @@ const config: CapacitorConfig = {
     androidScheme: 'https'
   },
   plugins: {
+    // Sin esta sección, el plugin arranca (del lado nativo, antes de que
+    // corra cualquier JS nuestro) con SUS valores por defecto: overlay activo
+    // y, sobre todo, backgroundColor #000000 -negro, hardcodeado en
+    // StatusBarConfig.java-. En Android <15 (donde la barra sí se pinta de
+    // verdad) eso pintaba la barra de negro desde el vamos; y como
+    // setOverlaysWebView() internamente cachea/restaura ese color al
+    // alternar overlay, ese negro podía volver a aparecer más tarde aunque
+    // ThemeService pidiera otra cosa por JS. Con esto, arranca ya del color
+    // correcto (el de modo claro; ThemeService lo corrige a oscuro por JS
+    // si corresponde) en vez de negro por defecto.
+    StatusBar: {
+      overlaysWebView: false,
+      style: 'DEFAULT',
+      backgroundColor: '#ffffff',
+    },
     SplashScreen: {
       launchShowDuration: 0,
       launchAutoHide: true,

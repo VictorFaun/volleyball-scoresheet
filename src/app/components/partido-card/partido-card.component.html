@@ -32,6 +32,7 @@
           </div>
           <ng-template #sinResultadoB><p style="margin: 0;">-</p></ng-template>
         </div>
+        <p *ngIf="partido.etiqueta" style="margin: 8px 0 0; font-size: small; text-align: right; color: rgba(var(--color-4-rgb), 0.5);">{{partido.etiqueta}}</p>
       </div>
     </div>
   </ion-item>

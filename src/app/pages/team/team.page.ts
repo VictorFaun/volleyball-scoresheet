@@ -16,16 +16,16 @@ export class TeamPage implements OnInit {
   equipo: any;
   autocompletar: boolean = false;
 
-  // Equipos de prueba rápidos para testing: al escribir "EP1" o "EP2" en el
-  // nombre del equipo, se ofrece cargar estos datos precargados.
+  // Equipo de prueba rápido para testing: al escribir "EP1" en el nombre
+  // del equipo, se ofrece cargar estos datos precargados.
   private readonly equiposPrueba: { [clave: string]: any } = {
     EP1: {
-      nombre: 'Equipo de Prueba 1',
-      entrenador: 'Entrenador Prueba 1',
-      primer_asistente: 'Primer Asistente Prueba 1',
-      segundo_asistente: 'Segundo Asistente Prueba 1',
-      medico: 'Médico Prueba 1',
-      fisioterapeuta: 'Fisioterapeuta Prueba 1',
+      nombre: 'Equipo de Prueba',
+      entrenador: 'Entrenador Prueba',
+      primer_asistente: 'Primer Asistente Prueba',
+      segundo_asistente: 'Segundo Asistente Prueba',
+      medico: 'Médico Prueba',
+      fisioterapeuta: 'Fisioterapeuta Prueba',
       jugadores: [
         { numero: 1, nombre: 'Jugador 1', capitan: false, libero: false },
         { numero: 2, nombre: 'Jugador 2', capitan: false, libero: false },
@@ -39,28 +39,6 @@ export class TeamPage implements OnInit {
         { numero: 10, nombre: 'Jugador 10', capitan: false, libero: false },
         { numero: 11, nombre: 'Jugador 11', capitan: false, libero: false },
         { numero: 12, nombre: 'Jugador 12', capitan: false, libero: true },
-      ]
-    },
-    EP2: {
-      nombre: 'Equipo de Prueba 2',
-      entrenador: 'Entrenador Prueba 2',
-      primer_asistente: 'Primer Asistente Prueba 2',
-      segundo_asistente: 'Segundo Asistente Prueba 2',
-      medico: 'Médico Prueba 2',
-      fisioterapeuta: 'Fisioterapeuta Prueba 2',
-      jugadores: [
-        { numero: 1, nombre: 'Jugador 13', capitan: false, libero: false },
-        { numero: 2, nombre: 'Jugador 14', capitan: false, libero: false },
-        { numero: 3, nombre: 'Jugador 15', capitan: false, libero: false },
-        { numero: 4, nombre: 'Jugador 16', capitan: true, libero: false },
-        { numero: 5, nombre: 'Jugador 17', capitan: false, libero: false },
-        { numero: 6, nombre: 'Jugador 18', capitan: false, libero: false },
-        { numero: 7, nombre: 'Jugador 19', capitan: false, libero: false },
-        { numero: 8, nombre: 'Jugador 20', capitan: false, libero: false },
-        { numero: 9, nombre: 'Jugador 21', capitan: false, libero: false },
-        { numero: 10, nombre: 'Jugador 22', capitan: false, libero: false },
-        { numero: 11, nombre: 'Jugador 23', capitan: false, libero: false },
-        { numero: 12, nombre: 'Jugador 24', capitan: false, libero: true },
       ]
     }
   };
@@ -275,7 +253,7 @@ export class TeamPage implements OnInit {
   buscarTeam(){
     const nombreNormalizado = (this.equipo?.nombre || '').trim().toUpperCase();
 
-    if (nombreNormalizado === 'EP1' || nombreNormalizado === 'EP2') {
+    if (nombreNormalizado === 'EP1') {
       this.autocompletar = false;
       if (this.ultimoEquipoPruebaConsultado !== nombreNormalizado) {
         this.ultimoEquipoPruebaConsultado = nombreNormalizado;
@@ -285,14 +263,16 @@ export class TeamPage implements OnInit {
     }
     this.ultimoEquipoPruebaConsultado = null;
 
-    if (!this.equipo?.nombre || !this._game_.partidos) {
+    // Solo entre partidos de la misma competencia (mismo competencia_id). Un
+    // partido suelto no tiene competencia_id, así que nunca autocompleta.
+    if (!this.equipo?.nombre || !this._game_.partidos || !this._game_.partido.competencia_id) {
       this.autocompletar = false;
       return;
     }
 
     const existeEquipo = this._game_.partidos.some((partido: any, index: number) =>
       index !== this._game_.index &&
-    partido.competicion == this._game_.partido.competicion &&
+    partido.competencia_id === this._game_.partido.competencia_id &&
     (
       partido.equipo_1 &&
       partido.equipo_1.nombre.toLowerCase() === this.equipo.nombre.toLowerCase() ||
@@ -300,7 +280,7 @@ export class TeamPage implements OnInit {
       partido.equipo_2.nombre.toLowerCase() === this.equipo.nombre.toLowerCase()
     )
     );
-    
+
     this.autocompletar = existeEquipo;
   }
 
@@ -331,7 +311,7 @@ export class TeamPage implements OnInit {
     this._game_.guardar();
   }
 
-  async confirmarCargarEquipoPrueba(clave: 'EP1' | 'EP2') {
+  async confirmarCargarEquipoPrueba(clave: 'EP1') {
     const alert = await this.alertController.create({
       header: 'Equipo de prueba',
       message: `¿Deseas cargar el ${this.equiposPrueba[clave].nombre}?`,
@@ -349,7 +329,7 @@ export class TeamPage implements OnInit {
     await alert.present();
   }
 
-  cargarEquipoPrueba(clave: 'EP1' | 'EP2') {
+  cargarEquipoPrueba(clave: 'EP1') {
     const datos = this.equiposPrueba[clave];
     this.equipo.nombre = datos.nombre;
     this.equipo.entrenador = datos.entrenador;
@@ -362,9 +342,13 @@ export class TeamPage implements OnInit {
   }
 
   buscarPartido(){
+    // Mismo criterio que buscarTeam(): sin competencia_id (partido suelto)
+    // no hay de dónde autocompletar.
+    if (!this._game_.partido.competencia_id) return null;
+
     const partidos = this._game_.partidos.filter((partido: any, index: number) =>
       index !== this._game_.index &&
-      partido.competicion == this._game_.partido.competicion &&
+      partido.competencia_id === this._game_.partido.competencia_id &&
       (
         partido.equipo_1 &&
         partido.equipo_1.nombre.toLowerCase() === this.equipo.nombre.toLowerCase() ||

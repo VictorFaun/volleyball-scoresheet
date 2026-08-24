@@ -540,37 +540,36 @@ body {
     font-size: 18px;
   }
 
-  // Acción principal: fondo teñido en color primario (no sólido), como
-  // única acción de la fila. Ver .action-button-solido para el caso de un
-  // solo botón (ahí sí va sólido, ver fecha.page.html).
+  // Acción principal: fondo teñido en color primario (no sólido). Mismo
+  // estilo tanto si va sola (ej. "Nuevo partido" en Home/Fecha) como si
+  // acompaña a una segunda acción al lado (ej. "Crear fecha" en Competencia).
   &.action-button-primary {
     color: var(--ion-color-primary);
     background: rgba(var(--ion-color-primary-rgb), 0.16);
-  }
-
-  // Único CTA de la vista (ej. "Nuevo partido" en fecha.page/home.page):
-  // botón sólido de ancho completo, en vez de la versión "teñida" que se
-  // usa cuando hay una segunda acción al lado para comparar.
-  &.action-button-solido {
-    background: var(--ion-color-primary);
-    color: var(--ion-color-primary-contrast);
-    padding: 16px 8px;
   }
 }
 
 .no-padding-message {
   --backdrop-opacity: 0.8;
-  
+
   .alert-wrapper {
-    
+
     .alert-message {
       padding: 0;
       margin: 0;
     }
   }
-  
+
   .no-padding {
     padding: 0 !important;
     margin: 0 !important;
   }
+}
+
+// Alert de resultados (tabla de posiciones): el ancho fijo por defecto de
+// ion-alert (~270-324px, ver --max-width) es muy angosto para una tabla de
+// 8 columnas. Se ensancha solo para esta alerta en particular.
+.alert-resultados {
+  --width: min(94vw, 480px);
+  --max-width: min(94vw, 480px);
 }

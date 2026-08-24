@@ -34,6 +34,14 @@ export class FilesystemStorageService {
     return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   }
 
+  // guardar() se llama muy seguido (cada punto, cambio, tiempo, etc. llaman
+  // a GameService.guardar()), y cada llamada puede terminar de resolver en
+  // cualquier orden. Sin encolar, dos escrituras casi simultáneas a Filesystem
+  // -incluso a archivos distintos- pueden pisarse o fallar en algunos
+  // dispositivos. Esta cola global serializa TODAS las escrituras de este
+  // servicio (una a la vez, en orden), sin bloquear lecturas.
+  private colaEscritura: Promise<void> = Promise.resolve();
+
   /**
    * Guarda (crea o actualiza) un registro dentro de una colección. Si el
    * registro no tiene "id", se le asigna uno nuevo (mutando el objeto
@@ -43,15 +51,24 @@ export class FilesystemStorageService {
     if (!datos.id) {
       datos.id = this.generarId();
     }
-    await Filesystem.writeFile({
-      path: this.rutaArchivo(coleccion, datos.id),
-      data: JSON.stringify(datos),
-      directory: this.directorio,
-      encoding: Encoding.UTF8,
-      // Crea la carpeta de la colección si todavía no existe.
-      recursive: true
-    });
-    return datos.id;
+    const id = datos.id;
+
+    const escritura = this.colaEscritura.then(() =>
+      Filesystem.writeFile({
+        path: this.rutaArchivo(coleccion, id),
+        data: JSON.stringify(datos),
+        directory: this.directorio,
+        encoding: Encoding.UTF8,
+        // Crea la carpeta de la colección si todavía no existe.
+        recursive: true
+      })
+    );
+    // Encolar la siguiente escritura detrás de esta pase o falle (si no, un
+    // guardado fallido dejaría la cola trabada para siempre).
+    this.colaEscritura = escritura.then(() => undefined, () => undefined);
+
+    await escritura;
+    return id;
   }
 
   /**

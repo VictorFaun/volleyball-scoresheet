@@ -68,27 +68,6 @@ export class CompetenciaPage implements OnInit {
     this.router.navigate(['/fecha'], { queryParams: { competenciaId: this.competencia.id, fechaId: fecha.id } });
   }
 
-  async renombrar() {
-    const alert = await this.alertController.create({
-      header: 'Renombrar competencia',
-      inputs: [{ name: 'nombre', type: 'text', value: this.competencia.nombre }],
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Guardar',
-          handler: (data) => {
-            const nombre = (data?.nombre || '').trim();
-            if (!nombre) return false;
-            this._game_.renombrarCompetencia(this.competencia, nombre);
-            this.cargar();
-            return true;
-          }
-        }
-      ]
-    });
-    await alert.present();
-  }
-
   irAConfiguracion() {
     this.router.navigate(['/competencia-config'], { queryParams: { id: this.competencia.id } });
   }
@@ -266,6 +245,82 @@ export class CompetenciaPage implements OnInit {
 
   copiarPartido(index: number) {
     this._game_.copiarPartido(index);
+  }
+
+  // Toma los partidos finalizados de la competencia y arma, por grupo (o
+  // una tabla general si no hay grupos creados), la tabla de posiciones
+  // completa: PJ, PG, PP, sets y puntos a favor/en contra, y el puntaje que
+  // define el orden (ya calculado según la config de puntos/desempate de
+  // la competencia). Los partidos sin grupo (fase eliminatoria manual) no
+  // entran en ninguna tabla. Mismo patrón de alert con HTML libre que usa
+  // mostrarResumenPartido() en GameService.
+  async verResultados() {
+    const tablas = this._game_.resultadosCompetencia(this.competencia);
+    if (!tablas.length) {
+      const alert = await this.alertController.create({
+        header: 'Resultados',
+        message: 'Aún no hay partidos finalizados en esta competencia.',
+        buttons: ['Entendido']
+      });
+      await alert.present();
+      return;
+    }
+
+    const escapeHtml = (texto: string) => texto
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    const estiloEncabezado = 'padding: 6px 4px; text-align: center; font-size: 10px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: rgba(var(--ion-color-dark-rgb), 0.4); white-space: nowrap; overflow: hidden;';
+    const estiloCelda = 'padding: 6px 4px; text-align: center; font-size: 12px;';
+    const estiloCeldaEquipo = 'padding: 6px 4px; text-align: left; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+    const filaBorde = 'border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);';
+
+    const tablasHtml = tablas.map(tabla => {
+      const filas = tabla.filas.map((f: any, i: number) => `
+        <tr>
+          <td style="${estiloCelda} ${i > 0 ? filaBorde : ''}">${i + 1}</td>
+          <td style="${estiloCeldaEquipo} ${i > 0 ? filaBorde : ''}">${escapeHtml(f.nombre)}</td>
+          <td style="${estiloCelda} ${i > 0 ? filaBorde : ''}">${f.pj}</td>
+          <td style="${estiloCelda} ${i > 0 ? filaBorde : ''}">${f.pg}</td>
+          <td style="${estiloCelda} ${i > 0 ? filaBorde : ''}">${f.pp}</td>
+          <td style="${estiloCelda} ${i > 0 ? filaBorde : ''}">${f.setsFavor}-${f.setsContra}</td>
+          <td style="${estiloCelda} ${i > 0 ? filaBorde : ''}">${f.puntosFavor}-${f.puntosContra}</td>
+          <td style="${estiloCelda} ${i > 0 ? filaBorde : ''} font-weight: 700; color: var(--ion-color-primary);">${f.puntos}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <div style="margin-top: 16px;">
+          <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px;">${escapeHtml(tabla.nombre)}</div>
+          <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+            <tr>
+              <th style="${estiloEncabezado} width: 7%;">#</th>
+              <th style="${estiloEncabezado} width: 27%; text-align: left;">Equipo</th>
+              <th style="${estiloEncabezado} width: 9%;">PJ</th>
+              <th style="${estiloEncabezado} width: 9%;">PG</th>
+              <th style="${estiloEncabezado} width: 9%;">PP</th>
+              <th style="${estiloEncabezado} width: 13%;">Sets</th>
+              <th style="${estiloEncabezado} width: 16%;">Puntos</th>
+              <th style="${estiloEncabezado} width: 10%;">Pts</th>
+            </tr>
+            ${filas}
+          </table>
+        </div>
+      `;
+    }).join('');
+
+    const alert = await this.alertController.create({
+      cssClass: 'no-padding-header no-padding-message alert-resultados',
+      htmlAttributes: {
+        innerHTML: `
+          <h2 class="alert-title sc-ion-alert-ios" style="text-align: center; padding-top: 12px;">Resultados</h2>
+          <div style="padding: 4px 16px 12px;">${tablasHtml}</div>
+        `
+      },
+      buttons: ['Cerrar']
+    });
+    await alert.present();
   }
 
   eliminarPartido(index: number) {

@@ -23,6 +23,12 @@ export class AppComponent {
 
   async init(){
     await this.showSplashScreen();
+    // El splash nativo se muestra por encima de todo (incluida la barra de
+    // estado) y, al ocultarse, la deja en su color por defecto en vez del
+    // que ThemeService ya había pedido al arrancar. Se vuelve a pedir acá,
+    // justo después de que el splash se oculta, para que quede como
+    // corresponde en vez de lo que dejó la transición del splash.
+    await this.themeService.aplicarBarraDeEstado();
     await this.enableKeepAwake();
     this.initBackButton();
     this.initPopstateTrap();
