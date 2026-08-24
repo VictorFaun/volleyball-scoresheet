@@ -7,12 +7,25 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <!-- Transparente de entrada (no depende de que el plugin de JS llegue
+             a correr): la barra de estado muestra lo que el WebView pinte
+             detrás (ver body en global.scss), en vez de heredar un color
+             fijo del tema nativo. android:statusBarColor gana por sobre el
+             mapeo legacy de colorPrimaryDark, así que esto es lo que manda. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- MainActivity usa AppTheme.NoActionBarLaunch (ver AndroidManifest.xml),
+             que hereda de este estilo y NO de "AppTheme" de más arriba -son
+             ramas separadas del mismo nombre-, así que el transparente tiene
+             que estar acá para que de verdad se aplique en tiempo de ejecución. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
 
     <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">

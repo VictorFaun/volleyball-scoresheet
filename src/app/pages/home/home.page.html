@@ -104,6 +104,26 @@
       <ion-toggle [checked]="themeService.darkMode" (ionChange)="themeService.setDarkMode($event.detail.checked)"></ion-toggle>
     </div>
 
+    <div class="card-row" style="cursor: default; flex-direction: column; align-items: stretch;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <ion-icon name="text-outline"></ion-icon>
+        <div class="card-row-texto">
+          <p class="card-row-titulo">Tamaño de letra</p>
+          <p class="card-row-subtitulo">{{themeService.nivelesTamanoLetra[themeService.nivelTamanoLetra].etiqueta}}</p>
+        </div>
+      </div>
+      <div class="selector-tamano-letra">
+        <button
+          *ngFor="let nivel of themeService.nivelesTamanoLetra; let i = index"
+          type="button"
+          class="opcion-tamano-letra"
+          [class.opcion-tamano-letra-seleccionada]="themeService.nivelTamanoLetra === i"
+          [style.font-size.px]="14 + i * 3"
+          (click)="themeService.setNivelTamanoLetra(i)"
+        >A</button>
+      </div>
+    </div>
+
     <div class="card-row" style="cursor: default; align-items: flex-start;">
       <ion-icon name="server-outline" style="margin-top: 2px;"></ion-icon>
       <div class="card-row-texto">
@@ -112,6 +132,29 @@
           <span style="font-size: 12px; color: rgba(var(--color-4-rgb), 0.5);">{{almacenamientoUsadoTexto}} de {{almacenamientoTotalTexto}}</span>
         </div>
         <ion-progress-bar [value]="almacenamientoFraccion" [color]="almacenamientoFraccion > 0.85 ? 'danger' : 'primary'" style="margin-top: 10px; border-radius: 4px;"></ion-progress-bar>
+      </div>
+    </div>
+
+    <div class="card-row" style="cursor: default; flex-direction: column; align-items: stretch;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <div class="card-row-texto">
+          <p class="card-row-titulo">Acerca de la app</p>
+        </div>
+      </div>
+      <div class="lista-info-app">
+        <div class="fila-info-app">
+          <span>Nombre</span>
+          <span>{{nombreApp}}</span>
+        </div>
+        <div class="fila-info-app">
+          <span>Plataforma</span>
+          <span>{{plataformaApp}}</span>
+        </div>
+        <div class="fila-info-app" *ngIf="versionApp">
+          <span>Versión</span>
+          <span>{{versionApp}}<ng-container *ngIf="buildApp"> ({{buildApp}})</ng-container></span>
+        </div>
       </div>
     </div>
   </div>

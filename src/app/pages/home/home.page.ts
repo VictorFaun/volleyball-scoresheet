@@ -5,6 +5,8 @@ import { GameService } from 'src/app/services/game/game.service';
 import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 import { mapearPartidoParaVista, PartidoVista } from 'src/app/services/game/partido-view.util';
 import { ThemeService } from 'src/app/services/theme/theme.service';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 
 interface CompetenciaResumen {
   competencia: any;
@@ -37,6 +39,15 @@ export class HomePage implements OnInit {
   almacenamientoTotalTexto = '';
   almacenamientoFraccion = 0;
 
+  // Info de la app para el recuadro "Acerca de" en Ajustes. La versión/build
+  // vienen de App.getInfo() (versionName/CFBundleShortVersionString
+  // empaquetado), que solo existe en un build nativo instalado; en web
+  // versionApp queda vacío y esa fila no se muestra (ver home.page.html).
+  plataformaApp = '';
+  versionApp = '';
+  buildApp: string | null = null;
+  nombreApp = 'Scoresheets';
+
   constructor(
     private _game_: GameService,
     private alertController: AlertController,
@@ -45,6 +56,26 @@ export class HomePage implements OnInit {
     public themeService: ThemeService
   ) { }
   ngOnInit(): void {
+    this.cargarInfoApp();
+  }
+
+  async cargarInfoApp() {
+    const plataforma = Capacitor.getPlatform();
+    this.plataformaApp = plataforma === 'ios' ? 'iOS' : plataforma === 'android' ? 'Android' : 'Web';
+
+    // En web no existe un "instalado" con versión propia (App.getInfo() es
+    // nativo), así que ahí simplemente no se muestra la fila de Versión
+    // (ver *ngIf="versionApp" en home.page.html) en vez de inventar un valor.
+    if (!Capacitor.isNativePlatform()) return;
+
+    try {
+      const info = await App.getInfo();
+      this.nombreApp = info.name;
+      this.versionApp = info.version;
+      this.buildApp = info.build;
+    } catch (error) {
+      console.error('Error al leer App.getInfo():', error);
+    }
   }
 
   async new_game(){

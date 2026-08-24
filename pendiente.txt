@@ -4,5 +4,3 @@
 
 - mover partidos entre fecha
 - al editar jugadores que guarde un historial de ediciones y asi en caso de error se pueda revisar
-
--agregar selector de color en competencia para pintarla y agregar iconos a competencias

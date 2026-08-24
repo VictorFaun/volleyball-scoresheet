@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mismo azul que usa ion-color-primary en variables.scss. No existía
+         este archivo antes: colorPrimary/colorPrimaryDark/colorAccent en
+         styles.xml quedaban resueltos por algún valor por defecto heredado
+         (probablemente negro), no por algo de esta app. -->
+    <color name="colorPrimary">#3B82F6</color>
+    <color name="colorPrimaryDark">#1E3A8A</color>
+    <color name="colorAccent">#3B82F6</color>
+</resources>
