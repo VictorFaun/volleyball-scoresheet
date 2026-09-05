@@ -2,11 +2,11 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { LocalstorageService } from '../bd/localstorage.service';
-import { Directory, Filesystem } from '@capacitor/filesystem';
+import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
 import { Clipboard } from '@capacitor/clipboard';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from 'pdf-lib';
 import { mapearPartidoParaVista } from './partido-view.util';
 
 @Injectable({
@@ -1966,91 +1966,436 @@ export class GameService {
     }
   }
 
+  // ==========================================================================
+  // EXPORTAR PLANILLA A PDF (formato "International Scoresheet" FIVB)
+  // ==========================================================================
+  // Las coordenadas de esta sección fueron calibradas visualmente contra las
+  // plantillas reales (assets/planilla_3.pdf y planilla_5.pdf), que comparten
+  // el mismo diseño: planilla_5 es igual a planilla_3 pero con una fila extra
+  // de sets (altura 112.5pt) insertada entre la cabecera y el bloque inferior.
+  // Por eso la planilla de 5 sets reutiliza exactamente las mismas coordenadas,
+  // sumando ese offset a la cabecera y a la fila de sets 1-2, y usando sin
+  // offset el patrón de sets 1-2 para los sets 3-4, y el patrón del set
+  // decisivo + bloque inferior para el set 5.
+  private readonly PLANILLA_OFFSET_5_SETS = 112.5;
+  private readonly PLANILLA_AZUL = () => rgb(0 / 255, 91 / 255, 172 / 255);
+
   async completarPlanilla(partido: any) {
-    console.log(partido);
-
-    // 1. Validar si el partido es de 3 sets como pide la regla
-    if (partido.numero_sets !== 3) {
-      try {
-
-        const urlPlantilla = 'assets/planilla_5.pdf';
-        const pdfBytesPlantilla = await fetch(urlPlantilla).then(res => res.arrayBuffer());
-
-        if (!pdfBytesPlantilla) throw new Error('No se pudo cargar la plantilla PDF.');
-
-        const pdfDoc = await PDFDocument.load(pdfBytesPlantilla);
-        const paginas = pdfDoc.getPages();
-        const primeraPagina = paginas[0];
-
-        //completar partido 5 sets
-
-        const pdfBytesModificado = await pdfDoc.save();
-        this.descargarPdf(pdfBytesModificado, `planilla_partido_${partido.numero_partido || 'final'}.pdf`);
-      } catch (error) {
-        console.error('Error procesando la planilla PDF:', error);
-      }
-
-      return;
-    }
-
     try {
-      const urlPlantilla = 'assets/planilla_3.pdf';
+      const es3Sets = partido.numero_sets === 3;
+      const urlPlantilla = es3Sets ? 'assets/planilla_3.pdf' : 'assets/planilla_5.pdf';
       const pdfBytesPlantilla = await fetch(urlPlantilla).then(res => res.arrayBuffer());
-
       if (!pdfBytesPlantilla) throw new Error('No se pudo cargar la plantilla PDF.');
 
       const pdfDoc = await PDFDocument.load(pdfBytesPlantilla);
-      const paginas = pdfDoc.getPages();
-      const primeraPagina = paginas[0];
+      const pagina = pdfDoc.getPages()[0];
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-      // =========================================================================
-      // 1. CABECERA PRINCIPAL (Dinámica desde el objeto partido)
-      // =========================================================================
+      const H = es3Sets ? 0 : this.PLANILLA_OFFSET_5_SETS;
+      // Origen = inicio de la columna "I" de titulares (no el borde de la caja:
+      // a la izquierda de eso va la franja de etiquetas "Team line-up" + el
+      // dígito grande del N° de set, que no se repite en la segunda caja).
+      const BOX1_X = 139.9, BOX2_X = 515.0;
 
+      const equipoA = [partido.equipo_1, partido.equipo_2].find((e: any) => e?.lado === 'A');
+      const equipoB = [partido.equipo_1, partido.equipo_2].find((e: any) => e?.lado === 'B');
+      const nombreA = equipoA?.nombre || '';
+      const nombreB = equipoB?.nombre || '';
 
-      // Nombre de la Competencia, Ciudad y Código de País
-      primeraPagina.drawText(partido.competicion || '', { x: 140, y: 490, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-      primeraPagina.drawText(partido.ciudad || '', { x: 60, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-      primeraPagina.drawText(partido.pais === 'chile' ? 'CHL' : (partido.pais || ''), { x: 300, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      this.dibujarCabeceraPlanilla(pagina, font, partido, equipoA, equipoB, H);
 
-      // Número de Partido
-      if (partido.numero_partido > 10) {
+      // planilla_3.pdf (imagen escaneada) y planilla_5.pdf (PDF vectorial) NO
+      // comparten el mismo layout absoluto pese a verse casi iguales, así que
+      // cada plantilla usa su propio "top" medido directamente contra su
+      // archivo. Dentro de una misma plantilla, la fila de sets 1-2 (y 3-4 en
+      // la de 5 sets) sí comparte el mismo patrón, solo que la de 5 sets
+      // agrega la cabecera desplazada por H.
+      const topNormal = es3Sets ? 440 : 431;
+      const topDecisivo = es3Sets ? 310 : 292;
 
-        primeraPagina.drawText(String(partido.numero_partido || ''), { x: 312, y: 518 - 57, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+      this.dibujarSetPlanilla(pagina, font, partido.set_1, BOX1_X, topNormal + H, false, nombreA, nombreB, es3Sets);
+      this.dibujarSetPlanilla(pagina, font, partido.set_2, BOX2_X, topNormal + H, false, nombreA, nombreB, es3Sets);
+      if (!es3Sets) {
+        this.dibujarSetPlanilla(pagina, font, partido.set_3, BOX1_X, topNormal, false, nombreA, nombreB, es3Sets);
+        this.dibujarSetPlanilla(pagina, font, partido.set_4, BOX2_X, topNormal, false, nombreA, nombreB, es3Sets);
+        this.dibujarSetPlanilla(pagina, font, partido.set_5, BOX1_X, topDecisivo, true, nombreA, nombreB, es3Sets);
       } else {
-        primeraPagina.drawText(String('0'), { x: 312, y: 518 - 57, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-        primeraPagina.drawText(String(partido.numero_partido || ''), { x: 325, y: 518 - 57, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
+        this.dibujarSetPlanilla(pagina, font, partido.set_3, BOX1_X, topDecisivo, true, nombreA, nombreB, es3Sets);
       }
 
-      // Fecha (D / M / Y)
-      if (partido.fecha) {
-        const [d, m, a] = partido.fecha.split('/');
-        primeraPagina.drawText(d || '', { x: 364, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-        primeraPagina.drawText(m || '', { x: 386, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-        primeraPagina.drawText(a || '', { x: 411, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-      }
+      this.dibujarRosterPlanilla(pagina, font, partido);
+      this.dibujarSancionesPlanilla(pagina, font, partido);
+      await this.dibujarAprobacionYFirmasPlanilla(pdfDoc, pagina, font, fontBold, partido);
+      this.dibujarResultadosPlanilla(pagina, font, fontBold, partido, nombreA, nombreB);
 
-      // Hora de programación de la planilla (H / mn)
-      if (partido.hora) {
-        const [h, mn] = partido.hora.split(':');
-        primeraPagina.drawText(h || '', { x: 470, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-        primeraPagina.drawText(mn || '', { x: 495, y: 518 - 44, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-      }
-
-      // Nombres de los Equipos (Cabecera central A vs B)
-      const equipoPlanillaA = [partido.equipo_1, partido.equipo_2].find((e: any) => e?.lado === 'A');
-      const equipoPlanillaB = [partido.equipo_1, partido.equipo_2].find((e: any) => e?.lado === 'B');
-      primeraPagina.drawText('A', { x: 358, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-      primeraPagina.drawText(equipoPlanillaA?.nombre || '', { x: 373, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-      primeraPagina.drawText('B', { x: 500, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-      primeraPagina.drawText(equipoPlanillaB?.nombre || '', { x: 455, y: 518 - 67, size: 10, color: rgb(0 / 255, 91 / 255, 172 / 255) });
-
-      // 5. Compilar y descargar el documento resultante
       const pdfBytesModificado = await pdfDoc.save();
       this.descargarPdf(pdfBytesModificado, `planilla_partido_${partido.numero_partido || 'final'}.pdf`);
-
     } catch (error) {
       console.error('Error procesando la planilla PDF:', error);
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'No se pudo generar la planilla PDF. Revisa la consola para más detalles.',
+        buttons: ['Aceptar']
+      });
+      await alert.present();
+    }
+  }
+
+  // Dibuja texto solo si hay valor (para no ensuciar la plantilla con "null"/"undefined").
+  // Todo lo que se completa en la planilla se dibuja en el mismo azul de
+  // lápiz/pluma (como si el árbitro/anotador lo hubiese escrito a mano),
+  // salvo que se pida explícitamente otro color.
+  private txtPlanilla(pagina: PDFPage, font: PDFFont, valor: any, x: number, y: number, opts: { size?: number, bold?: boolean, fontBold?: PDFFont, color?: any } = {}) {
+    if (valor === null || valor === undefined || valor === '') return;
+    pagina.drawText(String(valor), { x, y, size: opts.size || 7, font: opts.bold && opts.fontBold ? opts.fontBold : font, color: opts.color || this.PLANILLA_AZUL() });
+  }
+
+  private dibujarCabeceraPlanilla(pagina: PDFPage, font: PDFFont, partido: any, equipoA: any, equipoB: any, H: number) {
+    const AZ = this.PLANILLA_AZUL();
+    const t = (v: any, x: number, y: number, size = 10) => this.txtPlanilla(pagina, font, v, x, y + H, { size, color: AZ });
+
+    t(partido.competicion, 140, 490);
+    t(partido.ciudad, 60, 474);
+    t(partido.pais ? String(partido.pais).slice(0, 3).toUpperCase() : '', 300, 474);
+    t(partido.gimnasio, 60, 461);
+
+    if (partido.numero_partido > 10) {
+      t(partido.numero_partido, 312, 461);
+    } else if (partido.numero_partido !== null && partido.numero_partido !== undefined) {
+      t('0', 312, 461);
+      t(partido.numero_partido, 325, 461);
+    }
+
+    if (partido.fecha) {
+      const [d, m, a] = partido.fecha.split('/');
+      t(d, 364, 474); t(m, 386, 474); t(a, 411, 474);
+    }
+    if (partido.hora) {
+      const [h, mn] = partido.hora.split(':');
+      t(h, 470, 474); t(mn, 495, 474);
+    }
+
+    t('A', 358, 451);
+    t(equipoA?.nombre, 373, 451);
+    t('B', 500, 451);
+    t(equipoB?.nombre, 455, 451);
+
+    // Division / Categoria: texto libre, se marca la casilla si calza con las
+    // opciones fijas de la plantilla (Men/Women, Senior/Junior/Youth).
+    const div = String(partido.division || '').toLowerCase();
+    if (/mujer|dama|fem|women/.test(div)) this.txtPlanilla(pagina, font, 'X', 147, 447 + H, { size: 8 });
+    else if (/hombre|var[oó]n|masc|men/.test(div)) this.txtPlanilla(pagina, font, 'X', 88, 447 + H, { size: 8 });
+
+    const cat = String(partido.categoria || '').toLowerCase();
+    if (/senior|mayor|adult/.test(cat)) this.txtPlanilla(pagina, font, 'X', 252, 447 + H, { size: 8 });
+    else if (/junior/.test(cat)) this.txtPlanilla(pagina, font, 'X', 307, 447 + H, { size: 8 });
+    else if (/youth|infantil|menor/.test(cat)) this.txtPlanilla(pagina, font, 'X', 367, 447 + H, { size: 8 });
+  }
+
+  // Coordenadas x de las 6 columnas de titulares (I..VI) y las 4 bandas de la
+  // grilla de puntos, para el lado A y el lado B de una caja de set, dado el
+  // origen x de esa caja (BOX1_X para el set izquierdo de la fila, BOX2_X
+  // para el derecho).
+  private columnasSetPlanilla(origen: number) {
+    return {
+      IVI_A: [11.8, 35.35, 58.85, 82.4, 105.95, 129.5].map(v => origen + v),
+      PTS_A: [145.6, 154.3, 163.0, 171.7].map(v => origen + v),
+      IVI_B: [187.5, 211.05, 234.6, 258.15, 281.65, 305.2].map(v => origen + v),
+      PTS_B: [321.3, 330.0, 338.7, 347.4].map(v => origen + v),
+    };
+  }
+
+  // planilla_3.pdf (imagen escaneada) y planilla_5.pdf (vectorial) no
+  // comparten el mismo layout absoluto pese a verse casi iguales, así que la
+  // altura de cabecera y de la caja se midieron por separado contra cada
+  // archivo (con recortes con grilla superpuestos sobre el PDF real).
+  private coordenadasFilaSetPlanilla(top: number, filasPuntos: number, es3Sets: boolean) {
+    const esDecisivo = filasPuntos !== 12;
+    const yLabel = top - 6;
+    const yLabelSub = top - 12;
+    // Alto total de cabecera (fila START/TEAM/A/POINTS + fila I..VI).
+    const headerTotal = es3Sets ? 30 : (esDecisivo ? 27 : 32);
+    // La fila 1 de la grilla de POINTS comparte la banda de "I..VI" (queda
+    // una fila más arriba que la primera fila de datos del "team line-up").
+    const pointsTop = top - headerTotal / 2;
+    const dataTop = top - headerTotal;
+    const yTitular = dataTop - 5.5;
+    const ySubJugador = dataTop - 16.4;
+    const ySubPuntaje = dataTop - 27.4;
+    // Alto total de la caja (borde superior a borde inferior).
+    const alturaCaja = es3Sets ? (esDecisivo ? 110 : 130) : (esDecisivo ? 93.2 : 119.8);
+    const bottom = top - alturaCaja;
+    const alturaDatos = pointsTop - bottom;
+    const nFilas = filasPuntos + 3; // + fila "T" (tiempos) + 2 filas de reserva
+    const rowH = alturaDatos / nFilas;
+    const filaPunto = (n: number) => pointsTop - (n - 0.5) * rowH;
+    const yTiempo = pointsTop - (filasPuntos + 0.5) * rowH;
+    return { yLabel, yLabelSub, yTitular, ySubJugador, ySubPuntaje, filaPunto, yTiempo };
+  }
+
+  private fmtHoraPlanilla(iso: any): { hh: string, mm: string } | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    return { hh: String(d.getHours()).padStart(2, '0'), mm: String(d.getMinutes()).padStart(2, '0') };
+  }
+
+  // Puntaje acumulado de cada equipo contando los logs desde el final del
+  // arreglo (el más antiguo) hasta el índice `idxDesdeElFinal` inclusive
+  // (los logs se guardan más nuevo primero, ver clean_log()/punto()).
+  private puntajeEnIndicePlanilla(set: any, idxDesdeElFinal: number): { A: number, B: number } {
+    const logs = set.logs || [];
+    let a = 0, b = 0;
+    for (let i = logs.length - 1; i >= idxDesdeElFinal; i--) {
+      const l = logs[i];
+      if (l.tipo === 1) { if (l.equipo === 'A') a++; else b++; }
+      if (l.tipo === 7) { if (l.equipo === 'A') b++; else a++; }
+    }
+    return { A: a, B: b };
+  }
+
+  // Para cada equipo, determina en qué columna (posición inicial I..VI, por
+  // índice de la alineación de partida) ocurrió cada sustitución (tipo 2) que
+  // no haya sido deshecha (tipo 3), y el marcador en ese momento.
+  private construirSustitucionesPlanilla(set: any, alineacionInicial: { A: number[], B: number[] }) {
+    const resultado: any = { A: {}, B: {} };
+    for (const equipo of ['A', 'B'] as const) {
+      const ocupante = [...alineacionInicial[equipo]];
+      const logsCronologicos = [...(set.logs || [])].reverse();
+      const deshechos = new Set<string>();
+      logsCronologicos.forEach((l: any) => { if (l.tipo === 3 && l.equipo === equipo) deshechos.add(`${l.jugador}-${l.cambio}`); });
+      for (const l of logsCronologicos) {
+        if (l.tipo === 2 && l.equipo === equipo) {
+          const key = `${l.jugador}-${l.cambio}`;
+          if (deshechos.has(key)) continue;
+          const idx = ocupante.findIndex(n => n === l.jugador);
+          if (idx !== -1) {
+            const marcador = this.puntajeEnIndicePlanilla(set, set.logs.indexOf(l));
+            resultado[equipo][idx] = { entra: l.cambio, puntaje: marcador };
+            ocupante[idx] = l.cambio;
+          }
+        }
+      }
+    }
+    return resultado;
+  }
+
+  private dibujarSetPlanilla(pagina: PDFPage, font: PDFFont, set: any, origenX: number, top: number, esDecisivo: boolean, nombreA: string, nombreB: string, es3Sets: boolean) {
+    if (!set) return;
+    const cols = this.columnasSetPlanilla(origenX);
+    const filasPuntos = esDecisivo ? 10 : 12;
+    const rc = this.coordenadasFilaSetPlanilla(top, filasPuntos, es3Sets);
+
+    const hi = this.fmtHoraPlanilla(set.hora_inicio);
+    const hf = this.fmtHoraPlanilla(set.hora_fin);
+    if (hi) { this.txtPlanilla(pagina, font, hi.hh, origenX + 26, rc.yLabelSub, { size: 5.5 }); this.txtPlanilla(pagina, font, hi.mm, origenX + 38, rc.yLabelSub, { size: 5.5 }); }
+    if (hf) { this.txtPlanilla(pagina, font, hf.hh, origenX + 293, rc.yLabelSub, { size: 5.5 }); this.txtPlanilla(pagina, font, hf.mm, origenX + 305, rc.yLabelSub, { size: 5.5 }); }
+
+    // El lado izquierdo/derecho de la caja depende de qué equipo quedó a la
+    // izquierda en ese set (set.lado_izquierda).
+    const equipoIzq = set.lado_izquierda === 'A' ? nombreA : nombreB;
+    const equipoDer = set.lado_izquierda === 'A' ? nombreB : nombreA;
+    this.txtPlanilla(pagina, font, equipoIzq, origenX + 78, rc.yLabel, { size: 6.5 });
+    this.txtPlanilla(pagina, font, equipoDer, origenX + 210, rc.yLabel, { size: 6.5 });
+
+    const alinA: number[] = set.alineacion_a || [];
+    const alinB: number[] = set.alineacion_b || [];
+    cols.IVI_A.forEach((x, i) => this.txtPlanilla(pagina, font, alinA[i], x, rc.yTitular, { size: 6.5 }));
+    cols.IVI_B.forEach((x, i) => this.txtPlanilla(pagina, font, alinB[i], x, rc.yTitular, { size: 6.5 }));
+
+    const subs = this.construirSustitucionesPlanilla(set, { A: alinA, B: alinB });
+    for (const [equipo, colXs] of [['A', cols.IVI_A], ['B', cols.IVI_B]] as const) {
+      for (let i = 0; i < 6; i++) {
+        const s = subs[equipo][i];
+        if (s) {
+          this.txtPlanilla(pagina, font, s.entra, colXs[i], rc.ySubJugador, { size: 6 });
+          this.txtPlanilla(pagina, font, s.puntaje[equipo], colXs[i], rc.ySubPuntaje, { size: 6 });
+        }
+      }
+    }
+
+    // Grilla de puntos: numeración secuencial simple por equipo (1,2,3,...),
+    // en la fila correspondiente al resto de dividir por la cantidad de filas
+    // de la caja, avanzando de banda cuando se supera esa cantidad (igual al
+    // esquema "1 13 25 37" / "1 11 21" preimpreso en la plantilla).
+    const logsCronologicos = [...(set.logs || [])].reverse();
+    let scoreA = 0, scoreB = 0;
+    const escribirPunto = (equipo: 'A' | 'B', n: number, cols4: number[]) => {
+      const banda = Math.floor((n - 1) / filasPuntos);
+      const fila = ((n - 1) % filasPuntos) + 1;
+      this.txtPlanilla(pagina, font, n, cols4[Math.min(banda, cols4.length - 1)], rc.filaPunto(fila), { size: 4.3 });
+    };
+    for (const l of logsCronologicos) {
+      if (l.tipo === 1) {
+        if (l.equipo === 'A') { scoreA++; escribirPunto('A', scoreA, cols.PTS_A); }
+        else { scoreB++; escribirPunto('B', scoreB, cols.PTS_B); }
+      } else if (l.tipo === 7) {
+        // Tarjeta roja: punto para el equipo contrario al sancionado.
+        if (l.equipo === 'A') { scoreB++; escribirPunto('B', scoreB, cols.PTS_B); }
+        else { scoreA++; escribirPunto('A', scoreA, cols.PTS_A); }
+      } else if (l.tipo === 4) {
+        const x = l.equipo === 'A' ? cols.PTS_A[0] : cols.PTS_B[0];
+        this.txtPlanilla(pagina, font, `${scoreA}:${scoreB}`, x - 2, rc.yTiempo, { size: 4.3 });
+      }
+    }
+  }
+
+  private dibujarRosterPlanilla(pagina: PDFPage, font: PDFFont, partido: any) {
+    const equipoA = partido.equipo_1?.lado === 'A' ? partido.equipo_1 : partido.equipo_2;
+    const equipoB = partido.equipo_1?.lado === 'B' ? partido.equipo_1 : partido.equipo_2;
+    const jugadoresA: any[] = equipoA?.jugadores || [];
+    const jugadoresB: any[] = equipoB?.jugadores || [];
+    const startY = 273, rowH = 13;
+
+    const etiqueta = (j: any) => (j.nombre || '') + (j.capitan ? ' (C)' : '') + (j.libero ? ' (L)' : '');
+    jugadoresA.forEach((j, i) => {
+      const y = startY - i * rowH;
+      this.txtPlanilla(pagina, font, j.numero, 801, y, { size: 6 });
+      this.txtPlanilla(pagina, font, etiqueta(j), 815, y, { size: 6 });
+    });
+    jugadoresB.forEach((j, i) => {
+      const y = startY - i * rowH;
+      this.txtPlanilla(pagina, font, j.numero, 848, y, { size: 6 });
+      this.txtPlanilla(pagina, font, etiqueta(j), 862, y, { size: 6 });
+    });
+
+    const liberosA = jugadoresA.filter(j => j.libero).map(j => j.numero).join(', ');
+    const liberosB = jugadoresB.filter(j => j.libero).map(j => j.numero).join(', ');
+    this.txtPlanilla(pagina, font, liberosA, 805, 140, { size: 6 });
+    this.txtPlanilla(pagina, font, liberosB, 850, 140, { size: 6 });
+
+    const filasOficiales: [string, number][] = [
+      ['entrenador', 120],
+      ['primer_asistente', 109],
+      ['segundo_asistente', 98],
+      ['fisioterapeuta', 87],
+      ['medico', 76],
+    ];
+    for (const [campo, y] of filasOficiales) {
+      const valor = [equipoA?.[campo], equipoB?.[campo]].filter(Boolean).join(' / ');
+      this.txtPlanilla(pagina, font, valor, 805, y, { size: 5.5 });
+    }
+  }
+
+  private dibujarSancionesPlanilla(pagina: PDFPage, font: PDFFont, partido: any) {
+    const columnaPorTipo: Record<number, number> = { 5: 25, 6: 68, 7: 108, 9: 148 }; // W,P,E,D
+    let fila = 0;
+    for (let n = 1; n <= 5; n++) {
+      const set = partido[`set_${n}`];
+      if (!set) continue;
+      const logsCronologicos = [...(set.logs || [])].reverse();
+      let scoreA = 0, scoreB = 0;
+      for (const l of logsCronologicos) {
+        if (l.tipo === 1) { if (l.equipo === 'A') scoreA++; else scoreB++; }
+        if (l.tipo === 7) { if (l.equipo === 'A') scoreB++; else scoreA++; }
+        if (columnaPorTipo[l.tipo]) {
+          const y = 155 - fila * 13.5;
+          this.txtPlanilla(pagina, font, l.jugador, columnaPorTipo[l.tipo], y, { size: 6 });
+          this.txtPlanilla(pagina, font, l.equipo, 185, y, { size: 6 });
+          this.txtPlanilla(pagina, font, n, 215, y, { size: 6 });
+          this.txtPlanilla(pagina, font, `${scoreA}:${scoreB}`, 250, y, { size: 6 });
+          fila++;
+        }
+      }
+    }
+
+    let improcedenteA = 0, improcedenteB = 0;
+    for (let n = 1; n <= 5; n++) {
+      const logs = partido[`set_${n}`]?.logs || [];
+      improcedenteA += logs.filter((l: any) => l.tipo === 8 && l.equipo === 'A').length;
+      improcedenteB += logs.filter((l: any) => l.tipo === 8 && l.equipo === 'B').length;
+    }
+    this.txtPlanilla(pagina, font, improcedenteA || '', 200, 193, { size: 7 });
+    this.txtPlanilla(pagina, font, improcedenteB || '', 245, 193, { size: 7 });
+  }
+
+  // Intenta incrustar la imagen PNG de una firma guardada en el filesystem
+  // del dispositivo. Si no existe o falla la lectura, no dibuja nada.
+  private async dibujarFirmaPlanilla(pdfDoc: PDFDocument, pagina: PDFPage, nombreArchivo: string, x: number, y: number, ancho: number, alto: number) {
+    if (!nombreArchivo) return;
+    try {
+      const contenido = await Filesystem.readFile({ path: nombreArchivo, directory: Directory.Data, encoding: Encoding.UTF8 });
+      const binario = atob(contenido.data as string);
+      const bytes = new Uint8Array(binario.length);
+      for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+      const imagen = await pdfDoc.embedPng(bytes);
+      const escala = Math.min(ancho / imagen.width, alto / imagen.height);
+      pagina.drawImage(imagen, { x, y, width: imagen.width * escala, height: imagen.height * escala });
+    } catch (e) {
+      // Firma no disponible: se deja la casilla en blanco.
+    }
+  }
+
+  private async dibujarAprobacionYFirmasPlanilla(pdfDoc: PDFDocument, pagina: PDFPage, font: PDFFont, fontBold: PDFFont, partido: any) {
+    this.txtPlanilla(pagina, font, partido.primer_arbitro, 335, 112, { size: 6.5 });
+    this.txtPlanilla(pagina, font, partido.segundo_arbitro, 335, 95, { size: 6.5 });
+    this.txtPlanilla(pagina, font, partido.planillero, 335, 78, { size: 6.5 });
+    this.txtPlanilla(pagina, font, partido.asistente_planillero, 335, 62, { size: 6.5 });
+    this.txtPlanilla(pagina, font, partido.primer_banderin, 565, 18, { size: 6 });
+    this.txtPlanilla(pagina, font, partido.segundo_banderin, 620, 18, { size: 6 });
+    this.txtPlanilla(pagina, font, partido.tercer_banderin, 565, 6, { size: 6 });
+    this.txtPlanilla(pagina, font, partido.cuarto_banderin, 620, 6, { size: 6 });
+
+    await this.dibujarFirmaPlanilla(pdfDoc, pagina, partido.firma_primer_arbitro, 530, 108, 90, 14);
+    await this.dibujarFirmaPlanilla(pdfDoc, pagina, partido.firma_segundo_arbitro, 530, 91, 90, 14);
+    await this.dibujarFirmaPlanilla(pdfDoc, pagina, partido.firma_planillero, 530, 74, 90, 14);
+    await this.dibujarFirmaPlanilla(pdfDoc, pagina, partido.firma_asistente_planillero, 530, 58, 90, 14);
+
+    const equipoA = [partido.equipo_1, partido.equipo_2].find((e: any) => e?.lado === 'A');
+    const equipoB = [partido.equipo_1, partido.equipo_2].find((e: any) => e?.lado === 'B');
+    const capitanA = equipoA?.jugadores?.find((j: any) => j.capitan)?.numero;
+    const capitanB = equipoB?.jugadores?.find((j: any) => j.capitan)?.numero;
+    this.txtPlanilla(pagina, font, capitanA, 518, 5, { size: 7 });
+    this.txtPlanilla(pagina, font, capitanB, 592, 5, { size: 7 });
+
+    // Firmas de capitanes, entrenadores (bloque de SIGNATURES junto al roster)
+    await this.dibujarFirmaPlanilla(pdfDoc, pagina, partido.firma_fin_capitan_a || partido.firma_inicio_capitan_a, 805, 38, 40, 12);
+    await this.dibujarFirmaPlanilla(pdfDoc, pagina, partido.firma_fin_capitan_b || partido.firma_inicio_capitan_b, 850, 38, 40, 12);
+    await this.dibujarFirmaPlanilla(pdfDoc, pagina, partido.firma_entrenador_a, 805, 10, 40, 12);
+    await this.dibujarFirmaPlanilla(pdfDoc, pagina, partido.firma_entrenador_b, 850, 10, 40, 12);
+  }
+
+  private dibujarResultadosPlanilla(pagina: PDFPage, font: PDFFont, fontBold: PDFFont, partido: any, nombreA: string, nombreB: string) {
+    this.txtPlanilla(pagina, font, nombreA, 595, 178, { size: 6.5 });
+    this.txtPlanilla(pagina, font, nombreB, 685, 178, { size: 6.5 });
+
+    let ganadosA = 0, ganadosB = 0;
+    let totalMs = 0;
+    for (let n = 1; n <= partido.numero_sets; n++) {
+      const set = partido[`set_${n}`];
+      if (!set) continue;
+      const puntos = this.puntajeEnIndicePlanilla(set, 0);
+      const y = 145 - (n - 1) * 23;
+      const tiemposA = (set.logs || []).filter((l: any) => l.tipo === 4 && l.equipo === 'A').length;
+      const tiemposB = (set.logs || []).filter((l: any) => l.tipo === 4 && l.equipo === 'B').length;
+      const cambiosA = (set.logs || []).filter((l: any) => l.tipo === 2 && l.equipo === 'A').length;
+      const cambiosB = (set.logs || []).filter((l: any) => l.tipo === 2 && l.equipo === 'B').length;
+
+      this.txtPlanilla(pagina, font, tiemposA || '', 575, y, { size: 6 });
+      this.txtPlanilla(pagina, font, cambiosA || '', 605, y, { size: 6 });
+      this.txtPlanilla(pagina, font, set.victoria === 'A' ? 'X' : '', 635, y, { size: 6 });
+      this.txtPlanilla(pagina, font, puntos.A, 655, y, { size: 6 });
+      this.txtPlanilla(pagina, font, puntos.B, 725, y, { size: 6 });
+      this.txtPlanilla(pagina, font, set.victoria === 'B' ? 'X' : '', 750, y, { size: 6 });
+      this.txtPlanilla(pagina, font, cambiosB || '', 770, y, { size: 6 });
+      this.txtPlanilla(pagina, font, tiemposB || '', 782, y, { size: 6 });
+
+      if (set.victoria === 'A') ganadosA++;
+      if (set.victoria === 'B') ganadosB++;
+      if (set.hora_inicio && set.hora_fin) {
+        const inicio = new Date(set.hora_inicio).getTime();
+        const fin = new Date(set.hora_fin).getTime();
+        this.txtPlanilla(pagina, font, Math.round((fin - inicio) / 60000), 703, y, { size: 6 });
+        totalMs += (fin - inicio);
+      }
+    }
+    if (totalMs > 0) this.txtPlanilla(pagina, font, Math.round(totalMs / 60000), 700, 68, { size: 6.5 });
+
+    const ganador = ganadosA > ganadosB ? 'A' : (ganadosB > ganadosA ? 'B' : null);
+    if (ganador) {
+      this.txtPlanilla(pagina, font, ganador === 'A' ? nombreA : nombreB, 613, 25, { size: 7, bold: true, fontBold });
+      this.txtPlanilla(pagina, font, ganador === 'A' ? ganadosB : ganadosA, 740, 25, { size: 8, bold: true, fontBold });
     }
   }
 
