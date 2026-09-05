@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1788620971405,
+  "timestamp": 1788621633074,
   "index": "https://scoresheet.thedifference.pro/index.html",
   "assetGroups": [
     {
@@ -170,7 +170,7 @@
         "https://scoresheet.thedifference.pro/assets/icon/icon-192.png",
         "https://scoresheet.thedifference.pro/assets/icon/icon-512.png",
         "https://scoresheet.thedifference.pro/assets/icon/volleyball.svg",
-        "https://scoresheet.thedifference.pro/assets/manifest.webmanifest",
+        "https://scoresheet.thedifference.pro/assets/manifest.json",
         "https://scoresheet.thedifference.pro/assets/planilla_3.pdf",
         "https://scoresheet.thedifference.pro/assets/planilla_5.pdf",
         "https://scoresheet.thedifference.pro/assets/shapes.svg"
@@ -322,12 +322,12 @@
     "https://scoresheet.thedifference.pro/assets/icon/icon-192.png": "576e1b90e775f1120ef3fdd0425320d1ed5aebed",
     "https://scoresheet.thedifference.pro/assets/icon/icon-512.png": "64eee83ba2ba914a47b185fb2f5ecde50c35a12f",
     "https://scoresheet.thedifference.pro/assets/icon/volleyball.svg": "b570b0a1749b75194c22fa7dec366204b7556dbf",
-    "https://scoresheet.thedifference.pro/assets/manifest.webmanifest": "0d8345ca5293c223a870d6efa6eb5e8dec2d10b7",
+    "https://scoresheet.thedifference.pro/assets/manifest.json": "0d8345ca5293c223a870d6efa6eb5e8dec2d10b7",
     "https://scoresheet.thedifference.pro/assets/planilla_3.pdf": "2fd5dbf8378bad247562e1714a4abd615b457b97",
     "https://scoresheet.thedifference.pro/assets/planilla_5.pdf": "6787780c3e314346b522a0bae55915b961825a7c",
     "https://scoresheet.thedifference.pro/assets/shapes.svg": "638f87e27e6fc7ddfd6e6b262ea70d690f6c7011",
     "https://scoresheet.thedifference.pro/common.40d27714610d5786.js": "782a3ea5233d9f6d2079a5a28929c3653aa43ec2",
-    "https://scoresheet.thedifference.pro/index.html": "9630b4cac7d0460b309424ccfc824376ff48ebdf",
+    "https://scoresheet.thedifference.pro/index.html": "bfc44b4851c413cc254e8e9b72d0949fc2f137c0",
     "https://scoresheet.thedifference.pro/main.7ba7cdfaa8d04906.js": "ed4f5e97158c3469dc32b1520394031c0075dec4",
     "https://scoresheet.thedifference.pro/polyfills.68a05ea0a12fdac7.js": "7234ea2095061d0dc22bc4a7d3da98e06d547237",
     "https://scoresheet.thedifference.pro/runtime.38620d908585f620.js": "17dedd0968a03a26e76056205e9f7343e53b4632",
