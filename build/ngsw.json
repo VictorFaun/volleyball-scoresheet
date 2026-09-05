@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1788621633074,
+  "timestamp": 1788621766260,
   "index": "https://scoresheet.thedifference.pro/index.html",
   "assetGroups": [
     {
@@ -322,7 +322,7 @@
     "https://scoresheet.thedifference.pro/assets/icon/icon-192.png": "576e1b90e775f1120ef3fdd0425320d1ed5aebed",
     "https://scoresheet.thedifference.pro/assets/icon/icon-512.png": "64eee83ba2ba914a47b185fb2f5ecde50c35a12f",
     "https://scoresheet.thedifference.pro/assets/icon/volleyball.svg": "b570b0a1749b75194c22fa7dec366204b7556dbf",
-    "https://scoresheet.thedifference.pro/assets/manifest.json": "0d8345ca5293c223a870d6efa6eb5e8dec2d10b7",
+    "https://scoresheet.thedifference.pro/assets/manifest.json": "b008d551f7985590faac9c45d74d2f974e9f5a72",
     "https://scoresheet.thedifference.pro/assets/planilla_3.pdf": "2fd5dbf8378bad247562e1714a4abd615b457b97",
     "https://scoresheet.thedifference.pro/assets/planilla_5.pdf": "6787780c3e314346b522a0bae55915b961825a7c",
     "https://scoresheet.thedifference.pro/assets/shapes.svg": "638f87e27e6fc7ddfd6e6b262ea70d690f6c7011",
