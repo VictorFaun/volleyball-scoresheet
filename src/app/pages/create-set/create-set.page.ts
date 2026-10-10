@@ -95,14 +95,44 @@ export class CreateSetPage implements OnInit {
     // puede reordenar.
     if (this.bloqueado) return;
 
-    const jugadores = this._game_.obtenerEquipoPorLado(equipo).jugadores;
+    const datosEquipo = this._game_.obtenerEquipoPorLado(equipo);
+    const jugadores = datosEquipo.jugadores || [];
 
     const alineacion = equipo === 'A'
       ? this.set.alineacion_a
       : this.set.alineacion_b;
 
+    // Asigna el jugador a la posición; si ya estaba en otra, la deja vacía.
+    const asignar = (numero: number) => {
+      const indexExistente = alineacion.findIndex((num: any, i: number) => num === numero && i !== pos);
+      if (indexExistente !== -1) alineacion[indexExistente] = false;
+      alineacion[pos] = numero;
+      this._game_.guardar();
+    };
+
+    // Agrega un jugador nuevo al equipo (p. ej. uno que olvidaron anotar)
+    // y lo deja directamente en esta posición.
+    const agregarNuevo = async () => {
+      const nuevo = await this._game_.agregarJugadorRapido(datosEquipo);
+      if (nuevo) asignar(nuevo.numero);
+    };
+
     // Filtrar jugadores que no sean líberos
     const jugadoresFiltrados = jugadores.filter((j: any) => !j.libero);
+
+    if (jugadoresFiltrados.length === 0) {
+      const alertaSinJugadores = await this.alertController.create({
+        header: 'Sin jugadores disponibles',
+        cssClass: 'custom-alert',
+        message: `${datosEquipo.nombre || 'El equipo'} no tiene jugadores (que no sean líberos) para asignar. ¿Deseas agregar un jugador nuevo?`,
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          { text: 'Agregar jugador', handler: () => { agregarNuevo(); } }
+        ]
+      });
+      await alertaSinJugadores.present();
+      return;
+    }
 
     const inputs = jugadoresFiltrados.map((j: any) => ({
       name: `jugador-${j.numero}`,
@@ -122,18 +152,13 @@ export class CreateSetPage implements OnInit {
           role: 'cancel'
         },
         {
+          text: 'Nuevo jugador',
+          handler: () => { agregarNuevo(); }
+        },
+        {
           text: 'Aceptar',
           handler: (selectedValue: any) => {
-            const indexExistente = alineacion.findIndex((num: any, i: number) =>
-              num === selectedValue && i !== pos
-            );
-
-            if (indexExistente !== -1) {
-              alineacion[indexExistente] = false;
-            }
-
-            alineacion[pos] = selectedValue;
-            this._game_.guardar();
+            if (selectedValue !== undefined && selectedValue !== null) asignar(selectedValue);
           }
         }
       ]

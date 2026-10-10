@@ -366,11 +366,34 @@ export class GamePage implements OnInit {
       return;
     }
 
+    const registrarCambio = (numeroEntrante: number) => {
+      const nuevoLog: any = this._game_.clean_log();
+      nuevoLog.tipo = 2;
+      nuevoLog.jugador = jugadorSeleccionado;
+      nuevoLog.cambio = numeroEntrante;
+      nuevoLog.equipo = equipo;
+      nuevoLog.hora = new Date();
+
+      this.logs.unshift(nuevoLog);
+      this.updateLogs();
+      this._game_.guardar();
+    };
+
+    // Agrega al equipo un jugador que no estaba anotado y lo ingresa de
+    // inmediato en el cambio.
+    const agregarNuevo = async () => {
+      const nuevo = await this._game_.agregarJugadorRapido(this._game_.obtenerEquipoPorLado(equipo));
+      if (nuevo) registrarCambio(nuevo.numero);
+    };
+
     if (jugadoresDisponibles.length === 0) {
       const alertaSinOpciones = await this.alertController.create({
         header: 'Sin jugadores disponibles',
-        message: 'No hay jugadores disponibles para realizar el cambio.',
-        buttons: ['Aceptar']
+        message: 'No hay jugadores disponibles para realizar el cambio. ¿Deseas agregar un jugador nuevo?',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          { text: 'Agregar jugador', handler: () => { agregarNuevo(); } }
+        ]
       });
 
       await alertaSinOpciones.present();
@@ -393,21 +416,15 @@ export class GamePage implements OnInit {
           role: 'cancel'
         },
         {
+          text: 'Nuevo jugador',
+          handler: () => { agregarNuevo(); }
+        },
+        {
           text: 'Aceptar',
           handler: (valorSeleccionado: number) => {
             const jugadorValido = jugadoresDisponibles.find((j: any) => j.numero === valorSeleccionado);
             if (!jugadorValido) return;
-
-            const nuevoLog: any = this._game_.clean_log();
-            nuevoLog.tipo = 2;
-            nuevoLog.jugador = jugadorSeleccionado;
-            nuevoLog.cambio = jugadorValido.numero;
-            nuevoLog.equipo = equipo;
-            nuevoLog.hora = new Date();
-
-            this.logs.unshift(nuevoLog);
-            this.updateLogs();
-            this._game_.guardar();
+            registrarCambio(jugadorValido.numero);
           }
         }
       ]
@@ -508,28 +525,46 @@ export class GamePage implements OnInit {
     await alert.present();
   }
 
+  // Primero los jugadores de la alineación inicial (en ese orden) y después
+  // el resto del equipo (banca), ya que la amonestación puede ir a
+  // cualquiera de ellos. "Nuevo jugador" permite agregar uno que no estaba
+  // anotado y amonestarlo de inmediato.
   async seleccionarJugador(equipo: 'A' | 'B', tipoAmonestacion: number, nombreAmonestacion: string) {
-    const jugadores = equipo === 'A' ? this.alineacion_a : this.alineacion_b;
+    const alineacion: number[] = equipo === 'A' ? this.alineacion_a : this.alineacion_b;
     const equipoData = this._game_.obtenerEquipoPorLado(equipo);
-    
-    const inputs = jugadores.map((numeroJugador: number) => {
-      const jugador = equipoData.jugadores.find((j: any) => j.numero === numeroJugador);
-      return {
-        name: 'jugador',
-        type: 'radio',
-        label: `${jugador.numero}${jugador.nombre ? ' - ' + jugador.nombre : ''}`,
-        value: jugador.numero,
-        checked: false
-      };
-    });
+    const plantel: any[] = equipoData?.jugadores || [];
+
+    const enAlineacion = alineacion
+      .map((numero: number) => plantel.find((j: any) => j.numero === numero))
+      .filter((j: any) => !!j);
+    const banca = plantel
+      .filter((j: any) => !alineacion.includes(j.numero))
+      .sort((a: any, b: any) => (a.numero ?? 0) - (b.numero ?? 0));
+
+    const inputs = [...enAlineacion, ...banca].map((jugador: any) => ({
+      name: 'jugador',
+      type: 'radio',
+      label: `${jugador.numero}${jugador.nombre ? ' - ' + jugador.nombre : ''}${alineacion.includes(jugador.numero) ? '' : ' (banca)'}`,
+      value: jugador.numero,
+      checked: false
+    }));
+
+    const agregarNuevo = async () => {
+      const nuevo = await this._game_.agregarJugadorRapido(equipoData);
+      if (nuevo) this.registrarAmonestacion(equipo, tipoAmonestacion, nombreAmonestacion, nuevo.numero);
+    };
 
     const alert = await this.alertController.create({
       header: `Seleccionar Jugador - ${nombreAmonestacion}`,
-      inputs: inputs,
+      inputs: inputs as any[],
       buttons: [
         {
           text: 'Cancelar',
           role: 'cancel'
+        },
+        {
+          text: 'Nuevo jugador',
+          handler: () => { agregarNuevo(); }
         },
         {
           text: 'Aceptar',

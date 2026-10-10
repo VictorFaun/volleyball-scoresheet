@@ -52,6 +52,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/competencia-config/competencia-config.module').then( m => m.CompetenciaConfigPageModule)
   },
   {
+    path: 'competencia-equipo',
+    loadChildren: () => import('./pages/competencia-equipo/competencia-equipo.module').then( m => m.CompetenciaEquipoPageModule)
+  },
+  {
     path: 'fecha',
     loadChildren: () => import('./pages/fecha/fecha.module').then( m => m.FechaPageModule)
   },

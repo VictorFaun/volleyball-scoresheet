@@ -1,0 +1,81 @@
+<ion-header [translucent]="false" class="ion-no-border">
+  <ion-toolbar class="toolbar-header-grande">
+    <ion-buttons slot="start">
+      <ion-button class="boton-volver-grande" (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+    </ion-buttons>
+    <p class="header-title-izq">O-2 general</p>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" *ngIf="equipo">
+
+  <div style="margin: 20px 20px 20px;">
+
+    <div class="aviso-jugadores" style="margin: 0 0 20px;">
+      <ion-icon name="information-circle"></ion-icon>
+      <span>Plantel completo del equipo en "{{competencia?.nombre}}". Al completar un partido podrás elegir desde esta lista los jugadores que juegan (O-2 bis).</span>
+    </div>
+
+    <div class="input-text">
+      <label>Nombre</label>
+      <ion-input fill="outline" placeholder="Nombre Equipo" [(ngModel)]="equipo.nombre" (ionInput)="revisarEquipoPrueba()" (ionBlur)="guardarNombre()"></ion-input>
+    </div>
+
+    <div class="players">
+      <div style="display: flex;align-items: center;">
+        <label style="margin-right: 10px;">Jugadores ({{equipo.jugadores.length}})</label>
+        <ion-button class="btn-round" shape="round" style="margin: 0px;" (click)="abrirModalJugador()">
+          <ion-icon slot="icon-only" name="add"></ion-icon>
+        </ion-button>
+      </div>
+
+      <div class="table-players">
+        <table>
+          <thead>
+            <tr>
+              <td style="border-top-left-radius: 10px; width: 60px;">N° <span style="color: var(--color-danger-shade);">*</span></td>
+              <td>Nombre Jugador</td>
+              <td style="width: 50px;">Cap</td>
+              <td style="border-top-right-radius: 10px; width: 50px;">Lib</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let jugador of jugadoresOrdenados()" (click)="editarJugador(jugador)">
+              <td>{{jugador.numero}}</td>
+              <td>{{jugador.nombre}}</td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox [(ngModel)]="jugador.capitan" (ionChange)="guardar()" (click)="$event.stopPropagation()"></ion-checkbox></div></td>
+              <td><div style="display: flex;justify-content: center;align-items: center;"><ion-checkbox [(ngModel)]="jugador.libero" (ionChange)="guardar()" (click)="$event.stopPropagation()"></ion-checkbox></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="input-text">
+      <label>Entrenador</label>
+      <ion-input fill="outline" placeholder="Nombre Entrenador" [(ngModel)]="equipo.entrenador"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Primer Asistente Entrenador</label>
+      <ion-input fill="outline" placeholder="Nombre Primer Asistente" [(ngModel)]="equipo.primer_asistente"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Segundo Asistente Entrenador</label>
+      <ion-input fill="outline" placeholder="Nombre Segundo Asistente" [(ngModel)]="equipo.segundo_asistente"></ion-input>
+    </div>
+
+    <div class="input-text">
+      <label>Medico</label>
+      <ion-input fill="outline" placeholder="Nombre Medico" [(ngModel)]="equipo.medico"></ion-input>
+    </div>
+
+    <div class="input-text" style="padding-bottom: 0px;">
+      <label>Fisioterapeuta</label>
+      <ion-input fill="outline" placeholder="Nombre Fisioterapeuta" [(ngModel)]="equipo.fisioterapeuta"></ion-input>
+    </div>
+
+  </div>
+
+</ion-content>

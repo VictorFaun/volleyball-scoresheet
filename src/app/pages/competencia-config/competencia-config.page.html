@@ -161,6 +161,47 @@
 
   </div>
 
+  <!-- Equipos: O-2 general de cada equipo, base para armar el O-2 bis de cada partido. -->
+  <div style="margin: 20px 20px 20px;" *ngIf="pestanaActual === 'equipos'">
+
+    <div class="aviso-configuracion">
+      <ion-icon name="information-circle"></ion-icon>
+      <span>Registra el O-2 general (plantel completo) de cada equipo. Al completar un partido podrás elegir desde aquí los jugadores que juegan (O-2 bis).</span>
+    </div>
+
+    <div class="action-buttons-row">
+      <div class="action-button action-button-primary" (click)="crearEquipo()">
+        <ion-icon name="add"></ion-icon>
+        <span>Agregar equipo</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px;" *ngIf="competencia?.equipos?.length">
+      <div style="margin-bottom: 10px; font-size: x-large; font-weight: bold;">Equipos</div>
+      <ion-item-sliding style="margin-bottom: 10px;" *ngFor="let equipo of equiposOrdenados()">
+        <ion-item style="--padding-start:0; --inner-padding-end:0; --background: var(--ion-background-color); --border-width:0; --inner-border-width:0px; --min-height: 0; --border-radius: 14px;">
+          <div class="card-row" (click)="irAEquipo(equipo)">
+            <div class="card-row-texto">
+              <p class="card-row-titulo">{{equipo.nombre}}</p>
+              <p class="card-row-subtitulo">{{equipo.jugadores?.length || 0}} jugador{{(equipo.jugadores?.length || 0) === 1 ? '' : 'es'}}</p>
+            </div>
+            <ion-icon name="chevron-forward-outline" class="card-row-chevron"></ion-icon>
+          </div>
+        </ion-item>
+        <ion-item-options side="end" style="border-bottom-width: 0;">
+          <ion-item-option (click)="eliminarEquipo(equipo)" color="danger" style="border-radius: 14px;">
+            <ion-icon slot="icon-only" name="trash"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </div>
+
+    <p *ngIf="!competencia?.equipos?.length" style="text-align: center; color: rgba(var(--color-4-rgb), 0.5); margin-top: 24px;">
+      Aún no hay equipos en esta competencia.
+    </p>
+
+  </div>
+
   <!-- Resultados: fase de grupos (crear/listar grupos). -->
   <div style="margin: 20px 20px 20px;" *ngIf="pestanaActual === 'resultados'">
 
@@ -262,6 +303,10 @@
   <ion-tab-button (click)="pestanaActual = 'configuracion'" [selected]="pestanaActual === 'configuracion'">
     <ion-icon name="settings-outline"></ion-icon>
     <ion-label>Partidos</ion-label>
+  </ion-tab-button>
+  <ion-tab-button (click)="pestanaActual = 'equipos'" [selected]="pestanaActual === 'equipos'">
+    <ion-icon name="people-outline"></ion-icon>
+    <ion-label>Equipos</ion-label>
   </ion-tab-button>
   <ion-tab-button (click)="pestanaActual = 'resultados'" [selected]="pestanaActual === 'resultados'">
     <ion-icon name="bar-chart-outline"></ion-icon>

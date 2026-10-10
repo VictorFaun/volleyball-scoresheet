@@ -19,8 +19,15 @@
   <div style="margin: 20px 20px 20px;">
 
     <div class="input-text" style="position: relative;">
-      <label>Nombre  <ion-button *ngIf="autocompletar" fill="clear" size="small" style="position: absolute; right: 0px; top: -7px;" (click)="autocompletarDatos()">Autocompletar datos</ion-button></label>
+      <label>Nombre  <ion-button *ngIf="autocompletar" fill="clear" size="small" style="position: absolute; right: 0px; top: -7px;" (click)="autocompletarDatos()">{{fuenteFecha ? 'Autocompletar datos' : 'Cargar desde O-2'}}</ion-button></label>
       <ion-input fill="outline" placeholder="Nombre Equipo" [(ngModel)]="equipo.nombre" (ionInput)="buscarTeam()"></ion-input>
+      <!-- Equipos con O-2 general en la competencia que coinciden con lo escrito. -->
+      <div *ngIf="sugerenciasO2.length" style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;">
+        <ion-chip *ngFor="let sugerencia of sugerenciasO2" style="margin: 0;" (click)="seleccionarSugerencia(sugerencia)">
+          <ion-icon name="people-outline"></ion-icon>
+          <ion-label>{{sugerencia.nombre}}</ion-label>
+        </ion-chip>
+      </div>
     </div>
 
     <div class="players">

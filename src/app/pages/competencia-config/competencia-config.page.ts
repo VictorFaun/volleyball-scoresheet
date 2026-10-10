@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular';
 import { GameService } from 'src/app/services/game/game.service';
 
@@ -25,7 +25,7 @@ export class CompetenciaConfigPage implements OnInit {
     ratioPuntos: 'Ratio de puntos'
   };
 
-  pestanaActual: 'diseno' | 'configuracion' | 'resultados' = 'diseno';
+  pestanaActual: 'diseno' | 'configuracion' | 'equipos' | 'resultados' = 'diseno';
 
   // Colores disponibles para identificar la competencia en la lista de Home
   // (nombres de ion-color, igual que se usan para los estados de partido).
@@ -62,6 +62,7 @@ export class CompetenciaConfigPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private navCtrl: NavController,
     private alertController: AlertController,
     private _game_: GameService
@@ -85,6 +86,13 @@ export class CompetenciaConfigPage implements OnInit {
       this.competencia.configuracionResultados = this._game_.clean_configuracion_resultados();
     }
     this.configResultados = this.competencia.configuracionResultados;
+
+    if (!this.competencia.equipos) this.competencia.equipos = [];
+
+    // Al volver desde el O-2 de un equipo se aterriza en la pestaña Equipos.
+    if (this.route.snapshot.queryParamMap.get('pestana') === 'equipos') {
+      this.pestanaActual = 'equipos';
+    }
   }
 
   ionViewWillLeave() {
@@ -182,6 +190,60 @@ export class CompetenciaConfigPage implements OnInit {
       message: `Quita la asignación de los partidos de "${grupo.nombre}" antes de eliminarlo: ${listado}.`,
       buttons: ['Entendido']
     });
+    await alert.present();
+  }
+
+  equiposOrdenados(): any[] {
+    return [...(this.competencia?.equipos || [])].sort((a: any, b: any) =>
+      (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }));
+  }
+
+  irAEquipo(equipo: any) {
+    this._game_.guardarCompetencia(this.competencia);
+    this.router.navigate(['/competencia-equipo'], { queryParams: { competenciaId: this.competencia.id, equipoId: equipo.id } });
+  }
+
+  async crearEquipo() {
+    const alert = await this.alertController.create({
+      header: 'Agregar equipo',
+      inputs: [
+        { name: 'nombre', type: 'text', placeholder: 'Nombre del equipo' }
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Crear',
+          handler: (data) => {
+            const nombre = (data?.nombre || '').trim();
+            if (!nombre) return false;
+            const existente = this._game_.buscarEquipoCompetencia(this.competencia, nombre);
+            if (existente) {
+              this.mostrarAviso('Equipo repetido', `Ya existe un equipo llamado "${existente.nombre}" en esta competencia.`);
+              return false;
+            }
+            this._game_.crearEquipoCompetencia(this.competencia, nombre).then(equipo => this.irAEquipo(equipo));
+            return true;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  // Solo borra el O-2 general: los partidos ya completados con ese equipo
+  // conservan su propio plantel.
+  eliminarEquipo(equipo: any) {
+    this._game_.confirmarConPalabra({
+      header: 'Eliminar equipo',
+      message: `Se eliminará el O-2 general de "${equipo.nombre}". Los partidos ya completados conservan sus jugadores. Escribe "confirmo" para continuar.`,
+      onConfirm: async () => {
+        await this._game_.eliminarEquipoCompetencia(this.competencia, equipo);
+      }
+    });
+  }
+
+  private async mostrarAviso(header: string, message: string) {
+    const alert = await this.alertController.create({ header, message, buttons: ['Entendido'] });
     await alert.present();
   }
 

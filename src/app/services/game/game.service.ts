@@ -758,11 +758,9 @@ export class GameService {
 
   async new_firma(num: any) {
     if (num == 1) {
-      if (await this.validarJugadores(2)) {
-        if (this.partido.estado < 5)
-          this.partido.estado = 5
-        if (this.firmaHabilitada(1)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(1);
-      }
+      if (this.partido.estado < 5)
+        this.partido.estado = 5
+      if (this.firmaHabilitada(1)) this.redireccionar('signature', { num }); else this.avanzarDespuesDeFirma(1);
     }
     if (num == 2) {
       if (this.partido.estado < 6)
@@ -865,14 +863,15 @@ export class GameService {
         this.partido.equipo_1 = this.clean_equipo();
       this.redireccionar('team', { numero: 1 });
     }
+    // Se puede avanzar sin jugadores cargados: los que falten se agregan
+    // después desde el R-5 o desde un cambio en el set (ver
+    // agregarJugadorRapido). La alineación completa se exige en el R-5.
     if (numero == 2) {
-      if (await this.validarJugadores(1)) {
-        if (this.partido.estado < 4)
-          this.partido.estado = 4;
-        if (!this.partido.equipo_2)
-          this.partido.equipo_2 = this.clean_equipo();
-        this.redireccionar('team', { numero: 2 });
-      }
+      if (this.partido.estado < 4)
+        this.partido.estado = 4;
+      if (!this.partido.equipo_2)
+        this.partido.equipo_2 = this.clean_equipo();
+      this.redireccionar('team', { numero: 2 });
     }
   }
 
@@ -929,24 +928,52 @@ export class GameService {
     this.redireccionar('create');
   }
 
-  async validarJugadores(numero: 1 | 2) {
-    const equipo = numero === 1 ? this.partido.equipo_1 : this.partido.equipo_2;
-    const jugadoresNoLibero = equipo.jugadores.filter((j: any) => !j.libero);
-
-    if (jugadoresNoLibero.length < 6) {
-      const nombreEquipo = numero === 1 ? 'Primer Equipo' : 'Segundo Equipo';
-      const alerta = await this.alertController.create({
-        header: 'Equipo incompleto',
-        cssClass: 'custom-alert',
-        message: `El ${nombreEquipo} debe tener al menos 6 jugadores que no sean líberos.`,
-        buttons: ['Aceptar']
+  // Agrega rápido un jugador a un equipo del partido (por ejemplo, uno que
+  // el equipo olvidó anotar), desde el R-5 o desde un cambio en el set.
+  // Valida que el dorsal no esté repetido en el equipo. Resuelve con el
+  // jugador agregado, o null si el usuario canceló.
+  agregarJugadorRapido(equipo: any): Promise<any | null> {
+    return new Promise(async resolve => {
+      let agregado: any = null;
+      const alert = await this.alertController.create({
+        cssClass: 'no-padding-message',
+        header: 'Agregar Jugador',
+        subHeader: `Nuevo jugador para ${equipo?.nombre || 'el equipo'}`,
+        inputs: [
+          { name: 'dorsal', id: 'input-dorsal-jugador-rapido', type: 'number', placeholder: 'Número de camiseta', value: '' },
+          { name: 'nombre', type: 'text', placeholder: 'Nombre del jugador (opcional)', value: '' },
+        ],
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          {
+            text: 'Agregar',
+            handler: (data) => {
+              const dorsal = parseInt(data?.dorsal, 10);
+              if (isNaN(dorsal)) return false;
+              if ((equipo.jugadores || []).some((j: any) => j.numero === dorsal)) {
+                this.alertController.create({
+                  header: 'Advertencia',
+                  message: 'Este número de camiseta ya está en uso',
+                  buttons: ['Aceptar']
+                }).then(a => a.present());
+                return false;
+              }
+              const jugador: any = this.clean_jugador();
+              jugador.numero = dorsal;
+              jugador.nombre = data.nombre?.trim() || null;
+              if (!equipo.jugadores) equipo.jugadores = [];
+              equipo.jugadores.push(jugador);
+              this.guardar();
+              agregado = jugador;
+              return true;
+            }
+          }
+        ]
       });
-
-      await alerta.present();
-      return false;
-    }
-
-    return true;
+      alert.onDidDismiss().then(() => resolve(agregado));
+      await alert.present();
+      alert.querySelector<HTMLInputElement>('#input-dorsal-jugador-rapido')?.focus();
+    });
   }
 
   // Resuelve cuál de los dos equipos registrados (equipo_1/equipo_2) juega
@@ -1315,7 +1342,9 @@ export class GameService {
       icono: 'trophy-outline',
       color: 'medium',
       configuracionDefault: this.clean_configuracion_default(),
-      fechas: []
+      fechas: [],
+      // O-2 general de cada equipo (ver Competencia > Configuración > Equipos).
+      equipos: []
     };
     this.competencias.push(competencia);
     this.guardarCompetencia(competencia);
@@ -1578,6 +1607,82 @@ export class GameService {
   async eliminarGrupo(competencia: any, grupo: any) {
     const idx = (competencia.grupos || []).indexOf(grupo);
     if (idx !== -1) competencia.grupos.splice(idx, 1);
+    await this.guardarCompetencia(competencia);
+  }
+
+  // ===========================================================================
+  // Equipos de la competencia (O-2 general)
+  // ===========================================================================
+
+  // O-2 general de un equipo dentro de la competencia: el plantel completo
+  // inscrito. En cada partido se usa un subconjunto (el O-2 bis), que se
+  // arma desde la página del equipo (team.page.ts).
+  clean_equipo_competencia() {
+    return {
+      id: this.generarId(),
+      nombre: null as string | null,
+      jugadores: [] as any[],
+      entrenador: null,
+      primer_asistente: null,
+      segundo_asistente: null,
+      medico: null,
+      fisioterapeuta: null
+    };
+  }
+
+  // Equipo de prueba rápido para testing: al escribir "EP1" en el nombre del
+  // equipo (en un partido o en el O-2 general), se ofrece cargar estos datos.
+  readonly equiposPrueba: { [clave: string]: any } = {
+    EP1: {
+      nombre: 'Equipo de Prueba',
+      entrenador: 'Entrenador Prueba',
+      primer_asistente: 'Primer Asistente Prueba',
+      segundo_asistente: 'Segundo Asistente Prueba',
+      medico: 'Médico Prueba',
+      fisioterapeuta: 'Fisioterapeuta Prueba',
+      jugadores: [
+        { numero: 1, nombre: 'Jugador 1', capitan: false, libero: false },
+        { numero: 2, nombre: 'Jugador 2', capitan: false, libero: false },
+        { numero: 3, nombre: 'Jugador 3', capitan: true, libero: false },
+        { numero: 4, nombre: 'Jugador 4', capitan: false, libero: false },
+        { numero: 5, nombre: 'Jugador 5', capitan: false, libero: false },
+        { numero: 6, nombre: 'Jugador 6', capitan: false, libero: false },
+        { numero: 7, nombre: 'Jugador 7', capitan: false, libero: false },
+        { numero: 8, nombre: 'Jugador 8', capitan: false, libero: false },
+        { numero: 9, nombre: 'Jugador 9', capitan: false, libero: false },
+        { numero: 10, nombre: 'Jugador 10', capitan: false, libero: false },
+        { numero: 11, nombre: 'Jugador 11', capitan: false, libero: false },
+        { numero: 12, nombre: 'Jugador 12', capitan: false, libero: true },
+      ]
+    }
+  };
+
+  normalizarNombreEquipo(nombre: string | null | undefined): string {
+    return (nombre || '').trim().toLowerCase();
+  }
+
+  // O-2 general del equipo con ese nombre (sin distinguir mayúsculas ni
+  // espacios a los lados), o null si la competencia no lo tiene registrado.
+  buscarEquipoCompetencia(competencia: any, nombre: string | null | undefined): any | null {
+    const clave = this.normalizarNombreEquipo(nombre);
+    if (!clave) return null;
+    return (competencia?.equipos || []).find((e: any) => this.normalizarNombreEquipo(e.nombre) === clave) || null;
+  }
+
+  async crearEquipoCompetencia(competencia: any, nombre: string) {
+    const equipo = this.clean_equipo_competencia();
+    equipo.nombre = nombre;
+    if (!competencia.equipos) competencia.equipos = [];
+    competencia.equipos.push(equipo);
+    await this.guardarCompetencia(competencia);
+    return equipo;
+  }
+
+  // Solo quita el O-2 general: los partidos ya completados con ese equipo
+  // conservan su propio plantel.
+  async eliminarEquipoCompetencia(competencia: any, equipo: any) {
+    const idx = (competencia.equipos || []).indexOf(equipo);
+    if (idx !== -1) competencia.equipos.splice(idx, 1);
     await this.guardarCompetencia(competencia);
   }
 
