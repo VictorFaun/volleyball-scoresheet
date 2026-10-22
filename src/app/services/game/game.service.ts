@@ -742,8 +742,19 @@ export class GameService {
   // Una firma está habilitada salvo que se haya desactivado explícitamente
   // en la configuración del partido (los partidos guardados antes de que
   // existiera esta opción no tienen el campo, y se tratan como activadas).
+  // Las firmas de los oficiales del partido (planillero, asistente, 2° y 1er
+  // árbitro) además solo se piden si ese oficial está registrado.
+  private readonly OFICIAL_POR_FIRMA: Record<number, string> = {
+    7: 'planillero',
+    8: 'asistente_planillero',
+    9: 'segundo_arbitro',
+    10: 'primer_arbitro',
+  };
+
   firmaHabilitada(num: any): boolean {
-    return this.partido.firmas_habilitadas?.[num] !== false;
+    if (this.partido.firmas_habilitadas?.[num] === false) return false;
+    const campo = this.OFICIAL_POR_FIRMA[Number(num)];
+    return !campo || !!String(this.partido[campo] ?? '').trim();
   }
 
   // A qué paso del flujo se avanza después de resolver (o saltar) la firma
