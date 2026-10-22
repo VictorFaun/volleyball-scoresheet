@@ -1,0 +1,33 @@
+<ion-header [translucent]="false" class="ion-no-border">
+  <ion-toolbar class="toolbar-header-grande">
+    <ion-buttons slot="start">
+      <ion-button class="boton-volver-grande" (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+    </ion-buttons>
+    <p class="header-title-izq">Planilla</p>
+    <ion-buttons slot="end">
+      <ion-button color="primary" [disabled]="cargando || error" (click)="descargarOCompartir()">
+        <ion-icon slot="start" [name]="esNativo ? 'share-social-outline' : 'download-outline'"></ion-icon>
+        {{ esNativo ? 'Compartir' : 'Descargar' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="barra-zoom">
+    <span class="nombre-archivo">{{ nombreArchivo }}</span>
+    <ion-button fill="clear" class="icon-button-circle" [disabled]="cargando || error || nivelZoom === 0" (click)="cambiarZoom(-1)">
+      <ion-icon slot="icon-only" name="remove"></ion-icon>
+    </ion-button>
+    <span class="zoom-actual">{{ NIVELES_ZOOM[nivelZoom] * 100 }}%</span>
+    <ion-button fill="clear" class="icon-button-circle" [disabled]="cargando || error || nivelZoom === NIVELES_ZOOM.length - 1" (click)="cambiarZoom(1)">
+      <ion-icon slot="icon-only" name="add"></ion-icon>
+    </ion-button>
+  </div>
+
+  <div class="contenedor-planilla" #contenedor>
+    <div *ngIf="cargando" class="estado"><ion-spinner name="crescent"></ion-spinner></div>
+    <div *ngIf="error" class="estado">No se pudo mostrar la vista previa de la planilla.</div>
+    <canvas #lienzo [hidden]="cargando || error"></canvas>
+  </div>
+</ion-content>

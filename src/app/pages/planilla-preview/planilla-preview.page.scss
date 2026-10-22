@@ -1,0 +1,45 @@
+.barra-zoom {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 16px 8px;
+
+  .nombre-archivo {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    color: rgba(var(--color-4-rgb), 0.5);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .zoom-actual {
+    min-width: 44px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+// La hoja es apaisada: con zoom se recorre con scroll horizontal y vertical
+// dentro de este contenedor.
+.contenedor-planilla {
+  margin: 0 16px 16px;
+  overflow: auto;
+  border-radius: 10px;
+
+  canvas {
+    display: block;
+    background: #fff;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
+  }
+
+  .estado {
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+    color: rgba(var(--color-4-rgb), 0.6);
+    text-align: center;
+  }
+}

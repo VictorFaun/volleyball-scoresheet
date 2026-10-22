@@ -86,6 +86,12 @@ export class HomePage implements OnInit {
     this._game_.edit_game(index);
   }
 
+  // Partido finalizado: recorrerlo en modo solo vista.
+  ver_partido(index: any) {
+    this._game_.setOrigenHome();
+    this._game_.ver_partido(index);
+  }
+
 
   ionViewWillEnter() {
     this._game_.index = null;

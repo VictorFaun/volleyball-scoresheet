@@ -29,6 +29,102 @@ export class SignaturePage implements OnInit {
     this._game_.guardar();
   }
 
+  // Nómina informativa del equipo que firma. Solo en las firmas iniciales
+  // (1-2: capitán/entrenador A, 3-4: capitán/entrenador B), que van después
+  // del sorteo, cuando ya se sabe qué equipo es A y cuál B.
+  get esFirmaInicial(): boolean {
+    return this.num >= 1 && this.num <= 4;
+  }
+
+  get ladoNomina(): 'A' | 'B' {
+    return this.num <= 2 ? 'A' : 'B';
+  }
+
+  get equipoNomina(): any {
+    return this._game_.obtenerEquipoPorLado(this.ladoNomina);
+  }
+
+  get jugadoresNomina(): any[] {
+    return [...(this.equipoNomina?.jugadores || [])].sort((a: any, b: any) => (a.numero ?? 0) - (b.numero ?? 0));
+  }
+
+  get cuerpoTecnicoNomina(): { cargo: string, nombre: string }[] {
+    const equipo = this.equipoNomina;
+    if (!equipo) return [];
+    return [
+      { cargo: 'Entrenador', nombre: equipo.entrenador },
+      { cargo: 'Primer asistente', nombre: equipo.primer_asistente },
+      { cargo: 'Segundo asistente', nombre: equipo.segundo_asistente },
+      { cargo: 'Médico', nombre: equipo.medico },
+      { cargo: 'Fisioterapeuta', nombre: equipo.fisioterapeuta },
+    ].filter(o => !!o.nombre);
+  }
+
+  private escaparHtml(valor: any): string {
+    return String(valor ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+  }
+
+  // Mismo formato que el resumen del partido (GameService.mostrarResumenPartido)
+  // y la confirmación de firma: alert con título centrado, subtítulo tenue y
+  // filas con separadores suaves. Más ancho que un alert normal (.alert-nomina).
+  async verNomina() {
+    const jugadores = this.jugadoresNomina;
+    const oficiales = this.cuerpoTecnicoNomina;
+    const nombreEquipo = this.equipoNomina?.nombre || `Equipo ${this.ladoNomina}`;
+
+    const separador = 'border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);';
+    const estiloSeccion = 'padding: 14px 4px 6px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(var(--ion-color-dark-rgb), 0.45);';
+    const pill = (texto: string, colorRgb: string) =>
+      `<span style="display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; padding: 0 6px; border-radius: 999px; font-size: 11px; font-weight: 700; color: rgb(var(${colorRgb})); background: rgba(var(${colorRgb}), 0.16);">${texto}</span>`;
+
+    // Filas con flex (no tabla de ancho fijo): el nombre ocupa todo el
+    // espacio libre y solo se corta con "..." si de verdad no cabe.
+    const filasJugadores = jugadores.map((j: any, i: number) => `
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 4px; ${i ? separador : ''}">
+        <span style="width: 28px; flex-shrink: 0; text-align: right; font-size: 16px; font-weight: 700;">${this.escaparHtml(j.numero)}</span>
+        <span style="flex: 1; min-width: 0; text-align: left; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${this.escaparHtml(j.nombre) || '<span style="color: rgba(var(--ion-color-dark-rgb), 0.4);">Sin nombre</span>'}</span>
+        <span style="display: flex; gap: 4px; flex-shrink: 0;">
+          ${j.capitan ? pill('C', '--ion-color-primary-rgb') : ''}
+          ${j.libero ? pill('L', '--ion-color-warning-rgb') : ''}
+        </span>
+      </div>`).join('');
+
+    // Cargo arriba (tenue) y nombre abajo, a todo el ancho: así nombres
+    // largos no se parten letra por letra en una columna angosta.
+    const filasOficiales = oficiales.map((o, i) => `
+      <div style="padding: 9px 4px; text-align: left; ${i ? separador : ''}">
+        <div style="font-size: 12px; color: rgba(var(--ion-color-dark-rgb), 0.5);">${o.cargo}</div>
+        <div style="margin-top: 2px; font-size: 15px; font-weight: 600;">${this.escaparHtml(o.nombre)}</div>
+      </div>`).join('');
+
+    const alert = await this.alertController.create({
+      cssClass: 'no-padding-header no-padding-message alert-nomina',
+      htmlAttributes: {
+        innerHTML: `
+        <h2 class="alert-title sc-ion-alert-ios" style="text-align: center; padding-top: 16px;">Nómina Equipo ${this.ladoNomina}</h2>
+        <div style="text-align: center; padding: 4px 20px 16px;">
+          <div class="alert-message sc-ion-alert-ios" style="margin-bottom: 4px;">
+            ${this.escaparHtml(nombreEquipo)} &middot; ${jugadores.length} jugador${jugadores.length === 1 ? '' : 'es'}
+          </div>
+          <div style="max-height: 55vh; overflow-y: auto;">
+            <div style="${estiloSeccion}">Jugadores</div>
+            ${filasJugadores || `<div style="padding: 10px 4px; text-align: left; color: rgba(var(--ion-color-dark-rgb), 0.5);">Sin jugadores registrados</div>`}
+            ${filasOficiales ? `<div style="${estiloSeccion} margin-top: 6px; border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.15);">Cuerpo técnico</div>${filasOficiales}` : ''}
+          </div>
+          ${jugadores.some((j: any) => j.capitan || j.libero) ? `
+          <div style="display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 12px; font-size: 12px; color: rgba(var(--ion-color-dark-rgb), 0.5);">
+            <span style="display: flex; align-items: center; gap: 6px;">${pill('C', '--ion-color-primary-rgb')} Capitán</span>
+            <span style="display: flex; align-items: center; gap: 6px;">${pill('L', '--ion-color-warning-rgb')} Líbero</span>
+          </div>` : ''}
+        </div>
+      `,
+      },
+      buttons: ['Cerrar']
+    });
+
+    await alert.present();
+  }
+
   ngOnInit() {
     
     this.route.queryParams.subscribe(async params => {
@@ -366,6 +462,11 @@ export class SignaturePage implements OnInit {
   }
 
   async siguiente(){
+    // Modo solo vista: solo se avanza, sin guardar ni confirmar nada.
+    if (this._game_.soloLectura) {
+      this.avanzarDespuesDeFirma();
+      return;
+    }
     if(this.resultado_firma == null){
       await this.saveCanvas();
     }

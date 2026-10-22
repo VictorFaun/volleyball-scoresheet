@@ -12,6 +12,11 @@ export class InformacionPage implements OnInit {
 
   partido: any;
 
+  opcionesPopoverSelect: any = { size: 'cover', alignment: 'start' };
+
+  get opcionesDivision() { return this._game_.opcionesDivision(this.partido?.division); }
+  get opcionesCategoria() { return this._game_.opcionesCategoria(this.partido?.categoria); }
+
   constructor(private navCtrl: NavController, private _game_: GameService) { }
 
   ngOnInit() {

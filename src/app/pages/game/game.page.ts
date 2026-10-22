@@ -386,14 +386,19 @@ export class GamePage implements OnInit {
       if (nuevo) registrarCambio(nuevo.numero);
     };
 
+    // El alta rápida solo se ofrece mientras quede cupo (máx. 14 jugadores
+    // sin contar líberos, ver GameService.cuposEquipo).
+    const hayCupo = this._game_.puedeAgregarJugadorRapido(this._game_.obtenerEquipoPorLado(equipo));
+
     if (jugadoresDisponibles.length === 0) {
       const alertaSinOpciones = await this.alertController.create({
         header: 'Sin jugadores disponibles',
-        message: 'No hay jugadores disponibles para realizar el cambio. ¿Deseas agregar un jugador nuevo?',
-        buttons: [
-          { text: 'Cancelar', role: 'cancel' },
-          { text: 'Agregar jugador', handler: () => { agregarNuevo(); } }
-        ]
+        message: hayCupo
+          ? 'No hay jugadores disponibles para realizar el cambio. ¿Deseas agregar un jugador nuevo?'
+          : 'No hay jugadores disponibles para realizar el cambio y el equipo ya tiene el máximo de jugadores permitido.',
+        buttons: hayCupo
+          ? [{ text: 'Cancelar', role: 'cancel' }, { text: 'Agregar jugador', handler: () => { agregarNuevo(); } }]
+          : ['Aceptar']
       });
 
       await alertaSinOpciones.present();
@@ -415,10 +420,10 @@ export class GamePage implements OnInit {
           text: 'Cancelar',
           role: 'cancel'
         },
-        {
+        ...(hayCupo ? [{
           text: 'Nuevo jugador',
           handler: () => { agregarNuevo(); }
-        },
+        }] : []),
         {
           text: 'Aceptar',
           handler: (valorSeleccionado: number) => {
@@ -562,10 +567,11 @@ export class GamePage implements OnInit {
           text: 'Cancelar',
           role: 'cancel'
         },
-        {
+        // Alta rápida solo mientras quede cupo en el equipo.
+        ...(this._game_.puedeAgregarJugadorRapido(equipoData) ? [{
           text: 'Nuevo jugador',
           handler: () => { agregarNuevo(); }
-        },
+        }] : []),
         {
           text: 'Aceptar',
           handler: (data) => {

@@ -573,3 +573,37 @@ body {
   --width: min(94vw, 480px);
   --max-width: min(94vw, 480px);
 }
+// Alert de nómina (firmas iniciales): igual que .alert-resultados, se
+// ensancha para que nombres de jugadores y cuerpo técnico no se corten.
+.alert-nomina {
+  --width: min(92vw, 420px);
+  --max-width: min(92vw, 420px);
+}
+
+// Modo solo vista de un partido finalizado (GameService.setSoloLectura):
+// se desactivan los controles del contenido de cada vista del asistente; la
+// navegación (volver / Siguiente) está en el header y sigue funcionando.
+// Se deja pasar el scroll del contenido. Un aviso fijo indica el modo.
+body.modo-solo-lectura ion-content {
+  ion-input, ion-textarea, ion-select, ion-toggle, ion-checkbox, ion-radio-group,
+  ion-segment, ion-chip, ion-button, button, canvas, image-cropper, tr,
+  ion-item, app-datetimepicker, .input-datetime, .card-row, .action-button {
+    pointer-events: none;
+  }
+}
+
+body.modo-solo-lectura::after {
+  content: 'Solo vista';
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 99999;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ion-color-medium-contrast);
+  background: var(--ion-color-medium);
+  pointer-events: none;
+}

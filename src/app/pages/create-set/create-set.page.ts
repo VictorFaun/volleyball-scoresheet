@@ -117,6 +117,10 @@ export class CreateSetPage implements OnInit {
       if (nuevo) asignar(nuevo.numero);
     };
 
+    // Alta rápida solo mientras quede cupo (máx. 14 jugadores sin contar
+    // líberos, ver GameService.cuposEquipo).
+    const hayCupo = this._game_.puedeAgregarJugadorRapido(datosEquipo);
+
     // Filtrar jugadores que no sean líberos
     const jugadoresFiltrados = jugadores.filter((j: any) => !j.libero);
 
@@ -125,10 +129,9 @@ export class CreateSetPage implements OnInit {
         header: 'Sin jugadores disponibles',
         cssClass: 'custom-alert',
         message: `${datosEquipo.nombre || 'El equipo'} no tiene jugadores (que no sean líberos) para asignar. ¿Deseas agregar un jugador nuevo?`,
-        buttons: [
-          { text: 'Cancelar', role: 'cancel' },
-          { text: 'Agregar jugador', handler: () => { agregarNuevo(); } }
-        ]
+        buttons: hayCupo
+          ? [{ text: 'Cancelar', role: 'cancel' }, { text: 'Agregar jugador', handler: () => { agregarNuevo(); } }]
+          : ['Aceptar']
       });
       await alertaSinJugadores.present();
       return;
@@ -151,10 +154,10 @@ export class CreateSetPage implements OnInit {
           text: 'Cancelar',
           role: 'cancel'
         },
-        {
+        ...(hayCupo ? [{
           text: 'Nuevo jugador',
           handler: () => { agregarNuevo(); }
-        },
+        }] : []),
         {
           text: 'Aceptar',
           handler: (selectedValue: any) => {

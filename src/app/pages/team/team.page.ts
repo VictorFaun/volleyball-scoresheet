@@ -57,15 +57,65 @@ export class TeamPage implements OnInit {
       this._game_.new_equipo(2);
     }
     if (this.numero == 2) {
-      this._game_.new_firma(1);
+      this._game_.new_sorteo(1);
     }
   }
 
+  // Cupos restantes del O-2 bis (máx. 14 jugadores sin contar líberos y
+  // máx. 2 líberos, ver GameService.cuposEquipo).
+  get cupos() {
+    return this._game_.cuposEquipo(this.equipo);
+  }
+
+  get maxJugadores() { return this._game_.MAX_JUGADORES_PARTIDO; }
+  get maxLiberos() { return this._game_.MAX_LIBEROS_PARTIDO; }
+
+  get cantidadJugadores(): number {
+    return (this.equipo?.jugadores || []).filter((j: any) => !j.libero).length;
+  }
+
+  get cantidadLiberos(): number {
+    return (this.equipo?.jugadores || []).filter((j: any) => j.libero).length;
+  }
+
+  // Marca/desmarca líbero respetando los cupos: no más de 2 líberos, y no se
+  // puede pasar un líbero a jugador común si ya hay 14 comunes.
+  cambiarLibero(jugador: any, event: any) {
+    const marcado = !!event.detail.checked;
+    if (marcado === !!jugador.libero) return;
+    const cupos = this.cupos;
+    if (marcado && cupos.liberos <= 0) {
+      event.target.checked = false;
+      this.mostrarError(`El equipo ya tiene ${this.maxLiberos} líberos, el máximo permitido.`);
+      return;
+    }
+    if (!marcado && cupos.jugadores <= 0) {
+      event.target.checked = true;
+      this.mostrarError(`El equipo ya tiene ${this.maxJugadores} jugadores (sin contar líberos), el máximo permitido.`);
+      return;
+    }
+    jugador.libero = marcado;
+    this._game_.guardar();
+  }
+
+  // Valida que un plantel (antes de aplicarlo) respete los cupos.
+  private plantelRespetaCupos(jugadores: any[]): boolean {
+    const liberos = jugadores.filter(j => j.libero).length;
+    const comunes = jugadores.length - liberos;
+    if (comunes <= this.maxJugadores && liberos <= this.maxLiberos) return true;
+    this.mostrarError(`Un equipo puede tener como máximo ${this.maxJugadores} jugadores y ${this.maxLiberos} líberos. La selección tiene ${comunes} jugadores y ${liberos} líbero${liberos === 1 ? '' : 's'}.`);
+    return false;
+  }
+
   async abrirModalJugador() {
+    // Sin cupo de jugadores comunes pero con cupo de líbero: el nuevo
+    // jugador entra directamente como líbero.
+    const comoLibero = this.cupos.jugadores <= 0;
+    if (comoLibero && this.cupos.liberos <= 0) return;
     const alert = await this.alertController.create({
       cssClass: 'no-padding-message',
-      header: 'Agregar Jugador',
-      subHeader: 'Complete los datos del jugador',
+      header: comoLibero ? 'Agregar Líbero' : 'Agregar Jugador',
+      subHeader: comoLibero ? `Ya hay ${this.maxJugadores} jugadores: el nuevo se agregará como líbero` : 'Complete los datos del jugador',
 
       inputs: [
         {
@@ -106,6 +156,7 @@ export class TeamPage implements OnInit {
             let jugador: any = this._game_.clean_jugador();
             jugador.numero = dorsal;
             jugador.nombre = data.nombre?.trim() || null;
+            jugador.libero = comoLibero || null;
 
             if (!this.equipo.jugadores) {
               this.equipo.jugadores = [jugador];
@@ -240,6 +291,11 @@ export class TeamPage implements OnInit {
   // Un partido sin fecha solo usa el O-2 general; uno fuera de una
   // competencia no autocompleta (salvo el equipo de prueba EP1).
   buscarTeam(){
+    // Modo solo vista: sin sugerencias ni ofertas de autocompletar.
+    if (this._game_.soloLectura) {
+      this.limpiarFuentesAutocompletar();
+      return;
+    }
     const nombreNormalizado = (this.equipo?.nombre || '').trim().toUpperCase();
 
     if (nombreNormalizado === 'EP1') {
@@ -371,7 +427,8 @@ export class TeamPage implements OnInit {
             const jugadores = o2.jugadores
               .filter((j: any) => elegidos.has(j.numero) || participo(j.numero))
               .sort((a: any, b: any) => (a.numero ?? 0) - (b.numero ?? 0));
-            this.aplicarPlantel(jugadores, o2);
+            // Si se pasa de los cupos, el alert queda abierto para corregir.
+            return this.aplicarPlantel(jugadores, o2);
           }
         }
       ]
@@ -383,13 +440,16 @@ export class TeamPage implements OnInit {
   // mutar el origen al editar acá) y copia el cuerpo técnico desde "origen".
   // Los jugadores que ya participaron en un set se conservan aunque no
   // vengan en la selección, para no romper alineaciones ni logs.
-  private aplicarPlantel(jugadores: any[], origen: any) {
+  // Devuelve false (sin aplicar nada) si el plantel resultante excede los
+  // cupos de jugadores/líberos.
+  private aplicarPlantel(jugadores: any[], origen: any): boolean {
     const nuevos = (jugadores || []).map((j: any) => ({ ...this._game_.clean_jugador(), ...j }));
     for (const j of this.equipo.jugadores || []) {
       if (this._game_.jugadorParticipoEnSets(this.equipo.lado, j.numero) && !nuevos.some((n: any) => n.numero === j.numero)) {
         nuevos.push({ ...j });
       }
     }
+    if (!this.plantelRespetaCupos(nuevos)) return false;
     this.equipo.jugadores = nuevos;
     this.equipo.entrenador = origen.entrenador;
     this.equipo.primer_asistente = origen.primer_asistente;
@@ -398,6 +458,7 @@ export class TeamPage implements OnInit {
     this.equipo.fisioterapeuta = origen.fisioterapeuta;
     this.equipo.nombre = origen.nombre;
     this._game_.guardar();
+    return true;
   }
 
   async confirmarCargarEquipoPrueba(clave: 'EP1') {

@@ -6,11 +6,11 @@ const ESTADOS_TEXTO: Record<number, string> = {
   2: 'Config.',
   3: 'Config.',
   4: 'Config.',
-  5: 'Firmas',
+  5: 'Sorteo',
   6: 'Firmas',
   7: 'Firmas',
   8: 'Firmas',
-  9: 'Sorteo',
+  9: 'Firmas',
   10: 'R-5 · 1',
   11: 'Set 1',
   12: 'Fin · 1',
@@ -62,8 +62,8 @@ const ESTADOS_COLOR: Record<number, string> = {
 // juego, check al terminar un set, y doble check al finalizar el partido.
 const ESTADOS_ICONO: Record<number, string> = {
   1: 'settings-outline', 2: 'settings-outline', 3: 'settings-outline', 4: 'settings-outline',
-  5: 'create-outline', 6: 'create-outline', 7: 'create-outline', 8: 'create-outline',
-  9: 'shuffle-outline',
+  5: 'shuffle-outline',
+  6: 'create-outline', 7: 'create-outline', 8: 'create-outline', 9: 'create-outline',
   10: 'clipboard-outline', 11: 'play', 12: 'checkmark-circle-outline',
   13: 'clipboard-outline', 14: 'play', 15: 'checkmark-circle-outline',
   16: 'shuffle-outline',
@@ -87,6 +87,8 @@ export interface PartidoVista {
   numero_partido: number;
   fecha: string;
   etiqueta: string;
+  // true si el partido ya finalizó (estado 33): ya no se ofrece editarlo.
+  finalizado: boolean;
 }
 
 // Arma el objeto liviano usado para mostrar un partido en las listas (Home,
@@ -109,7 +111,8 @@ export function mapearPartidoParaVista(
     index,
     numero_partido: partido.numero_partido || 0,
     fecha: partido.fecha || '',
-    etiqueta: partido.etiqueta || ''
+    etiqueta: partido.etiqueta || '',
+    finalizado: partido.estado === 33
   };
 
   // El equipo que juega como "A"/"B" se define recién en el R-5 del set 1

@@ -6,12 +6,17 @@
       </ion-buttons>
     <p class="header-title-izq">{{text?text:"Firmas"}}</p>
     <ion-buttons slot="end">
+      <ion-button *ngIf="esFirmaInicial" (click)="verNomina()">
+        <ion-icon slot="start" name="people-outline"></ion-icon>
+        Nómina
+      </ion-button>
       <ion-button color="primary" (click)="siguiente()">
         Siguiente
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
+
 
 <ion-content [fullscreen]="true" style="--overflow: hidden;">
 

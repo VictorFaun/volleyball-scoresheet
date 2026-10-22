@@ -34,6 +34,11 @@
       <ion-input fill="outline" placeholder="Ej: Cuartos de final" [(ngModel)]="partido.etiqueta"></ion-input>
     </div>
 
+    <div class="input-text">
+      <label>Fase</label>
+      <ion-input fill="outline" placeholder="Ej: Pool A, Semifinal" maxlength="12" [(ngModel)]="partido.fase"></ion-input>
+    </div>
+
     <div class="select-text" *ngIf="gruposDisponibles.length">
       <label>Grupo</label>
       <ion-select fill="outline" interface="popover" label-placement="stacked" [interfaceOptions]="opcionesPopoverSelect" placeholder="Selecciona el grupo"

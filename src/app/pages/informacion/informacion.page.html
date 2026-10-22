@@ -49,35 +49,64 @@
       <ion-input fill="outline" placeholder="Nombre Gimnasio" [(ngModel)]="partido.gimnasio"></ion-input>
     </div>
 
-    <div class="input-text">
-      <label>Division</label>
-      <ion-input fill="outline" placeholder="Nombre Division" [(ngModel)]="partido.division"></ion-input>
+    <div class="select-text">
+      <label>División</label>
+      <ion-select fill="outline" interface="popover" label-placement="stacked" [interfaceOptions]="opcionesPopoverSelect" placeholder="Selecciona la división"
+        [(ngModel)]="partido.division">
+        <ion-select-option *ngFor="let op of opcionesDivision" [value]="op.valor">{{op.etiqueta}}</ion-select-option>
+      </ion-select>
     </div>
 
-    <div class="input-text">
-      <label>Categoria</label>
-      <ion-input fill="outline" placeholder="Nombre Categoria" [(ngModel)]="partido.categoria"></ion-input>
+    <div class="select-text">
+      <label>Categoría</label>
+      <ion-select fill="outline" interface="popover" label-placement="stacked" [interfaceOptions]="opcionesPopoverSelect" placeholder="Selecciona la categoría"
+        [(ngModel)]="partido.categoria">
+        <ion-select-option *ngFor="let op of opcionesCategoria" [value]="op.valor">{{op.etiqueta}}</ion-select-option>
+      </ion-select>
     </div>
 
-    <div class="input-text">
-      <label>Primer Arbitro</label>
-      <ion-input fill="outline" placeholder="Nombre Primer Arbitro" [(ngModel)]="partido.primer_arbitro"></ion-input>
+    <div class="input-text fila-oficial">
+      <div class="nombre-oficial">
+        <label>Primer Árbitro</label>
+        <ion-input fill="outline" placeholder="Nombre Primer Árbitro" [(ngModel)]="partido.primer_arbitro"></ion-input>
+      </div>
+      <div class="pais-oficial">
+        <label>País</label>
+        <ion-input fill="outline" placeholder="Ej: Chile" [(ngModel)]="partido.primer_arbitro_pais"></ion-input>
+      </div>
     </div>
 
-    <div class="input-text">
-      <label>Segundo Arbitro</label>
-      <ion-input fill="outline" placeholder="Nombre Segundo Arbitro" [(ngModel)]="partido.segundo_arbitro"></ion-input>
+    <div class="input-text fila-oficial">
+      <div class="nombre-oficial">
+        <label>Segundo Árbitro</label>
+        <ion-input fill="outline" placeholder="Nombre Segundo Árbitro" [(ngModel)]="partido.segundo_arbitro"></ion-input>
+      </div>
+      <div class="pais-oficial">
+        <label>País</label>
+        <ion-input fill="outline" placeholder="Ej: Chile" [(ngModel)]="partido.segundo_arbitro_pais"></ion-input>
+      </div>
     </div>
 
-    <div class="input-text">
-      <label>Planillero</label>
-      <ion-input fill="outline" placeholder="Nombre Planillero" [(ngModel)]="partido.planillero"></ion-input>
+    <div class="input-text fila-oficial">
+      <div class="nombre-oficial">
+        <label>Planillero</label>
+        <ion-input fill="outline" placeholder="Nombre Planillero" [(ngModel)]="partido.planillero"></ion-input>
+      </div>
+      <div class="pais-oficial">
+        <label>País</label>
+        <ion-input fill="outline" placeholder="Ej: Chile" [(ngModel)]="partido.planillero_pais"></ion-input>
+      </div>
     </div>
 
-    <div class="input-text">
-      <label>Asistente Planillero</label>
-      <ion-input fill="outline" placeholder="Nombre Asistente Planillero"
-        [(ngModel)]="partido.asistente_planillero"></ion-input>
+    <div class="input-text fila-oficial">
+      <div class="nombre-oficial">
+        <label>Asistente Planillero</label>
+        <ion-input fill="outline" placeholder="Nombre Asistente Planillero" [(ngModel)]="partido.asistente_planillero"></ion-input>
+      </div>
+      <div class="pais-oficial">
+        <label>País</label>
+        <ion-input fill="outline" placeholder="Ej: Chile" [(ngModel)]="partido.asistente_planillero_pais"></ion-input>
+      </div>
     </div>
 
     <div class="input-text">

@@ -234,6 +234,12 @@ export class CompetenciaPage implements OnInit {
     this._game_.edit_game(index);
   }
 
+  // Partido finalizado: recorrerlo en modo solo vista.
+  ver_partido(index: number) {
+    this._game_.setOrigenCompetencia(this.competencia.id);
+    this._game_.ver_partido(index);
+  }
+
   continuar_partido(index: number) {
     this._game_.setOrigenCompetencia(this.competencia.id);
     this._game_.continuarPartido(index);

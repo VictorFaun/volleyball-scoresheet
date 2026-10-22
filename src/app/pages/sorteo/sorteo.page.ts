@@ -145,13 +145,18 @@ export class SorteoPage implements OnInit {
     // El set ya tiene alineación/logs/resultado: el sorteo queda fijo, solo
     // se avanza al siguiente paso sin volver a escribir sobre sus datos.
     if (this.bloqueado) {
-      this._game_.new_set(this.set);
+      this.avanzar();
       return;
     }
 
     if (this.mostrarLados) {
+      // Si se rehace el sorteo y los equipos quedan invertidos, las firmas
+      // iniciales ya tomadas siguen siendo de la misma persona: se
+      // intercambian entre A y B para que acompañen a su equipo.
+      const ladoAnterior = this.equipoAsignadoA.lado;
       this.equipoAsignadoA.lado = 'A';
       this.equipoAsignadoB.lado = 'B';
+      if (ladoAnterior === 'B') this.intercambiarFirmasIniciales();
     }
 
     const clave = `set_${this.set}`;
@@ -164,7 +169,24 @@ export class SorteoPage implements OnInit {
     this.partido[clave].lado_izquierda = this.mostrarLados ? 'A' : this.equipoIzquierda;
 
     this._game_.guardar();
-    this._game_.new_set(this.set);
+    this.avanzar();
+  }
+
+  // Después del sorteo del set 1 vienen las firmas iniciales (capitanes y
+  // entrenadores, ya sabiendo quién es A y quién B); después del sorteo del
+  // set decisivo, directo al R-5 de ese set.
+  private avanzar() {
+    if (this.set === 1) {
+      this._game_.new_firma(1);
+    } else {
+      this._game_.new_set(this.set);
+    }
+  }
+
+  private intercambiarFirmasIniciales() {
+    const p = this.partido;
+    [p.firma_inicio_capitan_a, p.firma_inicio_capitan_b] = [p.firma_inicio_capitan_b, p.firma_inicio_capitan_a];
+    [p.firma_entrenador_a, p.firma_entrenador_b] = [p.firma_entrenador_b, p.firma_entrenador_a];
   }
 
 }

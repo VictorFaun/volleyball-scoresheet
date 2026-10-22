@@ -13,6 +13,11 @@ export class CompetenciaConfigPage implements OnInit {
 
   competencia: any;
   config: any;
+
+  opcionesPopoverSelect: any = { size: 'cover', alignment: 'start' };
+
+  get opcionesDivision() { return this._game_.opcionesDivision(this.config?.division); }
+  get opcionesCategoria() { return this._game_.opcionesCategoria(this.config?.categoria); }
   configResultados: any;
 
   // Claves de puntos3/puntos5 en el orden en que se muestran los inputs.
