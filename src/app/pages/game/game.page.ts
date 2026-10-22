@@ -243,6 +243,15 @@ export class GamePage implements OnInit {
     this._game_.closeSet(this.set)
   }
 
+  // Equipo que ganó el rally de un log, o null si el log no es un punto. La
+  // tarjeta roja (castigo) cuenta como rally ganado por el rival: le da el
+  // punto y el saque (y, si no estaba sacando, rota).
+  private ganadorRally(log: any): 'A' | 'B' | null {
+    if (log.tipo === 1) return log.equipo;
+    if (log.tipo === 7) return log.equipo === 'A' ? 'B' : 'A';
+    return null;
+  }
+
   contarRotaciones(equipo: "A" | "B"): number {
     let rotacionesA = 0;
     let rotacionesB = 0;
@@ -250,20 +259,20 @@ export class GamePage implements OnInit {
 
     // Recorremos del más viejo al más nuevo (invirtiendo el arreglo)
     for (let i = this.logs.length - 1; i >= 0; i--) {
-      const log = this.logs[i];
+      const ganador = this.ganadorRally(this.logs[i]);
 
-      // Solo considerar puntos
-      if (log.tipo === 1) {
-        if (ultimoEquipo && log.equipo !== ultimoEquipo) {
+      // Solo considerar rallies (puntos y castigos)
+      if (ganador) {
+        if (ultimoEquipo && ganador !== ultimoEquipo) {
           // Si hay un cambio de equipo, sumar rotación al equipo actual
-          if (log.equipo === "A") {
+          if (ganador === "A") {
             rotacionesA++;
-          } else if (log.equipo === "B") {
+          } else {
             rotacionesB++;
           }
         }
 
-        ultimoEquipo = log.equipo;
+        ultimoEquipo = ganador;
       }
     }
     return equipo === "A" ? rotacionesA : rotacionesB;
@@ -275,8 +284,9 @@ export class GamePage implements OnInit {
     }
 
     for (const log of this.logs) {
-      if (log.tipo === 1) {
-        return log.equipo; // El equipo que hizo el último punto tiene el saque
+      const ganador = this.ganadorRally(log);
+      if (ganador) {
+        return ganador; // El equipo que ganó el último rally tiene el saque
       }
     }
 
