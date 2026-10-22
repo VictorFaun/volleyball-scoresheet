@@ -7,7 +7,7 @@ import { Clipboard } from '@capacitor/clipboard';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from 'pdf-lib';
-import { mapearPartidoParaVista } from './partido-view.util';
+import { ganadorPuntoLog, mapearPartidoParaVista } from './partido-view.util';
 
 @Injectable({
   providedIn: 'root'
@@ -561,7 +561,8 @@ export class GameService {
       if (!set.logs || set.logs.length == 0) {
           return 0;
       }
-      return set.logs.filter((log: any) => (log.tipo == 1 && log.equipo == equipo) || (log.tipo == 7 && log.equipo !== equipo)).length;
+      // Puntos normales más los castigos del rival (roja o demora con castigo).
+      return set.logs.filter((log: any) => ganadorPuntoLog(log) === equipo).length;
   }
   async confirm_set(set: any) {
     let confirmacion = false
@@ -1012,6 +1013,91 @@ export class GameService {
       alert.onDidDismiss().then(() => resolve(confirmado));
       await alert.present();
     });
+  }
+
+  // Demoras del equipo (A/B) ya registradas en todo el partido (las
+  // sanciones por demora cuentan para el partido completo, no por set) y
+  // solicitudes improcedentes. La 2ª solicitud improcedente en adelante se
+  // trata como demora. Ver GamePage.registrarAmonestacion.
+  demorasPartido(lado: 'A' | 'B'): { demoras: number, improcedentes: number } {
+    let demoras = 0, improcedentes = 0;
+    for (let n = 1; n <= 5; n++) {
+      const logs = [...(this.partido?.[`set_${n}`]?.logs || [])].reverse();
+      for (const l of logs) {
+        if (l.equipo !== lado) continue;
+        if (l.tipo === 5) demoras++;
+        if (l.tipo === 8) { if (improcedentes > 0) demoras++; improcedentes++; }
+      }
+    }
+    return { demoras, improcedentes };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Sanciones por conducta (regla 21 FIVB)
+  // ---------------------------------------------------------------------------
+  // Tipos de log: 6 amarilla (advertencia, no es sanción), 7 castigo (roja:
+  // punto y saque al rival), 9 expulsión (fuera el resto del set), 11
+  // descalificación (fuera el resto del partido). Se aplican a un jugador
+  // (log.jugador = N°) o a un oficial (log.oficial = 'C' | 'AC1' | 'AC2' | 'T' | 'M').
+  readonly NIVEL_SANCION: Record<number, number> = { 6: 1, 7: 2, 9: 3, 11: 4 };
+  readonly TIPO_POR_NIVEL: Record<number, number> = { 1: 6, 2: 7, 3: 9, 4: 11 };
+  readonly NOMBRE_SANCION: Record<number, string> = { 6: 'Tarjeta amarilla', 7: 'Castigo (tarjeta roja)', 9: 'Expulsión', 11: 'Descalificación' };
+
+  // Logs del partido en orden cronológico, con su número de set.
+  logsPartido(): { set: number, log: any }[] {
+    const todos: { set: number, log: any }[] = [];
+    for (let n = 1; n <= 5; n++) {
+      for (const log of [...(this.partido?.[`set_${n}`]?.logs || [])].reverse()) todos.push({ set: n, log });
+    }
+    return todos;
+  }
+
+  private mismoMiembro(log: any, miembro: number | string): boolean {
+    return typeof miembro === 'number' ? log.jugador === miembro : log.oficial === miembro;
+  }
+
+  // Sanción más alta (nivel 1-4, 0 si ninguna) que ya recibió esa persona en
+  // el partido: la siguiente debe ser más grave (21.4.2, sanción progresiva).
+  nivelSancionPrevia(lado: 'A' | 'B', miembro: number | string): number {
+    return this.logsPartido()
+      .filter(({ log }) => log.equipo === lado && this.NIVEL_SANCION[log.tipo] && this.mismoMiembro(log, miembro))
+      .reduce((max, { log }) => Math.max(max, this.NIVEL_SANCION[log.tipo]), 0);
+  }
+
+  // true si el equipo ya recibió una amarilla en el partido: llegó al nivel
+  // de sanción (21.1) y la próxima conducta incorrecta se sanciona (21.3).
+  equipoTieneAmarilla(lado: 'A' | 'B'): boolean {
+    return this.logsPartido().some(({ log }) => log.equipo === lado && log.tipo === 6);
+  }
+
+  // Jugadores que no pueden estar en cancha: expulsados en este set
+  // (21.3.2) y descalificados en el partido (21.3.3).
+  jugadoresFueraDeJuego(lado: 'A' | 'B', set: number): Set<number> {
+    const fuera = new Set<number>();
+    for (const { set: n, log } of this.logsPartido()) {
+      if (log.equipo !== lado || typeof log.jugador !== 'number') continue;
+      if (log.tipo === 11 && n <= set) fuera.add(log.jugador);
+      if (log.tipo === 9 && n === set) fuera.add(log.jugador);
+    }
+    return fuera;
+  }
+
+  // Observaciones que la planilla exige registrar y la app genera sola:
+  // cambios excepcionales (15.7) y equipo declarado incompleto (6.4.3).
+  observacionesAutomaticas(partido: any): string[] {
+    const lineas: string[] = [];
+    for (let n = 1; n <= 5; n++) {
+      const set = partido?.[`set_${n}`];
+      if (!set?.logs) continue;
+      const m = { A: 0, B: 0 };
+      for (const l of [...set.logs].reverse()) {
+        if (l.tipo === 12) lineas.push(`Set ${n}, A ${m.A}:${m.B} B: cambio excepcional del equipo ${l.equipo}, sale N° ${l.jugador}, entra N° ${l.cambio}.`);
+        if (l.tipo === 13) lineas.push(`Set ${n}, A ${m.A}:${m.B} B: equipo ${l.equipo} declarado incompleto${l.paraPartido ? ' para el partido' : ''}.`);
+        const g = ganadorPuntoLog(l);
+        if (g) m[g]++;
+      }
+    }
+    return lineas;
   }
 
   // Límites del O-2 bis de un partido: hasta 14 jugadores que no son
@@ -2041,7 +2127,7 @@ export class GameService {
 
   // "Amonestación" agrupa demora, tarjeta amarilla/roja, solicitud
   // improcedente y expulsión (ver GamePage.amonestacion()).
-  private readonly TIPOS_AMONESTACION = [5, 6, 7, 8, 9];
+  private readonly TIPOS_AMONESTACION = [5, 6, 7, 8, 9, 11];
 
   private formatearDuracion(ms: number): string {
     if (!isFinite(ms) || ms < 0) return '-';
@@ -2276,7 +2362,10 @@ export class GameService {
       // plantilla de 3 sets.
       if (es3Sets) {
         this.dibujarSetsPlanilla3(pagina, font, partido);
-        this.dibujarObservacionesPlanilla(pagina, font, partido.observaciones);
+        // REMARKS: primero lo que la planilla exige registrar (cambios
+        // excepcionales, equipo incompleto) y luego lo escrito a mano.
+        const remarks = [...this.observacionesAutomaticas(partido), partido.observaciones || ''].filter(Boolean).join('\n');
+        this.dibujarObservacionesPlanilla(pagina, font, remarks);
       }
 
       // this.dibujarSetPlanilla(pagina, font, partido.set_1, BOX1_X, topNormal + H, false, nombreA, nombreB, es3Sets);
@@ -2358,7 +2447,12 @@ export class GameService {
     if (valor === null || valor === undefined || valor === '') return;
     const caracteres = [...String(valor)];
     if (caracteres.length > n) {
-      this.centradoEnCajaPlanilla(pagina, font, caracteres.join(''), xInicio, y, ancho * n, null, size);
+      // No cabe uno por casilla: completo y centrado en el ancho total,
+      // achicando la letra si hace falta para no salirse de la caja.
+      const texto = caracteres.join('');
+      let s = size;
+      while (s > 6 && font.widthOfTextAtSize(texto, s) > ancho * n - 2) s -= 0.5;
+      this.centradoEnCajaPlanilla(pagina, font, texto, xInicio, y, ancho * n, null, s);
       return;
     }
     caracteres.forEach((c, i) => this.centradoEnCajaPlanilla(pagina, font, c, xInicio + i * ancho, y, ancho, null, size));
@@ -2586,12 +2680,15 @@ export class GameService {
   }
 
   // Abreviación del nombre de un equipo para la planilla: una sola palabra
-  // -> sus 3 primeras letras; varias palabras -> la inicial de cada una.
-  // Siempre en mayúsculas. Ej: "Halcones" -> "HAL", "Halcones del Sur" -> "HDS".
+  // -> completa si tiene 5 letras o menos, si no sus 3 primeras letras;
+  // varias palabras -> la inicial de cada una. Siempre en mayúsculas.
+  // Ej: "Tigre" -> "TIGRE", "Halcones" -> "HAL", "Halcones del Sur" -> "HDS".
   private abreviarEquipoPlanilla(nombre: any): string {
     const palabras = String(nombre ?? '').trim().split(/\s+/).filter(Boolean);
     if (!palabras.length) return '';
-    const abreviacion = palabras.length === 1 ? palabras[0].slice(0, 3) : palabras.map(p => p[0]).join('');
+    const abreviacion = palabras.length === 1
+      ? (palabras[0].length <= 5 ? palabras[0] : palabras[0].slice(0, 3))
+      : palabras.map(p => p[0]).join('');
     return abreviacion.toUpperCase();
   }
 
@@ -2700,8 +2797,9 @@ export class GameService {
     let a = 0, b = 0;
     for (let i = logs.length - 1; i >= idxDesdeElFinal; i--) {
       const l = logs[i];
-      if (l.tipo === 1) { if (l.equipo === 'A') a++; else b++; }
-      if (l.tipo === 7) { if (l.equipo === 'A') b++; else a++; }
+      const ganador = ganadorPuntoLog(l);
+      if (ganador === 'A') a++;
+      if (ganador === 'B') b++;
     }
     return { A: a, B: b };
   }
@@ -2886,10 +2984,12 @@ export class GameService {
     let iCambio = Infinity;
     const enCambio = { A: 0, B: 0 };
     logs.forEach((l, i) => {
-      if (l.tipo === 1 || l.tipo === 7) {
-        const ganador: 'A' | 'B' = l.tipo === 1 ? l.equipo : otro(l.equipo);
+      const ganadorRally = ganadorPuntoLog(l);
+      if (ganadorRally) {
+        const ganador: 'A' | 'B' = ganadorRally;
         marcador[ganador]++;
-        if (l.tipo === 7) equipos[ganador].puntosCastigo.push(marcador[ganador]);
+        // Punto por castigo (roja o demora con castigo): círculo en POINTS.
+        if (l.tipo !== 1) equipos[ganador].puntosCastigo.push(marcador[ganador]);
         if (ganador !== saque) {
           const perdedor = equipos[saque];
           perdedor.rondas.push({ pos: perdedor.servidor, ronda: perdedor.vueltas[perdedor.servidor], texto: String(marcador[saque]), i });
@@ -2906,6 +3006,10 @@ export class GameService {
         if (iCambio === Infinity) { iCambio = i; enCambio.A = marcador.A; enCambio.B = marcador.B; }
       } else if (l.tipo === 4 && equipos[l.equipo]) {
         equipos[l.equipo].tiempos.push({ marcador: [marcador[l.equipo as 'A' | 'B'], marcador[otro(l.equipo)]], i });
+      } else if (l.tipo === 12 && equipos[l.equipo]) {
+        // Cambio excepcional: no ocupa casilla de sustitución (va en
+        // REMARKS), pero cambia quién está en esa posición.
+        if (typeof l.posicion === 'number') equipos[l.equipo].ocupantes[l.posicion] = l.cambio;
       } else if ((l.tipo === 2 || l.tipo === 3) && equipos[l.equipo]) {
         const eq = equipos[l.equipo];
         const m: [number, number] = [marcador[l.equipo as 'A' | 'B'], marcador[otro(l.equipo)]];
@@ -3266,15 +3370,24 @@ export class GameService {
         const e: 'A' | 'B' = l.equipo === 'B' ? 'B' : 'A';
         const marcador: [number, number] = [m[e], m[otro(e)]];
         let col: string | null = null, texto: any = null;
-        if (l.tipo === 6) { col = 'W'; texto = l.jugador; }
-        else if (l.tipo === 7) { col = 'P'; texto = l.jugador; }
-        else if (l.tipo === 9) { col = 'E'; texto = l.jugador; }
-        else if (l.tipo === 5 || (l.tipo === 8 && improcedentes[e]++ > 0)) { col = demoras[e]++ === 0 ? 'W' : 'P'; texto = 'D'; }
+        // Jugador (N°) u oficial (C, AC1, AC2, T, M).
+        const quien = l.jugador ?? l.oficial;
+        if (l.tipo === 6) { col = 'W'; texto = quien; }
+        else if (l.tipo === 7) { col = 'P'; texto = quien; }
+        else if (l.tipo === 9) { col = 'E'; texto = quien; }
+        else if (l.tipo === 11) { col = 'D'; texto = quien; }
+        else if (l.tipo === 5 || (l.tipo === 8 && improcedentes[e]++ > 0)) {
+          // Castigo por demora si así se registró, o (partidos anteriores al
+          // campo "castigo") si el equipo ya tenía una demora en el partido.
+          col = (l.castigo || demoras[e] > 0) ? 'P' : 'W';
+          demoras[e]++;
+          texto = 'D';
+        }
         if (col) filas.push({ col, texto, equipo: e, set: n, marcador });
         // El marcador se actualiza después: la sanción se anota con el
         // marcador previo al punto de castigo de la tarjeta roja.
-        if (l.tipo === 1) m[e]++;
-        if (l.tipo === 7) m[otro(e)]++;
+        const ganador = ganadorPuntoLog(l);
+        if (ganador) m[ganador]++;
       }
     }
 
@@ -3508,7 +3621,8 @@ export class GameService {
       for (const e of ['A', 'B'] as const) {
         const v = {
           T: set.logs.filter((l: any) => l.tipo === 4 && l.equipo === e).length,
-          S: set.logs.filter((l: any) => (l.tipo === 2 || l.tipo === 3) && l.equipo === e).length,
+          // Los cambios excepcionales también cuentan en el total (15.7).
+          S: set.logs.filter((l: any) => (l.tipo === 2 || l.tipo === 3 || l.tipo === 12) && l.equipo === e).length,
           W: set.victoria === e ? 1 : 0,
           P: this.contarPuntos(set, e),
         };

@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from 'src/app/services/game/game.service';
 import * as moment from 'moment';
 import { AlertController, NavController } from '@ionic/angular';
+import { ganadorPuntoLog } from 'src/app/services/game/partido-view.util';
 
 @Component({
   selector: 'app-game',
@@ -183,6 +184,15 @@ export class GamePage implements OnInit {
     if (tipo == 10) {
       return "Cambio de lado"
     }
+    if (tipo == 11) {
+      return "Descalificación"
+    }
+    if (tipo == 12) {
+      return "Cambio excepcional"
+    }
+    if (tipo == 13) {
+      return "Equipo incompleto"
+    }
     return tipo
   }
 
@@ -218,7 +228,7 @@ export class GamePage implements OnInit {
       return 0;
     }
 
-    return this.logs.filter((log: any) => (log.tipo === 1 && log.equipo === equipo) || (log.tipo === 7 && log.equipo !== equipo)).length;
+    return this.logs.filter((log: any) => ganadorPuntoLog(log) === equipo).length;
   }
 
   // Puntos necesarios para ganar el set actual (15 en el set decisivo, 25 en el resto).
@@ -243,13 +253,11 @@ export class GamePage implements OnInit {
     this._game_.closeSet(this.set)
   }
 
-  // Equipo que ganó el rally de un log, o null si el log no es un punto. La
-  // tarjeta roja (castigo) cuenta como rally ganado por el rival: le da el
-  // punto y el saque (y, si no estaba sacando, rota).
+  // Equipo que ganó el rally de un log, o null si el log no es un punto. Los
+  // castigos (tarjeta roja y demora con castigo) cuentan como rally ganado
+  // por el rival: le dan el punto y el saque (y, si no estaba sacando, rota).
   private ganadorRally(log: any): 'A' | 'B' | null {
-    if (log.tipo === 1) return log.equipo;
-    if (log.tipo === 7) return log.equipo === 'A' ? 'B' : 'A';
-    return null;
+    return ganadorPuntoLog(log);
   }
 
   contarRotaciones(equipo: "A" | "B"): number {
@@ -302,11 +310,37 @@ export class GamePage implements OnInit {
       ? this.alineacion_a
       : this.alineacion_b;
 
+    // Posición con cambio excepcional (15.7): ya no admite cambios regulares.
+    const posicion = alineacionInicial.indexOf(jugadorSeleccionado);
+    if (this.logs.some((log: any) => log.tipo === 12 && log.equipo === equipo && log.posicion === posicion)) {
+      const alerta = await this.alertController.create({
+        header: 'Cambio excepcional',
+        message: 'En esta posición hubo un cambio excepcional: no se permiten más cambios regulares en el set.',
+        buttons: ['Aceptar']
+      });
+      await alerta.present();
+      return;
+    }
+
+    // Expulsados en este set y descalificados en el partido no pueden
+    // entrar ni volver (21.3.2 / 21.3.3).
+    const fueraDeJuego = this._game_.jugadoresFueraDeJuego(equipo, Number(this.set));
+
+    // Si en esta posición sigue un expulsado/descalificado (p. ej. se cerró
+    // la app antes de elegir su reemplazo), se vuelve a pedir el reemplazo
+    // obligatorio en vez de un cambio normal.
+    const ocupante = this.ocupantePosicion(equipo, jugadorSeleccionado);
+    if (fueraDeJuego.has(ocupante)) {
+      const descalificado = this._game_.logsPartido().some(({ log }) => log.tipo === 11 && log.equipo === equipo && log.jugador === ocupante);
+      await this.reemplazoObligatorio(equipo, ocupante, descalificado ? 11 : 9);
+      return;
+    }
+
     // Jugadores disponibles: no liberos, no en alineación inicial
     let jugadoresDisponibles = jugadoresEquipo.filter((j: any) => {
       const yaEnAlineacion = alineacionInicial.includes(j.numero);
       const esLibero = j.libero;
-      return !yaEnAlineacion && !esLibero;
+      return !yaEnAlineacion && !esLibero && !fueraDeJuego.has(j.numero);
     });
 
     // Excluir jugadores que ya han sido parte de un cambio (como "cambio")
@@ -343,8 +377,15 @@ export class GamePage implements OnInit {
         return;
       }
 
-      const jugadorCambioNombre =
-        jugadoresEquipo.find((j: any) => j.numero === jugadorCambio)?.nombre || jugadorCambio;
+      if (fueraDeJuego.has(jugadorSeleccionado)) {
+        const alerta = await this.alertController.create({
+          header: 'No puede volver',
+          message: `El N° ${jugadorSeleccionado} está expulsado o descalificado y no puede volver a la cancha.`,
+          buttons: ['Aceptar']
+        });
+        await alerta.present();
+        return;
+      }
 
       const alertaConfirm = await this.alertController.create({
         header: 'Cambio existente',
@@ -479,6 +520,19 @@ export class GamePage implements OnInit {
     return numeroJugador;
   }
 
+  // Jugador en cancha en la posición cuyo titular es "numeroJugador":
+  // resultado de los cambios regulares (validaCambio) y, si los hubo, de los
+  // cambios excepcionales (tipo 12) en esa posición, el último manda.
+  ocupantePosicion(equipo: 'A' | 'B', numeroJugador: number): number {
+    const alineacion: any[] = equipo === 'A' ? this.alineacion_a : this.alineacion_b;
+    const posicion = alineacion.indexOf(numeroJugador);
+    let ocupante = this.validaCambio(equipo, numeroJugador);
+    for (const log of [...this.logs].reverse()) {
+      if (log.tipo === 12 && log.equipo === equipo && log.posicion === posicion) ocupante = log.cambio;
+    }
+    return ocupante;
+  }
+
   async tiempo(equipo: 'A' | 'B') {
     if (this.setFinalizado) return;
 
@@ -503,6 +557,10 @@ export class GamePage implements OnInit {
     this._game_.guardar();
   }
 
+  // Amonestaciones según las reglas FIVB:
+  //  - Demora (16) y solicitud improcedente (15.11): sanciones al equipo.
+  //  - Conducta (21): amarilla (advertencia), castigo (roja), expulsión y
+  //    descalificación, a un jugador o a un oficial del equipo.
   async amonestacion(equipo: 'A' | 'B') {
     if (this.setFinalizado) return;
 
@@ -510,73 +568,66 @@ export class GamePage implements OnInit {
       header: 'Amonestación',
       message: `Seleccione el tipo de amonestación para el equipo ${equipo}`,
       buttons: [
-        {
-          text: 'Demora',
-          handler: () => this.registrarAmonestacion(equipo, 5, 'Demora')
-        },
-        {
-          text: 'Tarjeta Amarilla',
-          handler: () => this.seleccionarJugador(equipo, 6, 'Tarjeta Amarilla')
-        },
-        {
-          text: 'Tarjeta Roja',
-          handler: () => this.seleccionarJugador(equipo, 7, 'Tarjeta Roja')
-        },
-        {
-          text: 'Solicitud Improcedente',
-          handler: () => this.registrarAmonestacion(equipo, 8, 'Solicitud Improcedente')
-        },
-        {
-          text: 'Expulsión',
-          handler: () => this.seleccionarJugador(equipo, 9, 'Expulsión')
-        },
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        }
+        { text: 'Demora', handler: () => { this.registrarAmonestacion(equipo, 5); } },
+        { text: 'Solicitud Improcedente', handler: () => { this.registrarAmonestacion(equipo, 8); } },
+        { text: 'Tarjeta Amarilla', handler: () => { this.seleccionarMiembro(equipo, 6); } },
+        { text: 'Tarjeta Roja', handler: () => { this.seleccionarMiembro(equipo, 7); } },
+        { text: 'Expulsión', handler: () => { this.seleccionarMiembro(equipo, 9); } },
+        { text: 'Descalificación', handler: () => { this.seleccionarMiembro(equipo, 11); } },
+        { text: 'Cancelar', role: 'cancel' }
       ]
     });
 
     await alert.present();
   }
 
-  // Primero los jugadores de la alineación inicial (en ese orden) y después
-  // el resto del equipo (banca), ya que la amonestación puede ir a
-  // cualquiera de ellos. "Nuevo jugador" permite agregar uno que no estaba
-  // anotado y amonestarlo de inmediato.
-  async seleccionarJugador(equipo: 'A' | 'B', tipoAmonestacion: number, nombreAmonestacion: string) {
+  // Elige a quién se sanciona: jugadores en cancha primero, luego la banca y
+  // los oficiales del equipo (entrenador, asistentes, fisioterapeuta,
+  // médico), que también pueden ser sancionados por conducta (21.2).
+  // "Nuevo jugador" agrega uno que no estaba anotado y lo sanciona.
+  async seleccionarMiembro(equipo: 'A' | 'B', tipoAmonestacion: number) {
     const alineacion: number[] = equipo === 'A' ? this.alineacion_a : this.alineacion_b;
     const equipoData = this._game_.obtenerEquipoPorLado(equipo);
     const plantel: any[] = equipoData?.jugadores || [];
+    const enCancha = alineacion.map((n: number) => this.ocupantePosicion(equipo, n));
 
-    const enAlineacion = alineacion
+    const enJuego = enCancha
       .map((numero: number) => plantel.find((j: any) => j.numero === numero))
       .filter((j: any) => !!j);
     const banca = plantel
-      .filter((j: any) => !alineacion.includes(j.numero))
+      .filter((j: any) => !enCancha.includes(j.numero))
       .sort((a: any, b: any) => (a.numero ?? 0) - (b.numero ?? 0));
 
-    const inputs = [...enAlineacion, ...banca].map((jugador: any) => ({
-      name: 'jugador',
-      type: 'radio',
-      label: `${jugador.numero}${jugador.nombre ? ' - ' + jugador.nombre : ''}${alineacion.includes(jugador.numero) ? '' : ' (banca)'}`,
-      value: jugador.numero,
-      checked: false
-    }));
+    const oficiales: [string, string, any][] = [
+      ['C', 'Entrenador', equipoData?.entrenador],
+      ['AC1', 'Primer asistente', equipoData?.primer_asistente],
+      ['AC2', 'Segundo asistente', equipoData?.segundo_asistente],
+      ['T', 'Fisioterapeuta', equipoData?.fisioterapeuta],
+      ['M', 'Médico', equipoData?.medico],
+    ];
+
+    const inputs: any[] = [
+      ...[...enJuego, ...banca].map((jugador: any) => ({
+        name: 'miembro',
+        type: 'radio',
+        label: `${jugador.numero}${jugador.nombre ? ' - ' + jugador.nombre : ''}${enCancha.includes(jugador.numero) ? '' : ' (banca)'}`,
+        value: jugador.numero,
+      })),
+      ...oficiales
+        .filter(([, , nombre]) => !!nombre)
+        .map(([codigo, cargo, nombre]) => ({ name: 'miembro', type: 'radio', label: `${codigo} - ${cargo} (${nombre})`, value: codigo })),
+    ];
 
     const agregarNuevo = async () => {
       const nuevo = await this._game_.agregarJugadorRapido(equipoData);
-      if (nuevo) this.registrarAmonestacion(equipo, tipoAmonestacion, nombreAmonestacion, nuevo.numero);
+      if (nuevo) this.registrarAmonestacion(equipo, tipoAmonestacion, nuevo.numero);
     };
 
     const alert = await this.alertController.create({
-      header: `Seleccionar Jugador - ${nombreAmonestacion}`,
-      inputs: inputs as any[],
+      header: `${this._game_.NOMBRE_SANCION[tipoAmonestacion]} - ¿a quién?`,
+      inputs,
       buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
+        { text: 'Cancelar', role: 'cancel' },
         // Alta rápida solo mientras quede cupo en el equipo.
         ...(this._game_.puedeAgregarJugadorRapido(equipoData) ? [{
           text: 'Nuevo jugador',
@@ -584,10 +635,10 @@ export class GamePage implements OnInit {
         }] : []),
         {
           text: 'Aceptar',
-          handler: (data) => {
-            if (data) {
-              this.registrarAmonestacion(equipo, tipoAmonestacion, nombreAmonestacion, data);
-            }
+          handler: (miembro: number | string) => {
+            if (miembro === undefined || miembro === null || miembro === '') return false;
+            this.registrarAmonestacion(equipo, tipoAmonestacion, miembro);
+            return true;
           }
         }
       ]
@@ -596,22 +647,204 @@ export class GamePage implements OnInit {
     await alert.present();
   }
 
-  async registrarAmonestacion(equipo: 'A' | 'B', tipoAmonestacion: number, nombreAmonestacion: string, jugadorNumero?: number) {
+  private async avisar(header: string, message: string) {
+    const alerta = await this.alertController.create({ header, message, buttons: ['Aceptar'] });
+    await alerta.present();
+    await alerta.onDidDismiss();
+  }
+
+  // Pregunta con botones; resuelve con el "valor" del botón elegido, o null
+  // si se canceló.
+  private preguntar(header: string, message: string, opciones: { texto: string, valor: any }[]): Promise<any> {
+    return new Promise(async resolve => {
+      let elegido: any = null;
+      const alerta = await this.alertController.create({
+        header, message, backdropDismiss: false,
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          ...opciones.map(o => ({ text: o.texto, handler: () => { elegido = o.valor; } })),
+        ]
+      });
+      alerta.onDidDismiss().then(() => resolve(elegido));
+      await alerta.present();
+    });
+  }
+
+  async registrarAmonestacion(equipo: 'A' | 'B', tipoAmonestacion: number, miembro?: number | string) {
+    // Conducta (21): sanción progresiva y nivel de sanción del equipo.
+    if (this._game_.NIVEL_SANCION[tipoAmonestacion] && miembro !== undefined) {
+      const tipoFinal = await this.ajustarSancionConducta(equipo, tipoAmonestacion, miembro);
+      if (tipoFinal === null) return;
+      tipoAmonestacion = tipoFinal;
+    }
 
     const nuevoLog: any = this._game_.clean_log();
     nuevoLog.tipo = tipoAmonestacion;
     nuevoLog.equipo = equipo;
-    nuevoLog.jugador = jugadorNumero || null;
+    nuevoLog.jugador = typeof miembro === 'number' ? miembro : null;
+    if (typeof miembro === 'string') nuevoLog.oficial = miembro;
     nuevoLog.hora = new Date();
+
+    // Demora (regla 16 FIVB): la 1ª del equipo en el partido es solo
+    // amonestación; desde la 2ª es castigo, con punto y saque para el rival.
+    // La 2ª solicitud improcedente en adelante cuenta como demora (15.11.3).
+    let avisoDemora: string | null = null;
+    if (tipoAmonestacion === 5 || tipoAmonestacion === 8) {
+      const { demoras, improcedentes } = this._game_.demorasPartido(equipo);
+      const esDemora = tipoAmonestacion === 5 || improcedentes > 0;
+      const prefijo = tipoAmonestacion === 8 && esDemora ? 'Solicitud improcedente repetida: cuenta como demora. ' : '';
+      if (esDemora && demoras > 0) {
+        nuevoLog.castigo = true;
+        const rival = equipo === 'A' ? 'B' : 'A';
+        avisoDemora = `${prefijo}Es la ${demoras + 1}ª demora del Equipo ${equipo} en el partido: castigo por demora. Punto y saque para el Equipo ${rival}.`;
+      } else if (esDemora) {
+        avisoDemora = `${prefijo}1ª demora del Equipo ${equipo} en el partido: amonestación por demora, sin punto. La próxima será castigo.`;
+      }
+    }
 
     this.logs.unshift(nuevoLog);
     this.updateLogs();
     this._game_.guardar();
 
-    // Si es expulsión, aquí podrías agregar lógica adicional para manejar la sustitución
-    if (tipoAmonestacion === 9) {
-      // Lógica para manejar expulsión y sustitución
-      console.log(`Se debe realizar sustitución para el jugador ${jugadorNumero} del equipo ${equipo}`);
+    if (avisoDemora) await this.avisar('Demora', avisoDemora);
+    // Un castigo (roja o demora) suma punto: puede tocar el cambio de lado.
+    if (ganadorPuntoLog(nuevoLog)) await this.verificarCambioDeLado();
+
+    // Expulsión / descalificación de un jugador en cancha: reemplazo
+    // inmediato (15.8).
+    if ((tipoAmonestacion === 9 || tipoAmonestacion === 11) && typeof miembro === 'number') {
+      await this.reemplazoObligatorio(equipo, miembro, tipoAmonestacion);
     }
+  }
+
+  // Aplica la escala de la regla 21: si la persona ya fue sancionada en el
+  // partido, la nueva sanción debe ser más grave que la anterior (21.4.2); y
+  // si el equipo ya tiene amarilla, llegó al nivel de sanción (21.1) y una
+  // nueva conducta incorrecta se sanciona al menos con castigo. Devuelve el
+  // tipo a registrar, o null si se canceló.
+  private async ajustarSancionConducta(equipo: 'A' | 'B', tipo: number, miembro: number | string): Promise<number | null> {
+    const g = this._game_;
+    const quien = typeof miembro === 'number' ? `El N° ${miembro}` : `El oficial ${miembro}`;
+    const previo = g.nivelSancionPrevia(equipo, miembro);
+
+    if (previo >= 4) {
+      await this.avisar('Ya descalificado', `${quien} ya está descalificado en este partido.`);
+      return null;
+    }
+    const minimo = previo > 0 ? previo + 1 : 0;
+    if (g.NIVEL_SANCION[tipo] < minimo) {
+      const tipoMinimo = g.TIPO_POR_NIVEL[minimo];
+      const elegido = await this.preguntar(
+        'Sanción progresiva',
+        `${quien} ya recibió ${g.NOMBRE_SANCION[g.TIPO_POR_NIVEL[previo]].toLowerCase()} en este partido. Por reincidencia corresponde una sanción más grave: ${g.NOMBRE_SANCION[tipoMinimo].toLowerCase()}.`,
+        [{ texto: `Aplicar ${g.NOMBRE_SANCION[tipoMinimo].toLowerCase()}`, valor: tipoMinimo }]
+      );
+      return elegido;
+    }
+    if (tipo === 6 && g.equipoTieneAmarilla(equipo)) {
+      return this.preguntar(
+        'Nivel de sanción',
+        `El equipo ${equipo} ya recibió tarjeta amarilla en este partido: llegó al nivel de sanción y una nueva conducta incorrecta debe sancionarse (castigo, expulsión o descalificación).`,
+        [{ texto: 'Aplicar castigo (roja)', valor: 7 }, { texto: 'Amarilla igual', valor: 6 }]
+      );
+    }
+    return tipo;
+  }
+
+  // Reemplazo inmediato del jugador expulsado/descalificado si está en
+  // cancha (15.8): cambio legal; si no se puede, cambio excepcional (15.7:
+  // cualquier jugador que no esté en cancha, salvo líberos); si tampoco, el
+  // equipo queda incompleto y pierde el set (6.4.3).
+  private async reemplazoObligatorio(equipo: 'A' | 'B', numero: number, tipo: number) {
+    const alineacion: number[] = equipo === 'A' ? this.alineacion_a : this.alineacion_b;
+    const posicion = [0, 1, 2, 3, 4, 5].find(i => this.ocupantePosicion(equipo, alineacion[i]) === numero);
+    if (posicion === undefined) return; // no estaba en cancha
+
+    const titular = alineacion[posicion];
+    const plantel: any[] = this._game_.obtenerEquipoPorLado(equipo)?.jugadores || [];
+    const fuera = this._game_.jugadoresFueraDeJuego(equipo, Number(this.set));
+    const enCancha = alineacion.map(n => this.ocupantePosicion(equipo, n));
+    const hayExcepcional = this.logs.some((l: any) => l.tipo === 12 && l.equipo === equipo && l.posicion === posicion);
+    const cambio = this.logs.find((l: any) => l.tipo === 2 && l.equipo === equipo && l.jugador === titular);
+    const volvio = cambio && this.logs.some((l: any) => l.tipo === 3 && l.equipo === equipo && l.jugador === titular && l.cambio === cambio.cambio);
+
+    // Cambio legal: si el titular aún no fue cambiado, cualquier jugador
+    // de la banca no usado en cambios; si el que sale es el suplente, solo
+    // puede volver su titular (una vez).
+    let legales: number[] = [];
+    if (!hayExcepcional) {
+      if (!cambio) {
+        const usados = this.logs.filter((l: any) => l.tipo === 2 && l.equipo === equipo).map((l: any) => l.cambio);
+        legales = plantel
+          .filter(j => !j.libero && !alineacion.includes(j.numero) && !usados.includes(j.numero) && !fuera.has(j.numero))
+          .map(j => j.numero);
+      } else if (!volvio && cambio.cambio === numero && !fuera.has(titular)) {
+        legales = [titular];
+      }
+    }
+    // El cambio excepcional solo se permite si no hay ningún cambio legal.
+    const excepcionales = legales.length ? [] : plantel
+      .filter(j => !j.libero && !enCancha.includes(j.numero) && !fuera.has(j.numero))
+      .map(j => j.numero);
+
+    const nombre = (n: number) => plantel.find(j => j.numero === n)?.nombre;
+    const inputs: any[] = [
+      ...legales.map(n => ({ type: 'radio', name: 'r', label: `[ ${n} ]${nombre(n) ? ' ' + nombre(n) : ''} · cambio legal`, value: { n, tipo: 'legal' } })),
+      ...excepcionales.map(n => ({ type: 'radio', name: 'r', label: `[ ${n} ]${nombre(n) ? ' ' + nombre(n) : ''} · cambio excepcional`, value: { n, tipo: 'excepcional' } })),
+    ];
+    const sancion = tipo === 11 ? 'descalificado' : 'expulsado';
+
+    const eleccion: any = await new Promise(async resolve => {
+      let valor: any = null;
+      const alerta = await this.alertController.create({
+        header: 'Reemplazo obligatorio',
+        subHeader: `N° ${numero} ${sancion}: debe ser reemplazado de inmediato.`,
+        message: inputs.length ? 'Primero un cambio legal; si no hay, un cambio excepcional.' : 'No hay jugadores para reemplazarlo: el equipo queda incompleto.',
+        backdropDismiss: false,
+        inputs,
+        // "Equipo incompleto" solo si no hay ningún reemplazo posible (15.8).
+        buttons: inputs.length
+          ? [{ text: 'Aceptar', handler: (v: any) => { if (!v) return false; valor = v; return true; } }]
+          : [{ text: 'Equipo incompleto', handler: () => { valor = { tipo: 'incompleto' }; } }]
+      });
+      alerta.onDidDismiss().then(() => resolve(valor));
+      await alerta.present();
+    });
+    if (!eleccion) return;
+
+    const log: any = this._game_.clean_log();
+    log.equipo = equipo;
+    log.hora = new Date();
+    if (eleccion.tipo === 'legal' && eleccion.n === titular) {
+      // Vuelve el titular: mismo registro que "deshacer cambio".
+      log.tipo = 3; log.jugador = titular; log.cambio = numero;
+    } else if (eleccion.tipo === 'legal') {
+      log.tipo = 2; log.jugador = titular; log.cambio = eleccion.n;
+    } else if (eleccion.tipo === 'excepcional') {
+      log.tipo = 12; log.jugador = numero; log.cambio = eleccion.n; log.posicion = posicion;
+    } else {
+      await this.declararIncompleto(equipo, tipo === 11);
+      return;
+    }
+    this.logs.unshift(log);
+    this.updateLogs();
+    this._game_.guardar();
+  }
+
+  // Equipo incompleto (6.4.3): pierde el set; el rival recibe los puntos que
+  // le faltan para ganarlo y el incompleto conserva los suyos.
+  private async declararIncompleto(equipo: 'A' | 'B', porDescalificacion: boolean) {
+    const rival: 'A' | 'B' = equipo === 'A' ? 'B' : 'A';
+    const marca: any = this._game_.clean_log();
+    marca.tipo = 13; marca.equipo = equipo; marca.hora = new Date(); marca.paraPartido = porDescalificacion;
+    this.logs.unshift(marca);
+    while (!this.esGanadorSet(rival)) {
+      const punto: any = this._game_.clean_log();
+      punto.tipo = 1; punto.equipo = rival; punto.hora = new Date(); punto.incompleto = true;
+      this.logs.unshift(punto);
+    }
+    this.updateLogs();
+    this._game_.guardar();
+    await this.avisar('Equipo incompleto', `El equipo ${equipo} queda incompleto y pierde el set: el equipo ${rival} recibe los puntos necesarios para ganarlo.${porDescalificacion ? ' Si en los sets siguientes tampoco puede completar 6 jugadores, también los pierde.' : ''}`);
   }
 }

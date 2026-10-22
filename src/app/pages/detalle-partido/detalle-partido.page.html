@@ -274,7 +274,7 @@
             <div slot="content" class="historial-lista">
               <div class="historial-item" *ngFor="let item of set.logsChrono">
                 <span class="lista-item-hora">{{ formatoHoraCorta(item.hora) }}</span>
-                <span class="lista-item-texto">{{ textLog(item.tipo) }}{{ item.jugador ? ' (J ' + item.jugador + ')' : '' }}{{ item.cambio ? ' → J ' + item.cambio : '' }}{{ item.equipo ? ' · Equipo ' + item.equipo : '' }}</span>
+                <span class="lista-item-texto">{{ textLog(item.tipo) }}{{ item.castigo ? " (castigo)" : "" }}{{ item.oficial ? " (" + item.oficial + ")" : "" }}{{ item.jugador ? ' (J ' + item.jugador + ')' : '' }}{{ item.cambio ? ' → J ' + item.cambio : '' }}{{ item.equipo ? ' · Equipo ' + item.equipo : '' }}</span>
               </div>
             </div>
           </ion-accordion>

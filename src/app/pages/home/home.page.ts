@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { GameService } from 'src/app/services/game/game.service';
+import { APP_VERSION } from 'src/environments/version';
 import { LocalstorageService } from 'src/app/services/bd/localstorage.service';
 import { mapearPartidoParaVista, PartidoVista } from 'src/app/services/game/partido-view.util';
 import { ThemeService } from 'src/app/services/theme/theme.service';
@@ -39,12 +40,12 @@ export class HomePage implements OnInit {
   almacenamientoTotalTexto = '';
   almacenamientoFraccion = 0;
 
-  // Info de la app para el recuadro "Acerca de" en Ajustes. La versión/build
-  // vienen de App.getInfo() (versionName/CFBundleShortVersionString
-  // empaquetado), que solo existe en un build nativo instalado; en web
-  // versionApp queda vacío y esa fila no se muestra (ver home.page.html).
+  // Info de la app para el recuadro "Acerca de" en Ajustes. En un build
+  // nativo la versión/build vienen de App.getInfo() (versionName /
+  // CFBundleShortVersionString del instalable); en web, de APP_VERSION
+  // (src/environments/version.ts).
   plataformaApp = '';
-  versionApp = '';
+  versionApp = APP_VERSION;
   buildApp: string | null = null;
   nombreApp = 'Scoresheets';
 
@@ -63,9 +64,7 @@ export class HomePage implements OnInit {
     const plataforma = Capacitor.getPlatform();
     this.plataformaApp = plataforma === 'ios' ? 'iOS' : plataforma === 'android' ? 'Android' : 'Web';
 
-    // En web no existe un "instalado" con versión propia (App.getInfo() es
-    // nativo), así que ahí simplemente no se muestra la fila de Versión
-    // (ver *ngIf="versionApp" en home.page.html) en vez de inventar un valor.
+    // App.getInfo() solo existe en nativo: en web queda APP_VERSION.
     if (!Capacitor.isNativePlatform()) return;
 
     try {

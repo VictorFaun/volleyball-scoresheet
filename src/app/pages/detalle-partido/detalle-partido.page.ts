@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { GameService } from 'src/app/services/game/game.service';
+import { ganadorPuntoLog } from 'src/app/services/game/partido-view.util';
 
 type Lado = 'A' | 'B';
 
@@ -102,7 +103,7 @@ export class DetallePartidoPage implements OnInit {
     9: 'Expulsión'
   };
 
-  private readonly TIPOS_AMONESTACION = [5, 6, 7, 8, 9];
+  private readonly TIPOS_AMONESTACION = [5, 6, 7, 8, 9, 11];
 
   partido: any;
   nombreA = 'Equipo A';
@@ -272,6 +273,9 @@ export class DetallePartidoPage implements OnInit {
     if (tipo == 8) return 'Solicitud improcedente';
     if (tipo == 9) return 'Expulsión';
     if (tipo == 10) return 'Cambio de lado';
+    if (tipo == 11) return 'Descalificación';
+    if (tipo == 12) return 'Cambio excepcional';
+    if (tipo == 13) return 'Equipo incompleto';
     return tipo;
   }
 
@@ -314,7 +318,8 @@ export class DetallePartidoPage implements OnInit {
     let mejorB: RachaEquipo | null = null;
 
     for (const log of logsChrono) {
-      if (log.tipo === 2) {
+      // Cambio regular (2) o excepcional (12): log.jugador sale, log.cambio entra.
+      if (log.tipo === 2 || log.tipo === 12) {
         if (log.equipo === 'A') {
           const idx = posA.indexOf(log.jugador);
           if (idx !== -1) posA[idx] = log.cambio;
@@ -326,8 +331,7 @@ export class DetallePartidoPage implements OnInit {
       }
 
       let winner: Lado | null = null;
-      if (log.tipo === 1) winner = log.equipo;
-      else if (log.tipo === 7) winner = log.equipo === 'A' ? 'B' : 'A';
+      winner = ganadorPuntoLog(log);
       if (!winner) continue;
 
       const servidorEquipo = currentServer;

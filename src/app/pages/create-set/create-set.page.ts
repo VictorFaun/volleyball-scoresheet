@@ -121,8 +121,10 @@ export class CreateSetPage implements OnInit {
     // líberos, ver GameService.cuposEquipo).
     const hayCupo = this._game_.puedeAgregarJugadorRapido(datosEquipo);
 
-    // Filtrar jugadores que no sean líberos
-    const jugadoresFiltrados = jugadores.filter((j: any) => !j.libero);
+    // Filtrar jugadores que no sean líberos ni estén descalificados (21.3.3:
+    // fuera por el resto del partido).
+    const fueraDeJuego = this._game_.jugadoresFueraDeJuego(equipo, Number(this.num));
+    const jugadoresFiltrados = jugadores.filter((j: any) => !j.libero && !fueraDeJuego.has(j.numero));
 
     if (jugadoresFiltrados.length === 0) {
       const alertaSinJugadores = await this.alertController.create({

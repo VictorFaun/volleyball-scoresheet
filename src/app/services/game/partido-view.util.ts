@@ -144,3 +144,19 @@ export function mapearPartidoParaVista(
 
   return vista;
 }
+
+// Equipo que gana el punto con un log, o null si el log no da punto:
+//  - tipo 1: punto normal del equipo del log.
+//  - tipo 7: tarjeta roja (castigo) -> punto y saque para el rival.
+//  - tipo 5 (demora) o 8 (solicitud improcedente que cuenta como demora)
+//    con castigo: true -> castigo por demora (2ª demora del equipo en el
+//    partido en adelante): punto y saque para el rival.
+// Usado en todo lo que cuenta puntos, saque o rotación (juego, detalle y
+// planilla), para que los castigos se traten siempre como rally ganado.
+export function ganadorPuntoLog(log: any): 'A' | 'B' | null {
+  if (!log) return null;
+  if (log.tipo === 1) return log.equipo === 'B' ? 'B' : 'A';
+  const castigo = log.tipo === 7 || ((log.tipo === 5 || log.tipo === 8) && log.castigo);
+  if (castigo) return log.equipo === 'A' ? 'B' : 'A';
+  return null;
+}
