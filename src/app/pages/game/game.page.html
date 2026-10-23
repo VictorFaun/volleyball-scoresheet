@@ -37,41 +37,53 @@
           <div class="cancha-equipo equipo-a" [class]="(this.saqueActual() == 'A'?'saque-a':'')">
             <div class="jugador-posicion" [class]="'pos-a-'+((((6 + 1 - this.contarRotaciones('A') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('A',alineacion_a[0])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('A',alineacion_a[0])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('A',alineacion_a[0]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
             <div class="jugador-posicion" [class]="'pos-a-'+((((6 + 2 - this.contarRotaciones('A') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('A',alineacion_a[1])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('A',alineacion_a[1])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('A',alineacion_a[1]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
             <div class="jugador-posicion" [class]="'pos-a-'+((((6 + 3 - this.contarRotaciones('A') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('A',alineacion_a[2])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('A',alineacion_a[2])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('A',alineacion_a[2]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
             <div class="jugador-posicion" [class]="'pos-a-'+((((6 + 4 - this.contarRotaciones('A') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('A',alineacion_a[3])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('A',alineacion_a[3])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('A',alineacion_a[3]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
             <div class="jugador-posicion" [class]="'pos-a-'+((((6 + 5 - this.contarRotaciones('A') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('A',alineacion_a[4])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('A',alineacion_a[4])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('A',alineacion_a[4]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
             <div class="jugador-posicion" [class]="'pos-a-'+((((6 + 0 - this.contarRotaciones('A') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('A',alineacion_a[5])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('A',alineacion_a[5])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('A',alineacion_a[5]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
           </div>
           <div class="cancha-equipo equipo-b" [class]="(this.saqueActual() == 'B'?'saque-b':'')">
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 1 - this.contarRotaciones('B') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('B',alineacion_b[0])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('B',alineacion_b[0])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('B',alineacion_b[0]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 2 - this.contarRotaciones('B') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('B',alineacion_b[1])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('B',alineacion_b[1])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('B',alineacion_b[1]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 3 - this.contarRotaciones('B') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('B',alineacion_b[2])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('B',alineacion_b[2])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('B',alineacion_b[2]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 4 - this.contarRotaciones('B') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('B',alineacion_b[3])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('B',alineacion_b[3])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('B',alineacion_b[3]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 5 - this.contarRotaciones('B') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('B',alineacion_b[4])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('B',alineacion_b[4])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('B',alineacion_b[4]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
             <div class="jugador-posicion" [class]="'pos-b-'+((((6 + 0 - this.contarRotaciones('B') % 6) % 6) || 6))">
               <ion-button (click)="cambiarJugador('B',alineacion_b[5])" [disabled]="setFinalizado" fill="clear">{{ocupantePosicion('B',alineacion_b[5])}}</ion-button>
+              <span class="marca-cambio" *ngIf="marcaCambio('B',alineacion_b[5]) as marca" [class.marca-cambio-tachada]="marca.tachado">{{marca.numero}}</span>
             </div>
           </div>
         </div>

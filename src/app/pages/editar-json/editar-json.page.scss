@@ -1,0 +1,84 @@
+// Colores de resaltado al estilo de VS Code (Light+/Dark+). Se definen como
+// variables para que el mismo HighlightStyle sirva en ambos modos.
+:host {
+  --json-clave: #0451a5;
+  --json-texto: #a31515;
+  --json-numero: #098658;
+  --json-literal: #0000ff;
+  --json-puntuacion: #3b3b3b;
+  --json-fondo: #ffffff;
+  --json-gutter: #f3f3f3;
+  --json-numero-linea: #6e7681;
+  --json-linea-activa: rgba(0, 0, 0, 0.04);
+  --json-seleccion: #add6ff;
+}
+
+:host-context(.ion-palette-dark) {
+  --json-clave: #9cdcfe;
+  --json-texto: #ce9178;
+  --json-numero: #b5cea8;
+  --json-literal: #569cd6;
+  --json-puntuacion: #d4d4d4;
+  --json-fondo: #1e1e1e;
+  --json-gutter: #1e1e1e;
+  --json-numero-linea: #858585;
+  --json-linea-activa: rgba(255, 255, 255, 0.05);
+  --json-seleccion: #264f78;
+}
+
+.vista-editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px 16px;
+  gap: 8px;
+}
+
+.aviso-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(var(--ion-color-danger-rgb), 0.12);
+  color: var(--ion-color-danger);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.3;
+
+  ion-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .aviso-error-titulo {
+    font-weight: 600;
+  }
+
+  .aviso-error-detalle {
+    margin-top: 2px;
+    word-break: break-all;
+  }
+
+  code {
+    font-family: Menlo, Consolas, 'Courier New', monospace;
+  }
+}
+
+.contenedor-editor {
+  flex: 1;
+  min-height: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--ion-color-dark-rgb), 0.15);
+
+  // global.scss aplica Inter a "*" (cada elemento), así que el editor no
+  // hereda la fuente monoespaciada: se fuerza en todo su contenido.
+  ::ng-deep * {
+    font-family: Menlo, Consolas, 'Courier New', monospace;
+  }
+}

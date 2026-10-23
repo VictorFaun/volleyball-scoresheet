@@ -2319,6 +2319,89 @@ export class GameService {
     }
   }
 
+  // Abre el editor del JSON crudo del partido (ver editar-json.page.ts).
+  editarJsonPartido(index: number) {
+    const partido = this.partidos[index];
+    if (!partido?.id) return;
+    this.router.navigate(['/editar-json'], { queryParams: { id: partido.id } });
+  }
+
+  // Reemplaza el contenido del partido por "datos" (JSON ya validado) sin
+  // cambiar la referencia del objeto: así this.partido y cualquier vista
+  // que lo esté usando ven los cambios de inmediato.
+  async reemplazarPartido(partido: any, datos: any) {
+    for (const clave of Object.keys(partido)) delete partido[clave];
+    Object.assign(partido, datos);
+    await this.localStorageService.guardarPartido(partido);
+  }
+
+  // Mueve un partido a otra competencia/fecha o lo deja suelto. Primero se
+  // elige la competencia (o "Partido suelto") y, si tiene fechas, la fecha.
+  // Devuelve true si el partido se movió, para que la vista se recargue.
+  async moverPartido(index: number): Promise<boolean> {
+    const partido = this.partidos[index];
+    if (!partido) return false;
+
+    const SUELTO = '__suelto__';
+    const SIN_FECHA = '__sin_fecha__';
+
+    const elegir = (header: string, inputs: any[]) => new Promise<any>(async resolve => {
+      let valor: any = null;
+      const alert = await this.alertController.create({
+        header,
+        inputs,
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          { text: 'Mover', handler: (v: any) => { if (v === undefined || v === null) return false; valor = v; return true; } }
+        ]
+      });
+      alert.onDidDismiss().then(() => resolve(valor));
+      await alert.present();
+    });
+
+    const competenciaActual = partido.competencia_id || null;
+    const inputsCompetencia: any[] = this.competencias.map((c: any) => ({
+      type: 'radio', label: c.nombre, value: c.id, checked: c.id === competenciaActual
+    }));
+    inputsCompetencia.unshift({ type: 'radio', label: 'Partido suelto (sin competencia)', value: SUELTO, checked: !competenciaActual });
+
+    const competenciaId = await elegir('Mover a competencia', inputsCompetencia);
+    if (competenciaId === null) return false;
+
+    let destinoCompetencia: any = null;
+    let destinoFecha: string | null = null;
+    if (competenciaId !== SUELTO) {
+      destinoCompetencia = this.competencias.find((c: any) => c.id === competenciaId);
+      if (!destinoCompetencia) return false;
+      const fechas = destinoCompetencia.fechas || [];
+      if (fechas.length) {
+        const fechaActual = competenciaId === competenciaActual ? (partido.fecha_id || null) : null;
+        const inputsFecha: any[] = fechas.map((f: any) => ({
+          type: 'radio', label: f.nombre, value: f.id, checked: f.id === fechaActual
+        }));
+        inputsFecha.push({ type: 'radio', label: 'Sin fecha', value: SIN_FECHA, checked: fechaActual === null });
+        const fechaId = await elegir(`¿A qué fecha de "${destinoCompetencia.nombre}"?`, inputsFecha);
+        if (fechaId === null) return false;
+        destinoFecha = fechaId === SIN_FECHA ? null : fechaId;
+      }
+    }
+
+    const nuevaCompetencia = destinoCompetencia?.id || null;
+    if (nuevaCompetencia === competenciaActual && destinoFecha === (partido.fecha_id || null)) return false;
+
+    // Los grupos son de cada competencia: al cambiar de competencia el
+    // partido sale de su grupo. El nombre "competicion" se actualiza igual
+    // que al renombrar, salvo en finalizados (conservan el de cuando se jugaron).
+    if (nuevaCompetencia !== competenciaActual) {
+      partido.grupo_id = null;
+      if (destinoCompetencia && !this.partidoFinalizado(partido)) partido.competicion = destinoCompetencia.nombre;
+    }
+    partido.competencia_id = nuevaCompetencia;
+    partido.fecha_id = destinoFecha;
+    await this.localStorageService.guardarPartido(partido);
+    return true;
+  }
+
   // ==========================================================================
   // EXPORTAR PLANILLA A PDF (formato "International Scoresheet" FIVB)
   // ==========================================================================

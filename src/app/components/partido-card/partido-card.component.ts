@@ -1,9 +1,13 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ActionSheetController } from '@ionic/angular';
 import { PartidoVista } from 'src/app/services/game/partido-view.util';
 
 // Tarjeta de partido reutilizada en Home y en la vista de Competencia: mismo
 // diseño (nombre de equipos, marcador por set, estado) y mismas acciones al
-// deslizar (editar -o ver, si ya finalizó-, exportar, copiar, eliminar).
+// deslizar: "más" y eliminar. "Más" abre un menú con el resto de las
+// acciones (editar -o ver, si ya finalizó-, exportar, copiar JSON, editar
+// JSON y mover a otra competencia/fecha): con un botón por acción no
+// cabían en la pantalla.
 @Component({
   selector: 'app-partido-card',
   templateUrl: './partido-card.component.html',
@@ -20,9 +24,30 @@ export class PartidoCardComponent {
   @Output() ver = new EventEmitter<void>();
   @Output() exportar = new EventEmitter<void>();
   @Output() copiar = new EventEmitter<void>();
+  @Output() editarJson = new EventEmitter<void>();
+  @Output() mover = new EventEmitter<void>();
   @Output() eliminar = new EventEmitter<void>();
 
-  // Solo el pill de "Config." (estado sin empezar) actúa como atajo directo
+  constructor(private actionSheetController: ActionSheetController) { }
+
+  async mostrarMas() {
+    const menu = await this.actionSheetController.create({
+      header: this.mostrarTorneo && this.partido.torneo ? this.partido.torneo : `Partido N° ${this.partido.numero_partido}`,
+      buttons: [
+        this.partido.finalizado
+          ? { text: 'Ver partido', icon: 'eye-outline', handler: () => this.ver.emit() }
+          : { text: 'Editar partido', icon: 'pencil', handler: () => this.editar.emit() },
+        { text: 'Exportar planilla', icon: 'document-text-outline', handler: () => this.exportar.emit() },
+        { text: 'Copiar JSON', icon: 'copy-outline', handler: () => this.copiar.emit() },
+        { text: 'Editar JSON', icon: 'code-slash-outline', handler: () => this.editarJson.emit() },
+        { text: 'Mover a competencia / fecha', icon: 'folder-open-outline', handler: () => this.mover.emit() },
+        { text: 'Cancelar', role: 'cancel' }
+      ]
+    });
+    await menu.present();
+  }
+
+  // Solo el pill de "Config."(estado sin empezar) actúa como atajo directo
   // a editar los datos básicos del partido. En cualquier otro estado, el
   // pill es solo informativo: el click cae al comportamiento normal de la
   // tarjeta (continuar.emit(), que retoma el paso exacto donde quedó).

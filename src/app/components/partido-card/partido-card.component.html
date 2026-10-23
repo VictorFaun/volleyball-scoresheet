@@ -37,18 +37,8 @@
     </div>
   </ion-item>
   <ion-item-options side="end" style="border-bottom-width: 0;">
-    <!-- Finalizado: no se edita, solo se puede recorrer en modo vista. -->
-    <ion-item-option *ngIf="partido.finalizado" (click)="ver.emit()" color="medium" style="border-radius: 14px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;">
-      <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
-    </ion-item-option>
-    <ion-item-option *ngIf="!partido.finalizado" (click)="editar.emit()" color="primary" style="border-radius: 14px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;">
-      <ion-icon slot="icon-only" name="pencil"></ion-icon>
-    </ion-item-option>
-    <ion-item-option (click)="exportar.emit()" color="secondary" style="border-radius: 0px;">
-      <ion-icon slot="icon-only" name="document-text-outline"></ion-icon>
-    </ion-item-option>
-    <ion-item-option (click)="copiar.emit()" color="success" style="border-radius: 0px;">
-      <ion-icon slot="icon-only" name="copy"></ion-icon>
+    <ion-item-option (click)="mostrarMas()" color="primary" style="border-radius: 14px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;">
+      <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
     </ion-item-option>
     <ion-item-option (click)="eliminar.emit()" color="danger" style="border-radius: 14px;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">
       <ion-icon slot="icon-only" name="trash"></ion-icon>

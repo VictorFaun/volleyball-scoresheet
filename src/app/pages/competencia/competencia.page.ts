@@ -253,6 +253,14 @@ export class CompetenciaPage implements OnInit {
     this._game_.copiarPartido(index);
   }
 
+  editarJsonPartido(index: number) {
+    this._game_.editarJsonPartido(index);
+  }
+
+  async moverPartido(index: number) {
+    if (await this._game_.moverPartido(index)) this.cargar();
+  }
+
   // Toma los partidos finalizados de la competencia y arma, por grupo (o
   // una tabla general si no hay grupos creados), la tabla de posiciones
   // completa: PJ, PG, PP, sets y puntos a favor/en contra, y el puntaje que

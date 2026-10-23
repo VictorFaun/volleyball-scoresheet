@@ -72,6 +72,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/planilla-preview/planilla-preview.module').then( m => m.PlanillaPreviewPageModule)
   },
   {
+    path: 'editar-json',
+    loadChildren: () => import('./pages/editar-json/editar-json.module').then( m => m.EditarJsonPageModule)
+  },
+  {
     path: 'archivados',
     loadChildren: () => import('./pages/archivados/archivados.module').then( m => m.ArchivadosPageModule)
   },

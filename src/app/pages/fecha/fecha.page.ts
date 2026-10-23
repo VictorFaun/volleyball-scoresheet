@@ -155,6 +155,14 @@ export class FechaPage implements OnInit {
     this._game_.copiarPartido(index);
   }
 
+  editarJsonPartido(index: number) {
+    this._game_.editarJsonPartido(index);
+  }
+
+  async moverPartido(index: number) {
+    if (await this._game_.moverPartido(index)) this.cargar();
+  }
+
   eliminarPartido(index: number) {
     const partido = this._game_.partidos[index];
     if (!partido) return;

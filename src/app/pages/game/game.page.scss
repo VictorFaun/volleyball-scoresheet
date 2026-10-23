@@ -146,6 +146,51 @@
   transition: transform 1s ease, top 1s ease, left 1s ease, right 1s ease;
 }
 
+/* Indicador de cambio (ver GamePage.marcaCambio): círculo chico arriba a la
+   derecha del jugador con el número de quien salió; tachado con una X
+   cuando el cambio ya se deshizo. pointer-events: none para no tapar el
+   toque sobre el jugador. */
+.marca-cambio {
+  position: absolute;
+  top: -7px;
+  right: -9px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 3px;
+  border-radius: 10px;
+  background: var(--ion-color-warning);
+  color: var(--ion-color-warning-contrast);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.marca-cambio-tachada {
+  background: var(--ion-background-color);
+  color: var(--ion-color-medium);
+  border: 1px solid var(--ion-color-medium);
+  line-height: 18px;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 1px;
+    right: 1px;
+    top: calc(50% - 0.5px);
+    height: 1px;
+    background: var(--ion-color-danger);
+    transform: rotate(45deg);
+  }
+
+  &::after {
+    transform: rotate(-45deg);
+  }
+}
+
 .jugador-posicion ion-button {
   margin: 0;
   width: 100%;

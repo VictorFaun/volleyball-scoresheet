@@ -258,4 +258,12 @@ export class HomePage implements OnInit {
   copiarPartido(index: number) {
     this._game_.copiarPartido(index);
   }
+
+  editarJsonPartido(index: number) {
+    this._game_.editarJsonPartido(index);
+  }
+
+  async moverPartido(index: number) {
+    if (await this._game_.moverPartido(index)) this.cargaPartidos();
+  }
 }

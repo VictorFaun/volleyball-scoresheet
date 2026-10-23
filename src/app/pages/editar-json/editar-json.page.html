@@ -1,0 +1,28 @@
+<ion-header [translucent]="false" class="ion-no-border">
+  <ion-toolbar class="toolbar-header-grande">
+    <ion-buttons slot="start">
+      <ion-button class="boton-volver-grande" (click)="volver()"><ion-icon slot="icon-only" name="arrow-back"></ion-icon></ion-button>
+    </ion-buttons>
+    <p class="header-title-izq">Editar JSON</p>
+    <ion-buttons slot="end">
+      <ion-button color="primary" [disabled]="!partido" (click)="guardar()">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        Guardar
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" [scrollY]="false">
+  <div class="vista-editor">
+    <div class="aviso-error" *ngIf="error" (click)="irAlError()">
+      <ion-icon name="alert-circle"></ion-icon>
+      <div>
+        <p class="aviso-error-titulo">JSON no válido</p>
+        <p *ngIf="error.linea" class="aviso-error-detalle">Línea {{error.linea}}, columna {{error.columna}}<span *ngIf="error.textoLinea !== null"> · <code>{{error.textoLinea}}</code></span></p>
+        <p *ngIf="error.mensaje" class="aviso-error-detalle">{{error.mensaje}}</p>
+      </div>
+    </div>
+    <div class="contenedor-editor" #contenedor></div>
+  </div>
+</ion-content>

@@ -533,6 +533,24 @@ export class GamePage implements OnInit {
     return ocupante;
   }
 
+  // Círculo chico junto al jugador en cancha que indica con quién se hizo
+  // el cambio en esa posición durante el set: mientras el suplente está en
+  // cancha muestra al titular que salió; cuando el titular vuelve (cambio
+  // deshecho/completado) muestra al suplente tachado, que ya no puede
+  // volver a entrar. Con cambio excepcional, el último reemplazado.
+  marcaCambio(equipo: 'A' | 'B', titular: number): { numero: number, tachado: boolean } | null {
+    const alineacion: any[] = equipo === 'A' ? this.alineacion_a : this.alineacion_b;
+    const posicion = alineacion.indexOf(titular);
+    // logs viene del más nuevo al más viejo.
+    const excepcional = this.logs.find((log: any) => log.tipo === 12 && log.equipo === equipo && log.posicion === posicion);
+    if (excepcional) return { numero: excepcional.jugador, tachado: false };
+
+    const cambio = this.logs.find((log: any) => log.tipo === 2 && log.equipo === equipo && log.jugador === titular);
+    if (!cambio) return null;
+    const volvio = this.logs.some((log: any) => log.tipo === 3 && log.equipo === equipo && log.jugador === titular && log.cambio === cambio.cambio);
+    return volvio ? { numero: cambio.cambio, tachado: true } : { numero: titular, tachado: false };
+  }
+
   async tiempo(equipo: 'A' | 'B') {
     if (this.setFinalizado) return;
 
