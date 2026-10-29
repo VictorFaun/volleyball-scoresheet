@@ -40,11 +40,6 @@
       <ion-icon name="information-circle"></ion-icon>
       <span>{{rival.nombre || 'El rival'}} no se presentó: este equipo gana 25-0 en cada set. Al continuar se pasa a las firmas.</span>
     </div>
-    <ion-button *ngIf="!equipo.no_se_presento && !rival?.no_se_presento && puedeCambiarNoPresentacion" color="danger" fill="outline" expand="block" style="margin: 0 0 16px;" (click)="marcarNoPresentado()">
-      <ion-icon slot="start" name="close-circle-outline"></ion-icon>
-      Equipo no se presentó
-    </ion-button>
-
     <div class="players">
       <div style="display: flex;align-items: center;">
         <label style="margin-right: 10px;">Jugadores <span class="cupos-jugadores">{{cantidadJugadores}}/{{maxJugadores}} · L {{cantidadLiberos}}/{{maxLiberos}}</span></label>
@@ -105,6 +100,13 @@
     <div class="input-text" style="padding-bottom: 0px;">
       <label>Fisioterapeuta</label>
       <ion-input fill="outline" placeholder="Nombre Fisioterapeuta" [(ngModel)]="equipo.fisioterapeuta"></ion-input>
+    </div>
+
+    <div *ngIf="!equipo.no_se_presento && !rival?.no_se_presento && puedeCambiarNoPresentacion" style="display: flex; justify-content: center; margin-top: 16px;">
+      <ion-button color="danger" fill="clear" size="small" (click)="marcarNoPresentado()">
+        <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+        Equipo no se presentó
+      </ion-button>
     </div>
 
   </div>

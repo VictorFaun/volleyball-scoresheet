@@ -1180,14 +1180,10 @@ export class GameService {
   }
 
   // Observaciones que la planilla exige registrar y la app genera sola:
-  // cambios excepcionales (15.7), equipo declarado incompleto (6.4.3) y
-  // equipo que no se presentó (6.4.1).
+  // cambios excepcionales (15.7) y equipo declarado incompleto (6.4.3). La
+  // no presentación de un equipo la escribe el planillero en observaciones.
   observacionesAutomaticas(partido: any): string[] {
     const lineas: string[] = [];
-    const ausente = this.equipoNoPresentado(partido);
-    if (ausente) {
-      lineas.push(`Equipo ${ausente.lado || ''} (${ausente.nombre || 'sin nombre'}) pierde el partido por no presentación (default, regla 6.4.2): 0:25 en cada set.`);
-    }
     for (let n = 1; n <= 5; n++) {
       const set = partido?.[`set_${n}`];
       if (!set?.logs) continue;
@@ -3178,7 +3174,7 @@ export class GameService {
     const equipos: any = {};
     for (const e of ['A', 'B'] as const) {
       equipos[e] = {
-        rondas: [] as { pos: number, ronda: number, texto: string, i: number }[],
+        rondas: [] as { pos: number, ronda: number, texto: string, i: number, final?: boolean }[],
         // Cada vez que un jugador va al saque: su N° de ronda impreso se tacha con "/".
         saques: [] as { pos: number, ronda: number, i: number }[],
         subs: [] as { pos: number, entra: number, marcador: [number, number], i: number, vuelta?: [number, number], iVuelta?: number }[],
@@ -3201,14 +3197,18 @@ export class GameService {
 
     let iCambio = Infinity;
     const enCambio = { A: 0, B: 0 };
+    let iUltimoPunto = -1, iUltimoCambioSaque = -1;
     logs.forEach((l, i) => {
       const ganadorRally = ganadorPuntoLog(l);
       if (ganadorRally) {
         const ganador: 'A' | 'B' = ganadorRally;
         marcador[ganador]++;
-        // Punto por castigo (roja o demora con castigo): círculo en POINTS.
-        if (l.tipo !== 1) equipos[ganador].puntosCastigo.push(marcador[ganador]);
+        iUltimoPunto = i;
+        // Punto por castigo (roja o demora con castigo) o dado por equipo
+        // incompleto del rival: círculo en POINTS.
+        if (l.tipo !== 1 || l.incompleto) equipos[ganador].puntosCastigo.push(marcador[ganador]);
         if (ganador !== saque) {
+          iUltimoCambioSaque = i;
           const perdedor = equipos[saque];
           perdedor.rondas.push({ pos: perdedor.servidor, ronda: perdedor.vueltas[perdedor.servidor], texto: String(marcador[saque]), i });
           saque = ganador;
@@ -3245,9 +3245,18 @@ export class GameService {
         }
       }
     });
-    // Puntaje final en la casilla de quien estaba sacando al terminar.
-    const s = equipos[saque];
-    s.rondas.push({ pos: s.servidor, ronda: s.vueltas[s.servidor], texto: String(marcador[saque]), i: logs.length });
+    // Fin del set (instrucciones de planilla FIVB 3.4.f): el último puntaje
+    // de cada equipo va en círculo en la casilla de su último saque. El
+    // ganador lo anota en la casilla de quien estaba sacando; si ganó el set
+    // recuperando el saque, en la de quien habría sacado, sin ✓. Con el set
+    // aún en juego, esa casilla queda vacía (se anota al perder el saque).
+    if (set.victoria) {
+      const s = equipos[saque];
+      if (iUltimoCambioSaque === iUltimoPunto && s.saques.length) s.saques.pop();
+      s.rondas.push({ pos: s.servidor, ronda: s.vueltas[s.servidor], texto: String(marcador[saque]), i: logs.length, final: true });
+      const ultimaRival = equipos[otro(saque)].rondas.slice(-1)[0];
+      if (ultimaRival && ultimaRival.texto !== 'X') ultimaRival.final = true;
+    }
     return { equipos, marcador, iCambio, enCambio };
   }
 
@@ -3255,12 +3264,14 @@ export class GameService {
     pagina.drawLine({ start: { x: x0, y: y0 }, end: { x: x1, y: y1 }, thickness: grosor, color: this.PLANILLA_AZUL() });
   }
 
-  // Marca la columna POINTS de una mitad: diagonal sobre cada punto desde
-  // "desde" hasta "hasta", círculo en el último (si "circulo") y una línea
-  // vertical que tacha los números que quedaron sin usar (si "tacharResto"). Con
+  // Marca la columna POINTS de una mitad: diagonal (/) sobre cada punto desde
+  // "desde" hasta "hasta" (en círculo los puntos por sanción del rival) y
+  // una línea vertical que tacha los números que quedaron sin usar (si
+  // "tacharResto"). El punto final del set no se encierra acá: va en
+  // círculo en la casilla de saque (ver simularSetPlanilla). Con
   // "tacharAntes" > 0 también tacha 1..tacharAntes (números ya usados en
   // otra caja, en la mitad de cambio de lado del set decisivo).
-  private marcarPuntosPlanilla(pagina: PDFPage, grilla: any, opts: { tacharAntes?: number, desde: number, hasta: number, circulo: boolean, tacharResto: boolean, castigo?: number[] }) {
+  private marcarPuntosPlanilla(pagina: PDFPage, grilla: any, opts: { tacharAntes?: number, desde: number, hasta: number, tacharResto: boolean, castigo?: number[] }) {
     const filas = grilla.ys.length;
     const total = filas * grilla.xs.length;
     const celda = (n: number) => {
@@ -3290,7 +3301,6 @@ export class GameService {
       const c = celda(n);
       this.lineaPlanilla(pagina, c.x0 - 0.6, c.yc - grilla.alto / 2 - 0.6, c.x1 + 0.6, c.yc + grilla.alto / 2 + 0.6);
     }
-    if (opts.circulo && opts.hasta >= opts.desde && opts.hasta <= total && !opts.castigo?.includes(opts.hasta)) encerrar(opts.hasta);
     if (opts.tacharResto) tachar(Math.max(opts.hasta + 1, (opts.tacharAntes || 0) + 1), total);
   }
 
@@ -3303,9 +3313,11 @@ export class GameService {
 
   // Dibuja una mitad de caja de set (un equipo). "hasta" limita a los
   // eventos anteriores a ese índice cronológico (caja 1 del set decisivo,
-  // que solo llega hasta el cambio de lado).
-  private dibujarMitadSetPlanilla(pagina: PDFPage, font: PDFFont, geo: any, filas: any, set: any, datos: any, equipo: any, opts: { lado: 'A' | 'B', hasta?: number, letra?: boolean, hora?: any, saca?: boolean }) {
+  // que solo llega hasta el cambio de lado) y "desde" a los posteriores
+  // (rondas de saque de la caja "Change side").
+  private dibujarMitadSetPlanilla(pagina: PDFPage, font: PDFFont, geo: any, filas: any, set: any, datos: any, equipo: any, opts: { lado: 'A' | 'B', hasta?: number, desde?: number, letra?: boolean, hora?: any, saca?: boolean }) {
     const hasta = opts.hasta ?? Infinity;
+    const desde = opts.desde ?? -Infinity;
     const L = filas.lineas;
     const base = (techo: number, piso: number, size: number) => piso + (techo - piso - font.heightAtSize(size, { descender: false })) / 2;
     const centroCol = (p: number) => (geo.cols[p] + geo.cols[p + 1]) / 2;
@@ -3351,20 +3363,22 @@ export class GameService {
     }
 
     // Rondas de saque: cada posición tiene 2 subcolumnas (1..n | n+1..2n).
-    // Al ir al saque se tacha con "/" el N° de ronda impreso, que está
-    // arriba a la derecha de su subcolumna (a filas.xRonda[subcolumna] del
-    // borde derecho y ~2.4pt bajo la línea superior, medido sobre
-    // planilla_3.pdf).
-    for (const s of datos.saques.filter((x: any) => x.i < hasta)) {
+    // Al ir al saque se marca con ✓ el N° de ronda impreso (instrucciones
+    // de planilla FIVB 3.3.a), que está arriba a la derecha de su subcolumna
+    // (a filas.xRonda[subcolumna] del borde derecho y ~2.4pt bajo la línea
+    // superior, medido sobre planilla_3.pdf).
+    const enRango = (x: any) => x.i < hasta && x.i >= desde;
+    for (const s of datos.saques.filter(enRango)) {
       const nFilas = filas.rondas;
       if (s.ronda < 1 || s.ronda > nFilas * 2) continue;
       const fila = (s.ronda - 1) % nFilas;
       const sub = s.ronda <= nFilas ? 0 : 1;
       const der = sub === 0 ? centroCol(s.pos) : geo.cols[s.pos + 1];
       const xc = der - filas.xRonda[sub], yc = L[5 + fila] - 2.4;
-      this.lineaPlanilla(pagina, xc - 1.4, yc - 1.9, xc + 1.4, yc + 1.9);
+      this.lineaPlanilla(pagina, xc - 1.5, yc, xc - 0.5, yc - 1.6);
+      this.lineaPlanilla(pagina, xc - 0.5, yc - 1.6, xc + 1.7, yc + 2.0);
     }
-    for (const r of datos.rondas.filter((x: any) => x.i < hasta)) {
+    for (const r of datos.rondas.filter(enRango)) {
       const nFilas = filas.rondas;
       if (r.ronda < 1 || r.ronda > nFilas * 2) continue;
       const sub = r.ronda <= nFilas ? 0 : 1, fila = (r.ronda - 1) % nFilas;
@@ -3372,7 +3386,13 @@ export class GameService {
       const x0 = sub === 0 ? geo.cols[r.pos] : xm;
       const techo = L[5 + fila], piso = L[6 + fila];
       // Un poco a la derecha y abajo, para no tapar el número de ronda impreso.
-      this.centradoEnCajaPlanilla(pagina, font, r.texto, x0 + 1.5, piso + 1.4, (xm - geo.cols[r.pos]) - 1.5, null, 7);
+      const ancho = (xm - geo.cols[r.pos]) - 1.5, y = piso + 1.4;
+      this.centradoEnCajaPlanilla(pagina, font, r.texto, x0 + 1.5, y, ancho, null, 7);
+      // Último puntaje del set: en círculo.
+      if (r.final) {
+        const w = font.widthOfTextAtSize(r.texto, 7);
+        pagina.drawEllipse({ x: x0 + 1.5 + ancho / 2, y: y + font.heightAtSize(7, { descender: false }) / 2, xScale: w / 2 + 1.8, yScale: 3.6, borderColor: this.PLANILLA_AZUL(), borderWidth: 0.6 });
+      }
     }
 
     // Tiempos.
@@ -3397,7 +3417,7 @@ export class GameService {
       const sim = this.simularSetPlanilla(set);
       for (const [lado, mitad, hora] of [[izq, g.izq, set.hora_inicio], [otro(izq), g.der, set.hora_fin]] as const) {
         this.dibujarMitadSetPlanilla(pagina, font, mitad, this.PLANILLA_SET_FILAS_NORMAL, set, sim.equipos[lado], equipoDe(lado), { lado, hora, saca: set.equipo_saque === lado });
-        this.marcarPuntosPlanilla(pagina, mitad.puntos, { desde: 1, hasta: sim.marcador[lado], circulo: !!set.victoria, tacharResto: !!set.victoria, castigo: sim.equipos[lado].puntosCastigo });
+        this.marcarPuntosPlanilla(pagina, mitad.puntos, { desde: 1, hasta: sim.marcador[lado], tacharResto: !!set.victoria, castigo: sim.equipos[lado].puntosCastigo });
       }
     };
     setNormal(partido.set_1, geo.set1, 'A');
@@ -3419,23 +3439,23 @@ export class GameService {
     // Caja 1: equipo de la izquierda hasta el cambio de lado (puntos 1..8).
     this.dibujarMitadSetPlanilla(pagina, font, g.izq, filas, set3, sim.equipos[izq], equipoDe(izq), { lado: izq, hasta: sim.iCambio, letra: true, hora: set3.hora_inicio, saca: set3.equipo_saque === izq });
     const puntosCaja1 = Math.min(k === Infinity ? sim.marcador[izq] : k, 8);
-    // Sin círculo: el punto final del set de este equipo va en la caja de
-    // cambio de lado; acá solo se tacha lo que sobró de 1..8.
-    this.marcarPuntosPlanilla(pagina, g.izq.puntos, { desde: 1, hasta: puntosCaja1, circulo: false, tacharResto: sim.iCambio !== Infinity, castigo: sim.equipos[izq].puntosCastigo });
+    // Acá solo se tacha lo que sobró de 1..8; lo posterior al cambio va en
+    // la caja de cambio de lado.
+    this.marcarPuntosPlanilla(pagina, g.izq.puntos, { desde: 1, hasta: puntosCaja1, tacharResto: sim.iCambio !== Infinity, castigo: sim.equipos[izq].puntosCastigo });
 
     // Caja 2: el otro equipo, todo el set.
     this.dibujarMitadSetPlanilla(pagina, font, g.der, filas, set3, sim.equipos[der], equipoDe(der), { lado: der, letra: true, hora: set3.hora_fin, saca: set3.equipo_saque === der });
-    this.marcarPuntosPlanilla(pagina, g.der.puntos, { desde: 1, hasta: sim.marcador[der], circulo: terminado, tacharResto: terminado, castigo: sim.equipos[der].puntosCastigo });
+    this.marcarPuntosPlanilla(pagina, g.der.puntos, { desde: 1, hasta: sim.marcador[der], tacharResto: terminado, castigo: sim.equipos[der].puntosCastigo });
 
-    // Caja "Change side": el equipo de la caja 1, desde el cambio de lado
-    // (se copia la alineación y lo ya anotado, y se sigue anotando acá).
-    // "Points at change" = puntos del equipo que NO llegó a 8 al momento del
-    // cambio (el que llegó a 8 es el que lo provocó).
+    // Caja "Change side" (instrucciones FIVB 3.5): el equipo de la caja 1
+    // desde el cambio de lado. Se repiten su alineación, sustituciones y
+    // tiempos; las rondas de saque siguen acá solo desde el cambio (si ese
+    // equipo estaba sacando, su casilla no se vuelve a marcar con ✓).
+    // "Points at change" = puntos de este equipo al momento del cambio.
     if (sim.iCambio !== Infinity) {
-      this.dibujarMitadSetPlanilla(pagina, font, g.cambio, filas, set3, sim.equipos[izq], null, { lado: izq, letra: true });
-      const puntosNoOcho = sim.enCambio.A === 8 ? sim.enCambio.B : sim.enCambio.A;
-      this.casillasPlanilla(pagina, font, String(puntosNoOcho), g.cambio.puntosEnCambio, 12, 2, filas.yEquipo, 10);
-      this.marcarPuntosPlanilla(pagina, g.cambio.puntos, { tacharAntes: k, desde: k + 1, hasta: sim.marcador[izq], circulo: terminado, tacharResto: terminado, castigo: sim.equipos[izq].puntosCastigo });
+      this.dibujarMitadSetPlanilla(pagina, font, g.cambio, filas, set3, sim.equipos[izq], null, { lado: izq, desde: sim.iCambio, letra: true });
+      this.casillasPlanilla(pagina, font, String(sim.enCambio[izq]), g.cambio.puntosEnCambio, 12, 2, filas.yEquipo, 10);
+      this.marcarPuntosPlanilla(pagina, g.cambio.puntos, { tacharAntes: k, desde: k + 1, hasta: sim.marcador[izq], tacharResto: terminado, castigo: sim.equipos[izq].puntosCastigo });
     }
   }
 
@@ -3519,6 +3539,11 @@ export class GameService {
         const techo = lineas[i], piso = lineas[i + 1];
         const y = piso + (techo - piso - font.heightAtSize(tamano, { descender: false })) / 2;
         this.centradoEnCajaPlanilla(pagina, font, j.numero, xNum, y, anchoNum, null, tamano);
+        // Capitán: su número en círculo (instrucciones FIVB 1.12).
+        if (j.capitan) {
+          const w = font.widthOfTextAtSize(String(j.numero ?? ''), tamano);
+          pagina.drawEllipse({ x: xNum + anchoNum / 2, y: y + font.heightAtSize(tamano, { descender: false }) / 2, xScale: Math.max(w / 2 + 1.2, 3.4), yScale: 3.6, borderColor: this.PLANILLA_AZUL(), borderWidth: 0.6 });
+        }
         this.txtPlanilla(pagina, font, this.nombreCortoJugadorPlanilla(j.nombre), xNombre, y, { size: tamano });
       };
       jugadores.filter(j => !j.libero).slice(0, 14).forEach((j, i) => fila(j, LINEAS_JUGADORES, i));
@@ -3541,6 +3566,18 @@ export class GameService {
         const nombre = this.nombreQueCabePlanilla(equipo?.[campo], font, tamano, xDer - xIzq - 4);
         this.txtPlanilla(pagina, font, nombre, xIzq + 2, y, { size: tamano });
       });
+    }
+
+    // Equipo que no se presentó: se tachan con una diagonal sus recuadros de
+    // jugadores, líberos, oficiales y firmas (manual internacional de
+    // planilla, "Forfeit"). [x0, x1 jugadores/firmas, x0, x1 oficiales]
+    const ausente = this.equipoNoPresentado(partido);
+    if (ausente) {
+      const [xa, xb, xoa, xob] = ausente === partido.equipo_1 ? [695.7, 780.7, 695.7, 772.1] : [780.7, 866.3, 789.8, 866.3];
+      this.lineaPlanilla(pagina, xa, 159.73, xb, 291.66);
+      this.lineaPlanilla(pagina, xa, 134.62, xb, 151.68);
+      this.lineaPlanilla(pagina, xoa, 82.47, xob, 126.21);
+      this.lineaPlanilla(pagina, xa, 32.4, xb, 74.4);
     }
 
     // const equipoA = partido.equipo_1?.lado === 'A' ? partido.equipo_1 : partido.equipo_2;
@@ -3849,8 +3886,12 @@ export class GameService {
     const total: any = { A: { T: 0, S: 0, W: 0, P: 0 }, B: { T: 0, S: 0, W: 0, P: 0 } };
     let totalSets = 0;
     const sets = [1, 2, 3].map(n => partido[`set_${n}`]);
+    // La planilla se rellena al ritmo del partido (se puede ver en vivo): la
+    // fila de un set solo va una vez cerrado (con ganador), y los totales,
+    // la hora de término, la duración y el ganador solo al cerrarse el
+    // partido (un equipo ya ganó los sets necesarios).
     sets.forEach((set, i) => {
-      if (!set?.logs || !(set.victoria || set.logs.length)) return;
+      if (!set?.logs || !set.victoria) return;
       const [techo, piso] = FILAS_SETS[i];
       const y = base(techo, piso);
       for (const e of ['A', 'B'] as const) {
@@ -3874,16 +3915,23 @@ export class GameService {
       }
     });
 
-    const yTotal = base(FILA_TOTAL[0], FILA_TOTAL[1]);
-    for (const e of ['A', 'B'] as const) for (const k of ['T', 'S', 'W', 'P']) enCelda(total[e][k], COLS[e][k], yTotal);
-    // "( ___ mn )" de Total Set Duration.
-    this.centradoEnCajaPlanilla(pagina, font, totalSets, 587.5, 68.1, 26, null, 9);
+    const setsParaGanar = Math.ceil((partido.numero_sets || 3) / 2);
+    const terminado = total.A.W >= setsParaGanar || total.B.W >= setsParaGanar;
 
-    // Hora de inicio (inicio del set 1), de término (fin del último set
-    // jugado) y duración total del partido, sobre los puntos "...... h ...... mn".
+    if (terminado) {
+      const yTotal = base(FILA_TOTAL[0], FILA_TOTAL[1]);
+      for (const e of ['A', 'B'] as const) for (const k of ['T', 'S', 'W', 'P']) enCelda(total[e][k], COLS[e][k], yTotal);
+      // "( ___ mn )" de Total Set Duration (sin horas, p. ej. por no
+      // presentación, queda vacío).
+      if (sets.some(s => s?.victoria && s.hora_inicio && s.hora_fin)) this.centradoEnCajaPlanilla(pagina, font, totalSets, 587.5, 68.1, 26, null, 9);
+    }
+
+    // Hora de inicio (inicio del set 1, apenas empieza), de término (fin del
+    // último set jugado) y duración total del partido (estas dos solo con el
+    // partido cerrado), sobre los puntos "...... h ...... mn".
     const jugados = sets.filter(s => s?.hora_inicio);
     const inicio = jugados[0]?.hora_inicio;
-    const fin = [...sets].reverse().find(s => s?.hora_fin)?.hora_fin;
+    const fin = terminado ? [...sets].reverse().find(s => s?.hora_fin)?.hora_fin : null;
     const hm = (x: number, xMn: number, hh: any, mm: any) => {
       this.centradoEnCajaPlanilla(pagina, font, hh, x - 5, 51.0, 10, null, tamano);
       this.centradoEnCajaPlanilla(pagina, font, mm, xMn - 5, 51.0, 10, null, tamano);
@@ -3896,7 +3944,7 @@ export class GameService {
 
     // WINNER: equipo ganador abreviado (una letra por casilla) y los sets
     // del perdedor después del "2 :" impreso.
-    if (total.A.W !== total.B.W && (total.A.W >= 2 || total.B.W >= 2)) {
+    if (terminado && total.A.W !== total.B.W) {
       const ganadorA = total.A.W > total.B.W;
       this.casillasPlanilla(pagina, font, this.abreviarEquipoPlanilla(ganadorA ? nombreA : nombreB), 588.46, 12, 3, 36.6, 10);
       this.centradoEnCajaPlanilla(pagina, font, ganadorA ? total.B.W : total.A.W, 666.1, 36.0, 10, null, 14);
