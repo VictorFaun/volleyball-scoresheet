@@ -3,4 +3,4 @@
 // instalable (versionName en android/app/build.gradle y MARKETING_VERSION
 // en el proyecto de iOS): al publicar una versión nativa, actualizar ahí
 // también el mismo número.
-export const APP_VERSION = '1.0.3';
+export const APP_VERSION = '1.0.4';

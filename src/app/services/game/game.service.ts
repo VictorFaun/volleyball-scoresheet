@@ -1916,6 +1916,36 @@ export class GameService {
     return (competencia?.equipos || []).find((e: any) => this.normalizarNombreEquipo(e.nombre) === clave) || null;
   }
 
+  // Otros partidos sueltos (sin competencia_id, no archivados) cuyo nombre de
+  // competición coincide con el del partido actual (sin distinguir
+  // mayúsculas ni espacios a los lados). Fuente de autocompletado para
+  // partidos sueltos (ver CreatePage y TeamPage). Vacío si el partido actual
+  // pertenece a una competencia o no tiene nombre de competición.
+  partidosSueltosMismaCompeticion(): any[] {
+    const actual = this.partido;
+    const clave = this.normalizarNombreEquipo(actual?.competicion);
+    if (!clave || actual.competencia_id) return [];
+    return this.partidos.filter((p: any, index: number) =>
+      index !== this.index && p !== actual && !p.archivado && !p.competencia_id &&
+      this.normalizarNombreEquipo(p.competicion) === clave
+    );
+  }
+
+  // Texto de una opción en la lista de partidos a elegir para autocompletar:
+  // "N°3 · Equipo X vs Equipo Y · 2-1" (número y marcador en sets solo si
+  // los tiene).
+  etiquetaPartidoAutocompletar(partido: any): string {
+    const vista = mapearPartidoParaVista(partido, -1, (set, equipo) => this.contarPuntos(set, equipo));
+    const partes: string[] = [];
+    if (partido.numero_partido) partes.push(`N°${partido.numero_partido}`);
+    partes.push(`${vista.equipoA} vs ${vista.equipoB}`);
+    if (vista.sets.length) {
+      const setsA = vista.sets.filter(s => s.victoria === 'A').length;
+      partes.push(`${setsA}-${vista.sets.length - setsA}`);
+    }
+    return partes.join(' · ');
+  }
+
   async crearEquipoCompetencia(competencia: any, nombre: string) {
     const equipo = this.clean_equipo_competencia();
     equipo.nombre = nombre;
@@ -3003,12 +3033,12 @@ export class GameService {
   // de saque y tiempos, más las líneas base de la cabecera.
   private readonly PLANILLA_SET_FILAS_NORMAL = {
     lineas: [423.71, 407.73, 396.79, 385.74, 374.80, 363.87, 352.82, 341.88, 330.95, 320.01],
-    rondas: 4, tiempos: [[341.88, 330.95], [330.95, 320.01]] as [number, number][],
+    rondas: 4, xRonda: [1.9, 1.9], tiempos: [[341.88, 330.95], [330.95, 320.01]] as [number, number][],
     yEquipo: 428.3, hora: [428.27, 438.25] as [number, number], yCirculo: 0,
   };
   private readonly PLANILLA_SET_FILAS_DECISIVO = {
     lineas: [300.67, 284.57, 273.52, 262.58, 251.53, 240.47, 229.42, 218.36, 207.31],
-    rondas: 3, tiempos: [[229.42, 218.36], [218.36, 207.31]] as [number, number][],
+    rondas: 3, xRonda: [1.1, 1.6], tiempos: [[229.42, 218.36], [218.36, 207.31]] as [number, number][],
     yEquipo: 304.76, hora: [305.00, 315.09] as [number, number], yCirculo: 308.66,
   };
 
@@ -3058,6 +3088,8 @@ export class GameService {
     for (const e of ['A', 'B'] as const) {
       equipos[e] = {
         rondas: [] as { pos: number, ronda: number, texto: string, i: number }[],
+        // Cada vez que un jugador va al saque: su N° de ronda impreso se tacha con "/".
+        saques: [] as { pos: number, ronda: number, i: number }[],
         subs: [] as { pos: number, entra: number, marcador: [number, number], i: number, vuelta?: [number, number], iVuelta?: number }[],
         tiempos: [] as { marcador: [number, number], i: number }[],
         // Números de punto (1, 2, ...) ganados por tarjeta roja del rival:
@@ -3072,6 +3104,7 @@ export class GameService {
     // El que saca primero arranca en la posición I (1ª vuelta); el que
     // recibe tiene la 1ª vuelta de la posición I marcada con "X".
     equipos[saque].vueltas[0] = 1;
+    equipos[saque].saques.push({ pos: 0, ronda: 1, i: -1 });
     equipos[otro(saque)].vueltas[0] = 1;
     equipos[otro(saque)].rondas.push({ pos: 0, ronda: 1, texto: 'X', i: -1 });
 
@@ -3091,6 +3124,7 @@ export class GameService {
           const g = equipos[ganador];
           g.servidor = (g.servidor + 1) % 6;
           g.vueltas[g.servidor]++;
+          g.saques.push({ pos: g.servidor, ronda: g.vueltas[g.servidor], i });
         }
         // Set decisivo sin log de cambio de lado: igual se cambia al llegar a 8.
         if (iCambio === Infinity && set._decisivo && (marcador.A === 8 || marcador.B === 8) && !logs.some(x => x.tipo === 10)) {
@@ -3223,6 +3257,19 @@ export class GameService {
     }
 
     // Rondas de saque: cada posición tiene 2 subcolumnas (1..n | n+1..2n).
+    // Al ir al saque se tacha con "/" el N° de ronda impreso, que está
+    // arriba a la derecha de su subcolumna (a filas.xRonda[subcolumna] del
+    // borde derecho y ~2.4pt bajo la línea superior, medido sobre
+    // planilla_3.pdf).
+    for (const s of datos.saques.filter((x: any) => x.i < hasta)) {
+      const nFilas = filas.rondas;
+      if (s.ronda < 1 || s.ronda > nFilas * 2) continue;
+      const fila = (s.ronda - 1) % nFilas;
+      const sub = s.ronda <= nFilas ? 0 : 1;
+      const der = sub === 0 ? centroCol(s.pos) : geo.cols[s.pos + 1];
+      const xc = der - filas.xRonda[sub], yc = L[5 + fila] - 2.4;
+      this.lineaPlanilla(pagina, xc - 1.4, yc - 1.9, xc + 1.4, yc + 1.9);
+    }
     for (const r of datos.rondas.filter((x: any) => x.i < hasta)) {
       const nFilas = filas.rondas;
       if (r.ronda < 1 || r.ronda > nFilas * 2) continue;

@@ -104,6 +104,56 @@ export class CreatePage implements OnInit, ComponentCanDeactivate {
     return competencia?.grupos || [];
   }
 
+  // Otros partidos sueltos con el mismo nombre de competición, de los que se
+  // pueden copiar los datos de este partido (ver autocompletarDatos).
+  get partidosParaAutocompletar(): any[] {
+    return this._game_.soloLectura ? [] : this._game_.partidosSueltosMismaCompeticion();
+  }
+
+  async autocompletarDatos() {
+    const partidos = this.partidosParaAutocompletar;
+    if (!partidos.length) return;
+    const alert = await this.alertController.create({
+      header: 'Autocompletar datos',
+      subHeader: 'Selecciona el partido del que copiar los datos',
+      inputs: partidos.map((p: any, i: number) => ({
+        type: 'radio',
+        label: this._game_.etiquetaPartidoAutocompletar(p),
+        value: i,
+        checked: i === 0
+      })),
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Usar',
+          handler: (i: number) => {
+            if (i === undefined || i === null) return false;
+            this.copiarDatosDe(partidos[i]);
+            return true;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  // Copia la configuración y la información general (lugar, división,
+  // categoría, fecha y oficiales). No copia lo propio de cada partido:
+  // número, etiqueta, fase, grupo, hora, equipos ni sets.
+  private copiarDatosDe(origen: any) {
+    if (!this.partidoEnCurso()) this.partido.numero_sets = origen.numero_sets;
+    this.partido.cambio_lado_ultimo_set = origen.cambio_lado_ultimo_set;
+    if (origen.firmas_habilitadas) this.partido.firmas_habilitadas = { ...origen.firmas_habilitadas };
+    const campos = [
+      'ciudad', 'pais', 'gimnasio', 'division', 'categoria', 'fecha',
+      'primer_arbitro', 'segundo_arbitro', 'planillero', 'asistente_planillero',
+      'primer_arbitro_pais', 'segundo_arbitro_pais', 'planillero_pais', 'asistente_planillero_pais',
+      'primer_banderin', 'segundo_banderin', 'tercer_banderin', 'cuarto_banderin',
+    ];
+    campos.forEach(c => this.partido[c] = origen[c] ?? null);
+    this._game_.guardar();
+  }
+
   activarTodasLasFirmas() {
     this.firmasConfig.forEach(f => this.partido.firmas_habilitadas[f.num] = true);
   }

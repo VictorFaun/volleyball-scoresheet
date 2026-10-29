@@ -19,6 +19,9 @@ export class TeamPage implements OnInit {
   fuenteFecha: { partido: any, equipo: any } | null = null;
   equipoO2: any = null;
   sugerenciasO2: any[] = [];
+  // Partido suelto: otros partidos sueltos de la misma competición (por
+  // nombre) donde un equipo con este nombre ya tiene jugadores cargados.
+  fuentesSueltos: { partido: any, equipo: any }[] = [];
 
   // Equipo de prueba rápido para testing (ver GameService.equiposPrueba).
   private get equiposPrueba() { return this._game_.equiposPrueba; }
@@ -288,8 +291,10 @@ export class TeamPage implements OnInit {
   //    fecha), con la opción de rearmarlo desde el O-2 general.
   // 2. Si no, el O-2 general del equipo (Competencia > Configuración >
   //    Equipos): se eligen los jugadores que juegan este partido.
-  // Un partido sin fecha solo usa el O-2 general; uno fuera de una
-  // competencia no autocompleta (salvo el equipo de prueba EP1).
+  // Un partido sin fecha solo usa el O-2 general. Uno fuera de una
+  // competencia solo autocompleta desde otros partidos sueltos con el mismo
+  // nombre de competición (ver buscarEquipoEnSueltos), además del equipo de
+  // prueba EP1.
   buscarTeam(){
     // Modo solo vista: sin sugerencias ni ofertas de autocompletar.
     if (this._game_.soloLectura) {
@@ -311,6 +316,8 @@ export class TeamPage implements OnInit {
     const competencia = this.competenciaDelPartido();
     if (!this.equipo || !competencia) {
       this.limpiarFuentesAutocompletar();
+      this.fuentesSueltos = this.buscarEquipoEnSueltos();
+      this.autocompletar = this.fuentesSueltos.length > 0;
       return;
     }
 
@@ -336,6 +343,7 @@ export class TeamPage implements OnInit {
     this.fuenteFecha = null;
     this.equipoO2 = null;
     this.sugerenciasO2 = [];
+    this.fuentesSueltos = [];
   }
 
   private competenciaDelPartido(): any | null {
@@ -367,6 +375,49 @@ export class TeamPage implements OnInit {
     return mejor;
   }
 
+  // Partidos sueltos de la misma competición (por nombre) donde un equipo
+  // con este nombre ya tiene jugadores cargados.
+  private buscarEquipoEnSueltos(): { partido: any, equipo: any }[] {
+    const nombre = this._game_.normalizarNombreEquipo(this.equipo?.nombre);
+    if (!nombre) return [];
+    const fuentes: { partido: any, equipo: any }[] = [];
+    this._game_.partidosSueltosMismaCompeticion().forEach((partido: any) => {
+      const equipo = [partido.equipo_1, partido.equipo_2].find((e: any) =>
+        e?.jugadores?.length && this._game_.normalizarNombreEquipo(e.nombre) === nombre
+      );
+      if (equipo) fuentes.push({ partido, equipo });
+    });
+    return fuentes;
+  }
+
+  // Lista los partidos sueltos encontrados para elegir de cuál copiar el
+  // equipo (plantel y cuerpo técnico).
+  async seleccionarDesdeSueltos() {
+    const fuentes = this.fuentesSueltos;
+    if (!fuentes.length) return;
+    const alert = await this.alertController.create({
+      header: 'Autocompletar equipo',
+      subHeader: 'Selecciona el partido del que copiar el equipo',
+      inputs: fuentes.map((f, i) => ({
+        type: 'radio',
+        label: this._game_.etiquetaPartidoAutocompletar(f.partido),
+        value: i,
+        checked: i === 0
+      })),
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Usar',
+          handler: (i: number) => {
+            if (i === undefined || i === null) return false;
+            return this.aplicarPlantel(fuentes[i].equipo.jugadores, fuentes[i].equipo);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
   seleccionarSugerencia(equipoO2: any) {
     this.equipo.nombre = equipoO2.nombre;
     this.buscarTeam();
@@ -374,6 +425,10 @@ export class TeamPage implements OnInit {
   }
 
   async autocompletarDatos(){
+    if (this.fuentesSueltos.length) {
+      await this.seleccionarDesdeSueltos();
+      return;
+    }
     const fuente = this.fuenteFecha;
     if (!fuente) {
       if (this.equipoO2) await this.seleccionarDesdeO2();
