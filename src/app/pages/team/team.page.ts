@@ -60,8 +60,46 @@ export class TeamPage implements OnInit {
       this._game_.new_equipo(2);
     }
     if (this.numero == 2) {
-      this._game_.new_sorteo(1);
+      if (this._game_.equipoNoPresentado()) this._game_.iniciarNoPresentacion();
+      else this._game_.new_sorteo(1);
     }
+  }
+
+  // Equipo que no se presentó (regla 6.4.2): ver GameService.iniciarNoPresentacion.
+  get rival(): any {
+    return this.numero == 1 ? this._game_.partido.equipo_2 : this._game_.partido.equipo_1;
+  }
+
+  get puedeCambiarNoPresentacion(): boolean {
+    return !this._game_.soloLectura && this._game_.puedeCambiarNoPresentacion();
+  }
+
+  async marcarNoPresentado() {
+    if (!this.equipo?.nombre?.trim()) {
+      this.mostrarError('Ingresa el nombre del equipo antes de marcarlo como no presentado.');
+      return;
+    }
+    const sets = Math.ceil(this._game_.partido.numero_sets / 2);
+    const alert = await this.alertController.create({
+      header: 'Equipo no presentado',
+      message: `${this.equipo.nombre} pierde el partido por no presentación: el rival gana ${sets} sets por 25-0. Se saltan el sorteo y los sets, y solo firma el equipo presente.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Confirmar',
+          handler: () => {
+            this.equipo.no_se_presento = true;
+            this._game_.guardar();
+            this.siguiente();
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  quitarNoPresentado() {
+    this._game_.quitarNoPresentacion(this.equipo);
   }
 
   // Cupos restantes del O-2 bis (máx. 14 jugadores sin contar líberos y

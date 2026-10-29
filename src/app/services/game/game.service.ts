@@ -753,6 +753,8 @@ export class GameService {
 
   firmaHabilitada(num: any): boolean {
     if (this.partido.firmas_habilitadas?.[num] === false) return false;
+    const ausente = this.ladoNoPresentado();
+    if (ausente && this.FIRMAS_EQUIPO[ausente].includes(Number(num))) return false;
     const campo = this.OFICIAL_POR_FIRMA[Number(num)];
     return !campo || !!String(this.partido[campo] ?? '').trim();
   }
@@ -764,13 +766,97 @@ export class GameService {
     if (num == 1) this.new_firma(2);
     if (num == 2) this.new_firma(3);
     if (num == 3) this.new_firma(4);
-    if (num == 4) this.new_set(1);
+    if (num == 4) {
+      if (this.ladoNoPresentado()) {
+        this.aplicarResultadoNoPresentacion();
+        this.new_firma(5);
+      } else {
+        this.new_set(1);
+      }
+    }
     if (num == 5) this.new_firma(6);
     if (num == 6) this.new_firma(7);
     if (num == 7) this.new_firma(8);
     if (num == 8) this.new_firma(9);
     if (num == 9) this.new_firma(10);
     if (num == 10) this.terminoPartido();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Equipo que no se presenta (default, reglas 6.4.1 y 6.4.2)
+  // ---------------------------------------------------------------------------
+  // Se marca al registrar el equipo (equipo.no_se_presento, ver TeamPage). El
+  // partido se salta el sorteo y los sets: se piden solo las firmas del
+  // equipo presente y de los oficiales, y el presente gana 25-0 cada set
+  // necesario para ganar el partido (ver aplicarResultadoNoPresentacion).
+  private readonly FIRMAS_EQUIPO: Record<'A' | 'B', number[]> = { A: [1, 2, 5], B: [3, 4, 6] };
+
+  equipoNoPresentado(partido: any = this.partido): any | null {
+    return [partido?.equipo_1, partido?.equipo_2].find((e: any) => e?.no_se_presento) || null;
+  }
+
+  ladoNoPresentado(partido: any = this.partido): 'A' | 'B' | null {
+    return this.equipoNoPresentado(partido)?.lado || null;
+  }
+
+  // Se puede marcar/desmarcar mientras no se haya jugado ningún set real.
+  puedeCambiarNoPresentacion(): boolean {
+    for (let n = 1; n <= 5; n++) {
+      const set = this.partido[`set_${n}`];
+      if (set && !set.no_presentado && this.setYaIniciado(n)) return false;
+    }
+    return true;
+  }
+
+  // Sigue el flujo tras registrar ambos equipos con uno marcado como no
+  // presentado. Como indican las instrucciones de planilla FIVB para
+  // default/forfeit, el equipo presente queda como "A", con el primer saque
+  // y como ganador del sorteo.
+  iniciarNoPresentacion() {
+    const ausente = this.equipoNoPresentado();
+    if (!ausente) return;
+    const presente = ausente === this.partido.equipo_1 ? this.partido.equipo_2 : this.partido.equipo_1;
+    presente.lado = 'A';
+    ausente.lado = 'B';
+    this.new_firma(1);
+  }
+
+  // Deshace la marca: quita los sets 25-0 y vuelve al registro de equipos
+  // (el sorteo se hace de nuevo).
+  quitarNoPresentacion(equipo: any) {
+    equipo.no_se_presento = false;
+    for (let n = 1; n <= 5; n++) {
+      if (this.partido[`set_${n}`]?.no_presentado) this.partido[`set_${n}`] = null;
+    }
+    if (this.partido.equipo_1) this.partido.equipo_1.lado = null;
+    if (this.partido.equipo_2) this.partido.equipo_2.lado = null;
+    if (this.partido.estado > 4) this.partido.estado = 4;
+    this.guardar();
+  }
+
+  // El equipo presente gana 25-0 cada set hasta ganar el partido (2 de 3 o
+  // 3 de 5). Los puntos se registran como logs normales para que marcador,
+  // resumen, tablas y planilla los cuenten igual que un set jugado.
+  aplicarResultadoNoPresentacion() {
+    const ausente = this.ladoNoPresentado();
+    if (!ausente) return;
+    const ganador = this.alternarEquipo(ausente);
+    const setsParaGanar = Math.ceil(this.partido.numero_sets / 2);
+    for (let n = 1; n <= 5; n++) {
+      if (n > setsParaGanar) {
+        this.partido[`set_${n}`] = null;
+        continue;
+      }
+      const set: any = this.clean_set();
+      set.no_presentado = true;
+      // Saque y lado se alternan por set como en un partido normal.
+      set.equipo_saque = n % 2 === 1 ? ganador : ausente;
+      set.lado_izquierda = n % 2 === 1 ? 'A' : 'B';
+      set.victoria = ganador;
+      set.logs = Array.from({ length: 25 }, () => ({ ...this.clean_log(), tipo: 1, equipo: ganador }));
+      this.partido[`set_${n}`] = set;
+    }
+    this.guardar();
   }
 
   async new_firma(num: any) {
@@ -1094,9 +1180,14 @@ export class GameService {
   }
 
   // Observaciones que la planilla exige registrar y la app genera sola:
-  // cambios excepcionales (15.7) y equipo declarado incompleto (6.4.3).
+  // cambios excepcionales (15.7), equipo declarado incompleto (6.4.3) y
+  // equipo que no se presentó (6.4.1).
   observacionesAutomaticas(partido: any): string[] {
     const lineas: string[] = [];
+    const ausente = this.equipoNoPresentado(partido);
+    if (ausente) {
+      lineas.push(`Equipo ${ausente.lado || ''} (${ausente.nombre || 'sin nombre'}) pierde el partido por no presentación (default, regla 6.4.2): 0:25 en cada set.`);
+    }
     for (let n = 1; n <= 5; n++) {
       const set = partido?.[`set_${n}`];
       if (!set?.logs) continue;
@@ -3228,6 +3319,9 @@ export class GameService {
       this.lineaPlanilla(pagina, x - 2.6, y - 2.6, x + 2.6, y + 2.6);
       this.lineaPlanilla(pagina, x - 2.6, y + 2.6, x + 2.6, y - 2.6);
     }
+    // Set ganado por no presentación del rival: no hubo juego, solo se
+    // anotan equipos, S/R y los puntos (25-0), sin horas ni rondas.
+    if (set.no_presentado) return;
     const hora = this.fmtHoraPlanilla(opts.hora);
     if (hora && geo.hora) {
       const [x0, x1] = geo.hora, xm = (x0 + x1) / 2;
